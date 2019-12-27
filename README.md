@@ -1,5 +1,7 @@
 # ShapeConverter
-The ShapeConverter converts vector data into WPF/XAML shapes. The main intention is to convert small icons ans logos.
+The ShapeConverter converts vector data into WPF/XAML shapes. The main intention is to convert icons and logos you get from your designer so that you can use the icon and logos as vector data in your WPF projects.
+
+<img src="Readme1.png">
 
 ##### Supported input file types
 * Adobe Illustrator (\*.ai)
@@ -22,15 +24,14 @@ The ShapeConverter converts vector data into WPF/XAML shapes. The main intention
 
 * the generated data do not contain any transformations
 * selectively deselect parts of the shape if the shape consists of multiple shapes
-* clipping regions are minimized and optimized
+* clipping regions are removed if possible or at least minimized and optimized
 * single executable
-* support
 
 ##### Export
 
 * Icon (\*.ico) with all resolutions 16x16, 32x32, 64x64, 128x128, 256x256
 * Image (\*.png, \*.jpg, \*.tiff, \*.bmp)
-* GIF (\*.giff)
+* GIF (\*.gif)
 * Scalable Vector Graphic (\*.svg)
 * Encapsulated Postscript (\*.eps)
 
