@@ -1,0 +1,49 @@
+﻿<!--
+// Author:
+//   Michael Göricke
+//
+// Copyright (c) 2019
+//
+// This file is part of ShapeConverter.
+//
+// ShapeConverter is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program. If not, see<http://www.gnu.org/licenses/> .-->
+
+<Application x:Class="ShapeConverter.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:ShapeConverter"
+             StartupUri="Shell\Main\MainWindow.xaml">
+    <Application.Resources>
+        <!--
+            unfortunately we need to include all styles here
+            a separate styles.xaml in the Shell/Styles folder doesn't work
+            without further effort
+        -->
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Shell/Styles/Colors.xaml" />
+                <ResourceDictionary Source="Shell/Styles/Icons.xaml" />
+                <ResourceDictionary Source="Shell/Styles/Converter.xaml" />
+                <ResourceDictionary Source="Shell/Styles/TextBox.xaml" />
+                <ResourceDictionary Source="Shell/Styles/TabControl.xaml" />
+                <ResourceDictionary Source="Shell/Styles/Button.xaml" />
+                <ResourceDictionary Source="Shell/Styles/RadioButton.xaml" />
+                <ResourceDictionary Source="Shell/Styles/ToggleButton.xaml" />
+                <ResourceDictionary Source="Shell/Styles/CheckBox.xaml" />
+                <ResourceDictionary Source="Shell/Styles/Header.xaml" />
+                <ResourceDictionary Source="Shell/Styles/ComboBox.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

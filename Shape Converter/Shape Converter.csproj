@@ -1,0 +1,708 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{A9491E59-4D31-4456-8D49-1BF89107560D}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>ShapeConverter</RootNamespace>
+    <AssemblyName>ShapeConverter</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WarningLevel>4</WarningLevel>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <TargetFrameworkProfile />
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;EXTENDEDVERSION</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;EXTENDEDVERSION2</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>ShapeConverter.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;EXTENDEDVERSION</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE;EXTENDEDVERSION2</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xaml">
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+    <Compile Include="BusinessLogic\Converter\CmykToRgbConverter.cs" />
+    <Compile Include="BusinessLogic\Exporter\EpsExporter.cs" />
+    <Compile Include="BusinessLogic\Exporter\IcoExporter.cs" />
+    <Compile Include="BusinessLogic\Exporter\ImageExporter.cs" />
+    <Compile Include="BusinessLogic\Exporter\SvgExporter.cs" />
+    <Compile Include="BusinessLogic\Generators\GeometrySourceGenerator\IGeometrySourceGenerator.cs" />
+    <Compile Include="BusinessLogic\Generators\GeometrySourceGenerator\PathGeometrySourceGenerator.cs" />
+    <Compile Include="BusinessLogic\Generators\GeometrySourceGenerator\StreamGeometrySourceGenerator.cs" />
+    <Compile Include="BusinessLogic\Generators\GraphicToWpfConverter.cs" />
+    <Compile Include="BusinessLogic\Generators\PreviewBrushGenerator.cs" />
+    <Compile Include="BusinessLogic\Generators\SourceGeneratorHelper.cs" />
+    <Compile Include="BusinessLogic\Helper\MatrixUtilities.cs" />
+    <Compile Include="BusinessLogic\Manipulation\OptimizeVisual.cs" />
+    <Compile Include="BusinessLogic\Manipulation\TransformVisual.cs" />
+    <Compile Include="BusinessLogic\Helper\DoubleUtilities.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsParser.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsParserModule.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\ColorSpace\CMYKDeviceColorSpace.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\ColorSpace\ColorSpaceActivator.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\ColorSpace\DeviceNColorSpace.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\ColorSpace\GrayDeviceColorSpace.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\ColorSpace\IColorSpace.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\ColorSpace\IndexedColorSpace.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\ColorSpace\PatternColorSpace.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\ColorSpace\RGBDeviceColorSpace.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\ColorSpace\UnknownColorSpace.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Arithmetic\AbsCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Arithmetic\AddCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Arithmetic\ArithmeticCommands.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Arithmetic\AtanCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Arithmetic\CeilingCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Arithmetic\CosCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Arithmetic\DivCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Arithmetic\ExpCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Arithmetic\FloorCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Arithmetic\IdivCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Arithmetic\LnCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Arithmetic\LogCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Arithmetic\ModCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Arithmetic\MulCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Arithmetic\NegCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Arithmetic\RandCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Arithmetic\RandomHelper.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Arithmetic\RoundCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Arithmetic\RrandCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Arithmetic\SinCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Arithmetic\SqrtCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Arithmetic\SrandCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Arithmetic\SubCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Arithmetic\TruncateCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Array\ALoadCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Array\ArrayCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Array\ArrayCommands.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Array\AStoreCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Array\CurrentPackingCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Array\SetPackingCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Boolean\AndCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Boolean\BitshiftCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Boolean\BooleanCommands.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Boolean\EqCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Boolean\GeCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Boolean\GtCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Boolean\LeCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Boolean\LtCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Boolean\NeCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Boolean\NotCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Boolean\OrCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Boolean\XorCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Combined\CombinedCommands.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Combined\CopyCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Combined\GetCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Combined\GetIntervalCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Combined\LengthCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Combined\PutCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Combined\PutIntervalCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\AllCommands.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Control\ControlCommands.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Conversion\ConversionCommands.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Control\CountExecStackCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Conversion\CviCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Conversion\CvLitCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Conversion\CvrCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Conversion\CvxCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Conversion\DoNothingCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Conversion\TypeCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Conversion\XcheckCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\DeviceSetup\CurrentPageDeviceOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\DeviceSetup\DeviceSetupCommands.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\DeviceSetup\ShowPageOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Dictionary\BeginCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Dictionary\ClearDictStackCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Dictionary\CountDictStackCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Dictionary\CurrentDictCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Dictionary\DefCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Dictionary\DictCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Dictionary\DictionaryCommands.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Control\ExecCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Control\ExecStackCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Control\ExitCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Dictionary\DictStackCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Dictionary\EndCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Dictionary\InternalDictCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Dictionary\KnownCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Dictionary\LoadCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Dictionary\MaxLengthCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Dictionary\StoreCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Dictionary\UndefCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Dictionary\WhereCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\File\CurrentFileCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\File\FileCommands.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\File\FilterCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\File\FlushFileCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\File\ReadLineCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\File\ReadStringCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Font\FindFontCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Font\FontCommands.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Control\ForAllCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Control\ForCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Font\FontNotingCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\GraphicState\CurrentBlackGenerationOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\GraphicState\CurrentCMYKColorOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\GraphicState\CurrentColorOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\GraphicState\CurrentColorSpaceOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\GraphicState\CurrentColorTransferOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\GraphicState\CurrentFlatOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\GraphicState\CurrentGrayOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\GraphicState\CurrentHalfToneOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\GraphicState\CurrentRGBColorOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\GraphicState\CurrentScreenOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\GraphicState\CurrentTransferOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\GraphicState\GraphicStateCommands.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Control\IfCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Control\IfElseCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\GraphicState\GRestoreOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\GraphicState\GSaveOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\GraphicState\RestoreOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\GraphicState\SaveOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\GraphicState\SetCmykColorOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\GraphicState\SetColorOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\GraphicState\SetColorSpaceOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\GraphicState\SetDashOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\GraphicState\SetFlatOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\GraphicState\SetGrayOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\GraphicState\SetLineCapOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\GraphicState\SetLineJoinOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\GraphicState\SetLineWidthOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\GraphicState\SetMiterLimitOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\GraphicState\SetOverPrintOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\GraphicState\SetRgbColorOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\GraphicState\SetStrokeAdjustOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\GraphicState\SetTransferOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\GraphicState\ShFillOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Internal\BeginProcedureOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Internal\EndArrayOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Internal\EndDictionaryOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Internal\EndProcedureOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Internal\ImmediateOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Internal\DscCommentOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Internal\OperatorOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Interpreter\CurrentSystemParamsOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Interpreter\DebugWriteLineOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Interpreter\DebugWriteStackOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Interpreter\DefaultErrorHandlerOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Interpreter\HandleErrorOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Interpreter\InterpreterCommands.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Control\LoopCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Interpreter\SetUserParamsOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Matrix\ConcatOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Matrix\CurrentMatrixOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Matrix\DtransformOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Matrix\ItransformOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Matrix\MatrixCommands.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Matrix\MatrixOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Matrix\ScaleOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Matrix\SetMatrixOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Matrix\TransformOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Matrix\TranslateOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Memory\CurrentGlobalOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Memory\MemoryCommands.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Memory\SetGlobalOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Misc\BindCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Misc\MiscCommands.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Misc\PrintCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Misc\ProductCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Misc\VersionCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Painting\EoFillOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Painting\FillHelper.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Painting\FillOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Painting\PaintingCommands.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Painting\PaintNotingCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Painting\StrokeCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Path\ArcCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Path\ArcHelper.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Path\ArcnCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Path\ArctCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Path\CharPathCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Path\ClipCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Path\ClipHelper.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Path\ClipPathCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Path\ClosePathCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Path\CurrentPointCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Path\CurveToCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Path\EoClipCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Path\FlattenPathCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Path\InitClipCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Path\LineToCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Path\MoveToCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Path\NewPathCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Path\PathCommands.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Path\RcurveToCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Path\RectClipCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Path\ReversePathCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Path\RlineToCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Path\RmoveToCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Path\SetBBoxCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Path\StrokePathCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Path\UstrokePathCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Pattern\MakePatternCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Pattern\PatternCommands.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Control\QuitCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Control\RepeatCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Resource\DefineResourceOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Resource\FindResourceOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Resource\ResourceCommands.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Resource\ResourceForAllOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Resource\ResourceStatusOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Resource\UndefineResourceOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Stack\ClearCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Stack\CleartomarkCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Stack\CountCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Stack\CounttomarkCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Stack\DupCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Stack\ExchCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Stack\IndexCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Stack\MarkCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Stack\PopCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Stack\RollCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Stack\StackCommands.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Control\StopCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\Control\StoppedCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\String\AnchorSearchCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\String\SearchCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\String\StatusCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\String\StringCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\String\StringCommands.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Commands\String\TokenCmd.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Content\Chars.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Content\DscParameterParser.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Content\EpsStreamReader.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Content\Lexer.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Content\LexerBase.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Content\Parser.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Content\Symbol.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Operands\AlwaysExecuteOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Operands\ArrayOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Operands\BooleanOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Operands\CommandOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Operands\CommentOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Operands\DictionaryOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Core\EpsDictionary.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Core\EpsKeys.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Core\EpsStack.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Core\EpsInterpreter.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Operands\FileOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Core\GraphicState.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Operands\GraphicStateOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Operands\IntegerOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Operands\MarkOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Operands\NameOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Operands\NullOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Operands\Operand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Core\PostScriptRunner.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Operands\RealOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Core\ResourceManager.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Operands\SaveOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Operands\StringOperand.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Function\ExponentialFunction.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Function\FunctionActivator.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Function\FunctionStop.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Function\IFunction.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Function\SampledFunction.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Function\StitchingFunction.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Pattern\IPattern.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Pattern\PatternActivator.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Pattern\ShadingPattern.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Pattern\TilingPattern.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Shading\RadialGradientShading.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Shading\UnknownShading.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Utilities\Ascii85Decoder.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Utilities\DictionaryStackHelper.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Utilities\OperandStackExtension.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Utilities\HomogeneousNumberArrayDecoder.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Utilities\OperandComparator.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Utilities\OperandHelper.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Shading\IShading.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Shading\LinearGradientShading.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Shading\ShadingActivator.cs" />
+    <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Utilities\RelativeSamplesDecoder.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\ColorSpace\IndexedColorSpace.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\Font\FontTypeBase.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\Function\PostScriptCalculatorFunction.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\Main\ContentInterpreter.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\Pattern\IPattern.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\Pattern\PatternManager.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\Pattern\ShadingPattern.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\Pattern\TilingPattern.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\Function\ExponentialFunction.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\Function\FunctionManager.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\Function\IFunction.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\Function\StitchingFunction.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\Function\UnknownFunction.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\Pattern\UnknownPattern.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\Function\FunctionStop.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\Shading\RadialGradientShading.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\XObject\XObjectManager.cs" />
+    <Compile Include="BusinessLogic\Parser\Svg\Css\CssStyleDeclaration.cs" />
+    <Compile Include="BusinessLogic\Parser\Svg\Css\CssStyleRule.cs" />
+    <Compile Include="BusinessLogic\Parser\Svg\Css\CssStyleSheet.cs" />
+    <Compile Include="BusinessLogic\Parser\Svg\Helper\DoubleWithUnitParser.cs" />
+    <Compile Include="BusinessLogic\Parser\Svg\Main\Clipping.cs" />
+    <Compile Include="BusinessLogic\Parser\Svg\Main\GeometryParser.cs" />
+    <Compile Include="BusinessLogic\Parser\Svg\Main\ShapeParser.cs" />
+    <Compile Include="BusinessLogic\Parser\Svg\Css\CssStyleCascade.cs" />
+    <Compile Include="BusinessLogic\Parser\Svg\Main\SvgzParser.cs" />
+    <Compile Include="BusinessLogic\Parser\Svg\Main\TransformMatrixParser.cs" />
+    <Compile Include="BusinessLogic\Converter\ArcToGeometryConverter.cs" />
+    <Compile Include="BusinessLogic\Converter\EllipseToGeometryConverter.cs" />
+    <Compile Include="BusinessLogic\Converter\RectToGeometryConverter.cs" />
+    <Compile Include="Shell\Controls\Header.cs" />
+    <Compile Include="Shell\FileConverter\PreviewShapeViewModel.cs" />
+    <Compile Include="BusinessLogic\Generators\DrawingBrushBinaryGenerator.cs" />
+    <Compile Include="BusinessLogic\Generators\DrawingBrushSourceGenerator.cs" />
+    <Compile Include="BusinessLogic\Generators\GeometryBinaryGenerator.cs" />
+    <Compile Include="BusinessLogic\Generators\GeometrySourceGenerator\GeometrySourceGenerator.cs" />
+    <Compile Include="BusinessLogic\Graphic\GraphicBrush.cs" />
+    <Compile Include="BusinessLogic\Graphic\GraphicEnums.cs" />
+    <Compile Include="BusinessLogic\Graphic\GraphicPathGeometry.cs" />
+    <Compile Include="BusinessLogic\Helper\CommonHelper.cs" />
+    <Compile Include="Shell\Exporter\VisualExporter.cs" />
+    <Compile Include="BusinessLogic\Parser\FileParser.cs" />
+    <Compile Include="BusinessLogic\Parser\IFileParser.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\ColorSpace\CMYKDeviceColorSpace.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\ColorSpace\GrayDeviceColorSpace.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\ColorSpace\DeviceNColorSpace.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\ColorSpace\RGBDeviceColorSpace.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\ColorSpace\ICCBasedColorSpace.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\ColorSpace\PatternColorSpace.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\ColorSpace\UnknownColorSpace.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\ExtendedStates\ExtendedStatesManager.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\Main\PdfKeys.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\Shading\IShading.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\Shading\LinearGradientShading.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\Shading\UnknownShading.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\Shading\ShadingManager.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\Main\FontState.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\Font\TrueTypeFont.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\Font\Type1Font.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\ColorSpace\IColorSpace.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\Font\IFont.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\Main\PdfUtilities.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\IllustratorParserModule.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\Main\GraphicsState.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\ColorSpace\ColorSpaceManager.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\Font\FontManager.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\IPropertiesExtension.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\ImageResources\IccProfileResource.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\LayerResources\ColorReader.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Structures\StructureBool.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Structures\StructureDouble.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Structures\StructureLong.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Structures\StructureString.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\ColorSpaceManager.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\PsdParserModule.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\Main\TextVectorizer.cs" />
+    <Compile Include="BusinessLogic\Parser\StreamGeometry\GraphicPathGenerator.cs" />
+    <Compile Include="Shell\FileConverter\FileConverter.xaml.cs">
+      <DependentUpon>FileConverter.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="BusinessLogic\Manipulation\NormalizeVisual.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\PsdParser.cs" />
+    <Compile Include="BusinessLogic\Parser\StreamGeometry\IStreamCodeGenerator.cs" />
+    <Compile Include="BusinessLogic\Parser\StreamGeometry\StreamGeometryParser.cs" />
+    <Compile Include="BusinessLogic\Graphic\GraphicVisual.cs" />
+    <Compile Include="BusinessLogic\Parser\Svg\Helper\DoubleListParser.cs" />
+    <Compile Include="BusinessLogic\Parser\Svg\Main\SvgParser.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\AdditionalLayerInformation.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\BlendMode.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Channel.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\ChannelType.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\ColorMode.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\ColorSpace.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\CompressionType.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Structures\StructureDescriptor.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\EmbeddedLayer.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Extensions.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\FileHeaderSection.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\IChannel.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\IImageSource.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\ILinkedLayer.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\InternalDocument.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\InvalidFormatException.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\IProperties.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\IPsdLayer.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\LayerandMaskInformationSection.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\LayerExtraRecords.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\LayerFlags.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\LayerMaskBlock.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\LayerRecords.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\LinkedLayer.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\PathResolver.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Properties.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\PsdDocument.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\PsdLayer.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\PSDReader.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\PsdResolver.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\PsdUtility.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\RangeStream.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\ColorModeDataSection.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\EmptyResource.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\ImageDataSection.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\ImageResourcesSection.cs" />
+    <!-- <Compile Include="Parser\Psd\psd-parser\Readers\ImageResources\GridAndGuidesResource.cs" /> -->
+    <!--<Compile Include="Parser\Psd\psd-parser\Readers\ImageResources\ResolutionInfoResource.cs" /> -->
+    <!--<Compile Include="Parser\Psd\psd-parser\Readers\ImageResources\SlicesInfoResource.cs" /> -->
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\ImageResources\VersionInfoResource.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\LayerAndMaskInformation\ChannelsBlock.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\LayerAndMaskInformation\DocumentResourceBlock.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\LayerAndMaskInformation\EmbeddedLayerBlock.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\LayerAndMaskInformation\GlobalLayerMaskInfoBlock.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\LayerAndMaskInformation\LayerBlendingRangesBlock.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\LayerAndMaskInformation\LayerExtraRecordsBlock.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\LayerAndMaskInformation\LayerInfoBlock.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\LayerAndMaskInformation\LayerRecordsBlock.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\LayerAndMaskInformation\LayerResourceBlock.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\LayerAndMaskInformation\LinkedDocumentBlock.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\LayerAndMaskInformation\LinkedDocumnetFileHeaderBlock.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\LayerAndMaskInformation\LinkedLayerBlock.cs" />
+    <!--<Compile Include="Parser\Psd\psd-parser\Readers\LayerResources\fxrpResource.cs" /> -->
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\LayerResources\GdFlResource.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\LayerResources\iOpaResource.cs" />
+    <!--<Compile Include="Parser\Psd\psd-parser\Readers\LayerResources\lfx2Resource.cs" /> -->
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\LayerResources\lnk2Resource.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\LayerResources\lnk3Resource.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\LayerResources\lnkDResource.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\LayerResources\lnkEResource.cs" />
+    <!--<Compile Include="Parser\Psd\psd-parser\Readers\LayerResources\lnsrResource.cs" /> -->
+    <!--<Compile Include="Parser\Psd\psd-parser\Readers\LayerResources\lrFXResource.cs" /> -->
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\LayerResources\lsctResource.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\LayerResources\lsdkResource.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\LayerResources\luniResource.cs" />
+    <!--<Compile Include="Parser\Psd\psd-parser\Readers\LayerResources\lyidResource.cs" /> -->
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\LayerResources\lyvrResource.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\LayerResources\PlLdResource.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\LayerResources\PtFlResource.cs" />
+    <!--<Compile Include="Parser\Psd\psd-parser\Readers\LayerResources\shmdResource.cs" /> -->
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\LayerResources\SoCoResource.cs" />
+    <!--<Compile Include="Parser\Psd\psd-parser\Readers\LayerResources\SoLdResource.cs" /> -->
+    <!--<Compile Include="Parser\Psd\psd-parser\Readers\LayerResources\SoLEResource.cs" /> -->
+    <!--<Compile Include="Parser\Psd\psd-parser\Readers\LayerResources\TyShResource.cs" /> -->
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\LayerResources\vmskResource.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\LayerResources\vstkResource.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\ReaderCollector.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Readers\ResourceReaderBase.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\ResourceIDAttribute.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\SectionType.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Structures\StructureItem.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Structures\StructureAlias.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Structures\StructureClass.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Structures\StructureEngineData.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Structures\StructureEnumerate.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Structures\StructureEnumerateReference.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Structures\StructureList.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Structures\StructureObjectArray.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Structures\StructureOffset.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Structures\StructureProperty.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Structures\StructureReader.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Structures\StructureReference.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Structures\StructureUnitFloat.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\Structures\StructureUnknownOSType.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\UnitType.cs" />
+    <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\LazyDataReader.cs" />
+    <Compile Include="BusinessLogic\Parser\Svg\SvgParserModule.cs" />
+    <Compile Include="Shell\MVVM\DelegateCommand.cs" />
+    <Compile Include="Shell\MVVM\ViewModelBase.cs" />
+    <Compile Include="Shell\StreamConverter\StreamConverter.xaml.cs">
+      <DependentUpon>StreamConverter.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="BusinessLogic\Generators\StreamSourceGenerator.cs" />
+    <Compile Include="Shell\Controls\UniformTabPanel.cs" />
+    <Page Include="Shell\FileConverter\FileConverter.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Shell\Main\MainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Shell\Main\MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Page Include="Shell\StreamConverter\StreamConverter.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Shell\Styles\Button.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Shell\Styles\CheckBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Shell\Styles\Colors.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Shell\Styles\ComboBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Shell\Styles\Converter.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Shell\Styles\Header.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Shell\Styles\Icons.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Shell\Styles\RadioButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Shell\Styles\TabControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Shell\Styles\TextBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Shell\Styles\ToggleButton.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BusinessLogic\Parser\Illustrator\Main\PdfParser.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.7">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.7 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PdfSharp\PdfSharp-Reader.csproj">
+      <Project>{02fcc0bb-2aa2-43ba-8d2f-66d168b87a1d}</Project>
+      <Name>PdfSharp-Reader</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="PdfSharpReader.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="ShapeConverter.ico" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

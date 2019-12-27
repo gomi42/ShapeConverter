@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net45</TargetFrameworks>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>1.1.18306.1005</Version>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <FileVersion>1.1.18306.1005</FileVersion>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseUrl>https://github.com/NtreevSoft/psd-parser/blob/master/LICENSE.md</PackageLicenseUrl>
+    <Copyright>Copyright �� Ntreev Soft 2018</Copyright>
+    <Description>Photoshop file parser for .net</Description>
+    <Company>NtreevSoft</Company>
+    <Authors>s2quake</Authors>
+    <RepositoryUrl>https://github.com/NtreevSoft/psd-parser</RepositoryUrl>
+    <PackageTags>c# parser photoshop .net</PackageTags>
+  </PropertyGroup>
+</Project>
