@@ -27,6 +27,7 @@ The ShapeConverter converts vector data into WPF/XAML shapes. The main intention
 * clipping regions are removed if possible or at least minimized and optimized
 * single executable
 * show a background checkboard to verify transparencies of the shape
+* normalize the coordinates to the range 0..100 (default) to decouple the generated data from the designer's coordinate space
 
 ##### Export
 
