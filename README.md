@@ -1,5 +1,5 @@
 # ShapeConverter
-The ShapeConverter converts vector data into WPF/XAML shapes. The main intention is to convert icons and logos you get from your designer so that you can use the icon and logos as vector data in your WPF projects.
+The ShapeConverter converts vector data into WPF/XAML shapes. The main intention is to convert icons and logos you get from your designer so that you can use the icons and logos as vector data in your WPF projects.
 
 ![intro](/Readme1.png)
 
