@@ -18,7 +18,7 @@ The ShapeConverter converts vector data into WPF/XAML shapes. The main intention
 ##### All input files support
 
 * linear and radial gradients
-* transparency (exept EPS) including transparent gradients
+* transparency (except EPS) including transparent gradients
 
 ##### More features
 
