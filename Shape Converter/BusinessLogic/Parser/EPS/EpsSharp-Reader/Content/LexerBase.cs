@@ -65,7 +65,7 @@ namespace EpsSharp.Eps.Content
             ClearToken();
             var ch = MoveToNonWhiteSpace(reader);
 
-            while (char.IsDigit(ch) || ch == '+' || ch == '-' || ch == 'e' || ch == 'E' || ch == '.')
+            while (char.IsDigit(ch) || ch == '+' || ch == '-' || ch == 'e' || ch == 'E' || ch == '.' || ch == '#')
             {
                 ch = AppendAndScanNextChar(reader);
             }
