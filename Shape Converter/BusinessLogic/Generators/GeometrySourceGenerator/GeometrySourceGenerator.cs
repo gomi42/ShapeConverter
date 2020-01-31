@@ -350,7 +350,7 @@ namespace ShapeConverter.BusinessLogic.Generators.GeometrySourceGenerator
 
                 if (!string.IsNullOrEmpty(Filename))
                 {
-                    code.AppendLine(string.Format($"{indent1}/// Shapes extracted from file \"{0}\"", Filename));
+                    code.AppendLine(string.Format("{0}/// Shapes extracted from file \"{1}\"", indent1, Filename));
                 }
 
                 code.AppendLine($"{indent1}/// Generated from the following stream geometry:");
