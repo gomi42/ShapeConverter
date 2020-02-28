@@ -98,7 +98,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="BusinessLogic\Converter\CmykToRgbConverter.cs" />
+    <Compile Include="BusinessLogic\Converter\ColorSpaceConverter.cs" />
     <Compile Include="BusinessLogic\Exporter\EpsExporter.cs" />
     <Compile Include="BusinessLogic\Exporter\IcoExporter.cs" />
     <Compile Include="BusinessLogic\Exporter\ImageExporter.cs" />
@@ -416,6 +416,7 @@
     <Compile Include="BusinessLogic\Parser\Svg\Css\CssStyleDeclaration.cs" />
     <Compile Include="BusinessLogic\Parser\Svg\Css\CssStyleRule.cs" />
     <Compile Include="BusinessLogic\Parser\Svg\Css\CssStyleSheet.cs" />
+    <Compile Include="BusinessLogic\Parser\Svg\Helper\ColorParser.cs" />
     <Compile Include="BusinessLogic\Parser\Svg\Helper\DoubleWithUnitParser.cs" />
     <Compile Include="BusinessLogic\Parser\Svg\Main\Clipping.cs" />
     <Compile Include="BusinessLogic\Parser\Svg\Main\GeometryParser.cs" />

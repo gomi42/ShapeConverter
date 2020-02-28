@@ -2,7 +2,7 @@
 // Author:
 //   Michael Göricke
 //
-// Copyright (c) 2019
+// Copyright (c) 2019-2020
 //
 // This file is part of ShapeConverter.
 //
@@ -108,7 +108,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
                 graphicPath.StrokeLineCap = GetLineCap();
                 graphicPath.StrokeLineJoin = GetLineJoin();
                 graphicPath.StrokeDashOffset = MatrixUtilities.TransformScale(cssStyleCascade.GetDouble("stroke-dashoffset", 0), currentTransformationMatrix) / graphicPath.StrokeThickness;
-                graphicPath.StrokeDashes = GetDashes(graphicPath.StrokeThickness);                            
+                graphicPath.StrokeDashes = GetDashes(graphicPath.StrokeThickness);
             }
         }
 
@@ -258,58 +258,12 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
                 return CreateBrush(element, "color", setDefault, graphicPath);
             }
 
-            // 5: color is specified in rgb values
-            if (strVal.StartsWith("rgb(", StringComparison.OrdinalIgnoreCase))
+            // 5: try color formats of different flavours (hex, rgb, name)
+            var success = ColorParser.TryParseColor(strVal, alpha, out Color color);
+
+            if (success)
             {
-                var str = strVal.Substring(4, strVal.Length - 5);
-                string[] parts = str.Split(',');
-
-                if (parts.Length != 3)
-                {
-                    return null;
-                }
-
-                try
-                {
-                    string redStr = parts[0].Trim();
-                    string greenStr = parts[1].Trim();
-                    string blueStr = parts[2].Trim();
-                    byte red;
-                    byte green;
-                    byte blue;
-
-                    if (string.IsNullOrWhiteSpace(redStr)
-                        || string.IsNullOrWhiteSpace(greenStr)
-                        || string.IsNullOrWhiteSpace(blueStr))
-                    {
-                        red = 0;
-                        green = 0;
-                        blue = 0;
-                    }
-                    else
-                    {
-                        red = (byte)int.Parse(redStr);
-                        green = (byte)int.Parse(greenStr);
-                        blue = (byte)int.Parse(blueStr);
-                    }
-
-                    return new GraphicSolidColorBrush { Color = Color.FromArgb((byte)(alpha * 255), red, green, blue) };
-                }
-                catch
-                {
-                }
-
-                return null;
-            }
-
-            // 6: color is either given as name or hex values
-            try
-            {
-                var color = (Color)ColorConverter.ConvertFromString(strVal);
-                return new GraphicSolidColorBrush { Color = Color.FromArgb((byte)(alpha * 255), color.R, color.G, color.B) };
-            }
-            catch
-            {
+                return new GraphicSolidColorBrush { Color = color };
             }
 
             return null;
@@ -527,18 +481,16 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
                 var stopOpacity = GetDoubleAttribute(stopElem, "stop-opacity", 1);
 
                 XAttribute colorAttr = stopElem.Attribute("stop-color");
-                Color color;
 
-                if (colorAttr != null)
+                if (colorAttr != null
+                    && ColorParser.TryParseColor(colorAttr.Value, opacity * stopOpacity, out Color color))
                 {
-                    color = (Color)ColorConverter.ConvertFromString(colorAttr.Value);
+                    stop.Color = color;
                 }
                 else
                 {
-                    color = Colors.Black;
+                    stop.Color = Colors.Black;
                 }
-
-                stop.Color = Color.FromArgb((byte)(opacity * stopOpacity * 255), color.R, color.G, color.B);
             }
         }
 

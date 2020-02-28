@@ -2,7 +2,7 @@
 // Author:
 //   Michael Göricke
 //
-// Copyright (c) 2019
+// Copyright (c) 2019-2020
 //
 // This file is part of ShapeConverter.
 //
@@ -364,7 +364,7 @@ namespace ShapeConverter.Parser.Psd
             else
             {
                 colorPrecision = GraphicColorPrecision.Estimated;
-                color = CmykToRgbConverter.Convert(cmykColor.C / 100.0, cmykColor.M / 100.0, cmykColor.Y / 100.0, cmykColor.K / 100.0);
+                color = ColorSpaceConverter.ConvertCmykToRgb(cmykColor.C / 100.0, cmykColor.M / 100.0, cmykColor.Y / 100.0, cmykColor.K / 100.0);
             }
 
             return (color, colorPrecision);

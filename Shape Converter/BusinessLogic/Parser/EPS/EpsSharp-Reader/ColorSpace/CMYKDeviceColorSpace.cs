@@ -2,7 +2,7 @@
 // Author:
 //   Michael Göricke
 //
-// Copyright (c) 2019
+// Copyright (c) 2019-2020
 // This file is part of ShapeConverter.
 //
 // ShapeConverter is free software: you can redistribute it and/or modify
@@ -57,7 +57,7 @@ namespace EpsSharp.Eps.Core
         /// </summary>
         public Color GetColor(List<double> values)
         {
-            return CmykToRgbConverter.Convert(values[0], values[1], values[2], values[3]);
+            return ColorSpaceConverter.ConvertCmykToRgb(values[0], values[1], values[2], values[3]);
         }
 
         /// <summary>
@@ -141,7 +141,7 @@ namespace EpsSharp.Eps.Core
         /// </summary>
         public List<Operand> GetRGBColorOperands()
         {
-            var color = CmykToRgbConverter.Convert(values[0], values[1], values[2], values[3]);
+            var color = ColorSpaceConverter.ConvertCmykToRgb(values[0], values[1], values[2], values[3]);
             List<Operand> operands = new List<Operand>();
 
             var realOp = new RealOperand(color.R);
@@ -167,7 +167,7 @@ namespace EpsSharp.Eps.Core
         /// </summary>
         public GraphicBrush GetBrush(EpsRect boundingBox)
         {
-            var color = CmykToRgbConverter.Convert(values[0], values[1], values[2], values[3]);
+            var color = ColorSpaceConverter.ConvertCmykToRgb(values[0], values[1], values[2], values[3]);
             return new GraphicSolidColorBrush { Color = color };
         }
     }

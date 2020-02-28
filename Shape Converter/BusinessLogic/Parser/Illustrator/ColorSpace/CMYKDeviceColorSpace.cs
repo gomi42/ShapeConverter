@@ -2,7 +2,7 @@
 // Author:
 //   Michael Göricke
 //
-// Copyright (c) 2019
+// Copyright (c) 2019-2020
 // This file is part of ShapeConverter.
 //
 // ShapeConverter is free software: you can redistribute it and/or modify
@@ -59,7 +59,7 @@ namespace ShapeConverter.Parser.Pdf
         /// </summary>
         public Color GetColor(List<double> values, double alpha)
         {
-            return CmykToRgbConverter.Convert(alpha, values[0], values[1], values[2], values[3]);
+            return ColorSpaceConverter.ConvertCmykToRgb(alpha, values[0], values[1], values[2], values[3]);
         }
 
         /// <summary>

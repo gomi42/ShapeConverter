@@ -2,7 +2,7 @@
 // Author:
 //   Michael Göricke
 //
-// Copyright (c) 2019
+// Copyright (c) 2019-2020
 //
 // This file is part of ShapeConverter.
 //
@@ -27,20 +27,20 @@ namespace ShapeConverter.BusinessLogic.ShapeConverter
     /// <summary>
     /// The CMYK to RGB converter
     /// </summary>
-    internal static class CmykToRgbConverter
+    internal static class ColorSpaceConverter
     {
         /// <summary>
         /// Convert a CMYK color given as individual values to RGB
         /// </summary>
-        public static Color Convert(double c, double m, double y, double k)
+        public static Color ConvertCmykToRgb(double c, double m, double y, double k)
         {
-            return Convert(1.0, c, m, y, k);
+            return ConvertCmykToRgb(1.0, c, m, y, k);
         }
 
         /// <summary>
         /// Convert a CMYK color given as individual values to RGB
         /// </summary>
-        public static Color Convert(double alpha, double c, double m, double y, double k)
+        public static Color ConvertCmykToRgb(double alpha, double c, double m, double y, double k)
         {
             // The following Adobe ICC profile would do a great job here:
             //
@@ -73,6 +73,83 @@ namespace ShapeConverter.BusinessLogic.ShapeConverter
                             + (0.15 * k + 0.7) * k);
 
             return Color.FromArgb(MakeColorByte(alpha), MakeColorByte(r), MakeColorByte(g), MakeColorByte(b));
+        }
+
+        /// <summary>
+        /// Convert a color from HSL model to RGB model
+        /// </summary>
+        public static Color ConvertHlsToRgb(double alpha, double hue, double saturation, double luminosity)
+        {
+            byte red, green, blue;
+
+            if (saturation == 0)
+            {
+                red = (byte)Math.Round(luminosity * 255.0);
+                green = (byte)Math.Round(luminosity * 255.0);
+                blue = (byte)Math.Round(luminosity * 255.0);
+            }
+            else
+            {
+                double t1, t2;
+                double th = hue / 360.0;
+
+                if (luminosity < 0.5)
+                {
+                    t2 = luminosity * (1d + saturation);
+                }
+                else
+                {
+                    t2 = (luminosity + saturation) - (luminosity * saturation);
+                }
+
+                t1 = 2d * luminosity - t2;
+
+                double tr, tg, tb;
+                tr = th + (1.0 / 3.0);
+                tg = th;
+                tb = th - (1.0 / 3.0);
+
+                red = ConvertHlsColorChannel(tr, t1, t2);
+                green = ConvertHlsColorChannel(tg, t1, t2);
+                blue = ConvertHlsColorChannel(tb, t1, t2);
+            }
+
+            return Color.FromArgb((byte)(alpha * 255), red, green, blue);
+        }
+
+        /// <summary>
+        /// Convert a single color channel
+        /// </summary>
+        private static byte ConvertHlsColorChannel(double c, double t1, double t2)
+        {
+            double retVal = t1;
+
+            if (c < 0)
+            {
+                c += 1.0;
+            }
+            else
+            if (c > 1)
+            {
+                c -= 1.0;
+            }
+
+            if (c < 1.0 / 6.0)
+            {
+                retVal = t1 + (t2 - t1) * 6.0 * c;
+            }
+            else
+            if (c < 1.0 / 2.0)
+            {
+                retVal = t2;
+            }
+            else
+            if (c < 2.0 / 3.0)
+            {
+                retVal = t1 + (t2 - t1) * (2.0 / 3.0 - c) * 6.0;
+            }
+
+            return MakeColorByte(retVal);
         }
 
         /// <summary>
