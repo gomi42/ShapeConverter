@@ -201,8 +201,8 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
             if (hasPercent)
             {
                 colorValue = colorValue.Substring(0, colorValue.Length - 1);
-                retVal = int.Parse(colorValue, CultureInfo.InvariantCulture);
-                retVal = (int)Math.Round(255.0 * (double)retVal / 100.0);
+                var percent = double.Parse(colorValue, CultureInfo.InvariantCulture);
+                retVal = (int)Math.Round(255.0 * percent / 100.0);
             }
             else
             {
