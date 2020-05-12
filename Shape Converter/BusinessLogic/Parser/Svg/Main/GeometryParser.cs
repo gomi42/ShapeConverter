@@ -19,6 +19,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see<http://www.gnu.org/licenses/>.
 
+using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Media;
@@ -72,16 +73,6 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
             if (geometry != null)
             {
-                //Matrix currentPathTransformationMatrix = currentTransformationMatrix;
-
-                //var attrs = shape.Attribute("transform");
-
-                //if (attrs != null)
-                //{
-                //    var transformMatrix = TransformMatrixParser.GetTransformMatrix(attrs.Value);
-                //    currentPathTransformationMatrix = transformMatrix * currentPathTransformationMatrix;
-                //}
-
                 var trans = new TransformVisual();
                 geometry = trans.Transform(geometry, currentTransformationMatrix);
             }
@@ -186,20 +177,64 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             var y = GetDoubleAttr(path, "y");
             var width = GetDoubleAttr(path, "width");
             var height = GetDoubleAttr(path, "height");
-            var rx = GetDoubleAttr(path, "rx");
-            var ry = GetDoubleAttr(path, "ry");
+            var rx = GetRadiusAttr(path, "rx");
+            var ry = GetRadiusAttr(path, "ry");
 
-            if (rx > width / 2)
+            double rxVal = 0.0;
+            double ryVal;
+
+            if (rx.IsAuto && ry.IsAuto)
             {
-                rx = width / 2;
+                rxVal = 0.0;
+                ryVal = 0.0;
+            }
+            else
+            {
+                if (!rx.IsAuto)
+                {
+                    if (rx.IsPercentage)
+                    {
+                        rxVal = width * rx.Value / 100.0;
+                    }
+                    else
+                    {
+                        rxVal = rx.Value;
+                    }
+                }
+
+                if (!ry.IsAuto)
+                {
+                    if (ry.IsPercentage)
+                    {
+                        ryVal = height * ry.Value / 100.0;
+                    }
+                    else
+                    {
+                        ryVal = ry.Value;
+                    }
+                }
+                else
+                {
+                    ryVal = rxVal;
+                }
+
+                if (rx.IsAuto)
+                {
+                    rxVal = ryVal;
+                }
+
+                if (rxVal > width / 2)
+                {
+                    rxVal = width / 2;
+                }
+
+                if (ryVal > height / 2)
+                {
+                    ryVal = height / 2;
+                }
             }
 
-            if (ry > height / 2)
-            {
-                ry = height / 2;
-            }
-
-            var rectangle = RectToGeometryConverter.RectToGeometry(new Rect(x, y, width, height), rx, ry);
+            var rectangle = RectToGeometryConverter.RectToGeometry(new Rect(x, y, width, height), rxVal, ryVal);
 
             return rectangle;
         }
@@ -225,10 +260,36 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         {
             var cx = GetDoubleAttr(path, "cx");
             var cy = GetDoubleAttr(path, "cy");
-            var radiusX = GetDoubleAttr(path, "rx");
-            var radiusY = GetDoubleAttr(path, "ry");
+            var rx = GetRadiusAttr(path, "rx");
+            var ry = GetRadiusAttr(path, "ry");
 
-            var ellipse = EllipseToGeometryConverter.EllipseToGeometry(new Point(cx, cy), radiusX, radiusY);
+            double rxVal;
+            double ryVal;
+
+            if (!rx.IsAuto)
+            {
+                rxVal = rx.Value;
+            }
+            else
+            {
+                rxVal = 0.0;
+            }
+
+            if (!ry.IsAuto)
+            {
+                ryVal = ry.Value;
+            }
+            else
+            {
+                ryVal = rxVal;
+            }
+
+            if (rx.IsAuto)
+            {
+                rxVal = ryVal;
+            }
+
+            var ellipse = EllipseToGeometryConverter.EllipseToGeometry(new Point(cx, cy), rxVal, ryVal);
 
             return ellipse;
         }
@@ -249,6 +310,59 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             }
 
             return dbl;
+        }
+
+        /// <summary>
+        /// A radius desciption
+        /// </summary>
+        private struct Radius
+        {
+            public bool IsAuto { get; set; }
+
+            public bool IsPercentage { get; set; }
+
+            public double Value { get; set; }
+        }
+
+        /// <summary>
+        /// Get a radius attribute
+        /// </summary>
+        private static Radius GetRadiusAttr(XElement path, string attrName)
+        {
+            Radius radius = new Radius();
+
+            XAttribute xAttr = path.Attribute(attrName);
+
+            if (xAttr != null)
+            {
+                var strVal = xAttr.Value;
+
+                if (strVal == "auto")
+                {
+                    radius.IsAuto = true;
+                }
+                else
+                {
+                    var hasPercent = strVal.EndsWith("%", StringComparison.OrdinalIgnoreCase);
+
+                    if (hasPercent)
+                    {
+                        radius.IsPercentage = true;
+                        strVal = strVal.Substring(0, strVal.Length - 1);
+                        radius.Value = double.Parse(strVal, CultureInfo.InvariantCulture);
+                    }
+                    else
+                    {
+                        radius.Value = double.Parse(strVal, CultureInfo.InvariantCulture);
+                    }
+                }
+            }
+            else
+            {
+                radius.IsAuto = true;
+            }
+
+            return radius;
         }
     }
 }
