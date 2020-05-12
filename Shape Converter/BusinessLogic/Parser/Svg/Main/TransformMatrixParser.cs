@@ -44,7 +44,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
                 while (match.Success)
                 {
                     var transformMatrix = GetSingleTransformMatrix(match.Value);
-                    result = result * transformMatrix;
+                    result = transformMatrix * result;
 
                     match = match.NextMatch();
                 }
