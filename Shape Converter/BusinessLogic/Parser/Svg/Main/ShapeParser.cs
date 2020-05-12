@@ -306,12 +306,12 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
                     Matrix matrix = GetTransformMatrix(gradientElem);
 
-                    var x = GetDoubleAttribute(gradientElem, "x1", 0);
-                    var y = GetDoubleAttribute(gradientElem, "y1", 0);
+                    var x = DoubleAttributeParser.GetDouble(gradientElem, "x1", 0);
+                    var y = DoubleAttributeParser.GetDouble(gradientElem, "y1", 0);
                     gradient.StartPoint = new Point(x, y) * matrix;
 
-                    x = GetDoubleAttribute(gradientElem, "x2", 1);
-                    y = GetDoubleAttribute(gradientElem, "y2", 0);
+                    x = DoubleAttributeParser.GetDouble(gradientElem, "x2", 1);
+                    y = DoubleAttributeParser.GetDouble(gradientElem, "y2", 0);
                     gradient.EndPoint = new Point(x, y) * matrix;
 
                     // see comment in LinearGradientShading.cs of the pdf parser in GetBrush for more details
@@ -336,15 +336,15 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
                     Matrix matrix = GetTransformMatrix(gradientElem);
 
-                    var x = GetDoubleAttribute(gradientElem, "cx", 0.5);
-                    var y = GetDoubleAttribute(gradientElem, "cy", 0.5);
+                    var x = DoubleAttributeParser.GetDouble(gradientElem, "cx", 0.5);
+                    var y = DoubleAttributeParser.GetDouble(gradientElem, "cy", 0.5);
                     gradient.EndPoint = new Point(x, y) * matrix;
 
-                    x = GetDoubleAttribute(gradientElem, "fx", x);
-                    y = GetDoubleAttribute(gradientElem, "fy", y);
+                    x = DoubleAttributeParser.GetDouble(gradientElem, "fx", x);
+                    y = DoubleAttributeParser.GetDouble(gradientElem, "fy", y);
                     gradient.StartPoint = new Point(x, y) * matrix;
 
-                    var r = GetDoubleAttribute(gradientElem, "r", 0);
+                    var r = DoubleAttributeParser.GetDouble(gradientElem, "r", 0);
                     gradient.RadiusX = r;
                     gradient.RadiusY = r;
 
@@ -477,8 +477,8 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
                 var stop = new GraphicGradientStop();
                 gradientBrush.GradientStops.Add(stop);
 
-                stop.Position = GetDoubleAttribute(stopElem, "offset", 0);
-                var stopOpacity = GetDoubleAttribute(stopElem, "stop-opacity", 1);
+                stop.Position = DoubleAttributeParser.GetDouble(stopElem, "offset", 0);
+                var stopOpacity = DoubleAttributeParser.GetDouble(stopElem, "stop-opacity", 1);
 
                 XAttribute colorAttr = stopElem.Attribute("stop-color");
 
@@ -492,23 +492,6 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
                     stop.Color = Colors.Black;
                 }
             }
-        }
-
-        /// <summary>
-        /// Converts the specified attribute to a double value
-        /// </summary>
-        private double GetDoubleAttribute(XElement element, string name, double defaultValue)
-        {
-            double retVal = defaultValue;
-            XAttribute xAttr = element.Attribute(name);
-
-            if (xAttr != null)
-            {
-                var dblStr = xAttr.Value;
-                retVal = DoubleWithUnitParser.Parse(dblStr);
-            }
-
-            return retVal;
         }
     }
 }

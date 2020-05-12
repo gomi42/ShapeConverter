@@ -25,6 +25,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Xml.Linq;
 using ShapeConverter.BusinessLogic.Generators;
+using ShapeConverter.BusinessLogic.Parser.Svg.Helper;
 using ShapeConverter.BusinessLogic.ShapeConverter;
 using ShapeConverter.Parser.StreamGeometry;
 
@@ -296,20 +297,10 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
         /// <summary>
         /// Get a double attribute, if it doesn't exist it defaults to 0
-        /// Maybe we should sync this method with ShapeParser.GetDoubleAttribute
         /// </summary>
         private static double GetDoubleAttr(XElement path, string attrName)
         {
-            double dbl = 0.0;
-
-            XAttribute xAttr = path.Attribute(attrName);
-
-            if (xAttr != null)
-            {
-                dbl = double.Parse(xAttr.Value, CultureInfo.InvariantCulture);
-            }
-
-            return dbl;
+            return DoubleAttributeParser.GetDouble(path, attrName, 0.0);
         }
 
         /// <summary>

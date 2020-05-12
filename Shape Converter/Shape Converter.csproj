@@ -417,6 +417,7 @@
     <Compile Include="BusinessLogic\Parser\Svg\Css\CssStyleRule.cs" />
     <Compile Include="BusinessLogic\Parser\Svg\Css\CssStyleSheet.cs" />
     <Compile Include="BusinessLogic\Parser\Svg\Helper\ColorParser.cs" />
+    <Compile Include="BusinessLogic\Parser\Svg\Helper\DoubleAttributeParser.cs" />
     <Compile Include="BusinessLogic\Parser\Svg\Helper\DoubleWithUnitParser.cs" />
     <Compile Include="BusinessLogic\Parser\Svg\Main\Clipping.cs" />
     <Compile Include="BusinessLogic\Parser\Svg\Main\GeometryParser.cs" />
