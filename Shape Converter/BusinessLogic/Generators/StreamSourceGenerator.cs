@@ -498,11 +498,11 @@ namespace ShapeConverter.BusinessLogic.Generators
             if (finalizeLastFigure)
             {
                 result.Append(indent2);
-                result.AppendLine("</PathFigure>");
+                result.AppendLine($"</{pathFigureTag}>");
             }
 
             result.Append(indent1);
-            result.AppendLine("</PathGeometry>");
+            result.AppendLine($"</{pathGeometryTag}>");
 
             return result.ToString();
         }
