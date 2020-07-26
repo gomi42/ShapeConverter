@@ -75,25 +75,6 @@ namespace ShapeConverter.BusinessLogic.Generators
         /// <summary>
         /// Generate the XAML source code (a <Path/> for a single graphic path
         /// </summary>
-        public static string GeneratePathGeometry(GraphicPath graphicPath)
-        {
-            var tag = "PathGeometry";
-            var indentTag = SourceGeneratorHelper.GetTagIndent(0);
-            var indentProperty = SourceGeneratorHelper.GetPropertyIndent(0, tag);
-            StringBuilder result = new StringBuilder();
-
-            result.AppendLine($"{indentTag}<{tag} x:Key=\"xyzIcon\"");
-
-            result.Append($"{indentProperty}Figures=\"");
-            result.Append(GenerateStreamGeometry(graphicPath.Geometry, false));
-            result.Append("\" />");
-
-            return result.ToString();
-        }
-
-        /// <summary>
-        /// Generate the XAML source code (a <Path/> for a single graphic path
-        /// </summary>
         public static string GenerateGeometry(GraphicPath graphicPath)
         {
             var tag = "Geometry";
@@ -402,6 +383,131 @@ namespace ShapeConverter.BusinessLogic.Generators
         }
 
         /// <summary>
+        /// Generate the XAML source code (a <Path/> for a single graphic path
+        /// </summary>
+        public static string GeneratePathGeometry(GraphicPath graphicPath)
+        {
+            GraphicPathGeometry geometry = graphicPath.Geometry;
+            StringBuilder result = new StringBuilder();
+            bool finalizeLastFigure = false;
+            int level = 0;
+
+            var indent1 = SourceGeneratorHelper.GetTagIndent(level);
+            var indent2 = SourceGeneratorHelper.GetTagIndent(level + 1);
+            var indent3 = SourceGeneratorHelper.GetTagIndent(level + 2);
+
+            var pathGeometryTag = "PathGeometry";
+            var pathFigureTag = "PathFigure";
+
+            string fillRule = string.Empty;
+
+            switch (geometry.FillRule)
+            {
+                case GraphicFillRule.EvenOdd:
+                    fillRule = "EvenOdd";
+                    break;
+
+                case GraphicFillRule.NoneZero:
+                    fillRule = "NoneZero";
+                    break;
+            }
+
+            result.AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}<{1} FillRule=\"{2}\">", indent1, pathGeometryTag, fillRule));
+
+            foreach (var segment in geometry.Segments)
+            {
+                switch (segment)
+                {
+                    case GraphicMoveSegment graphicMove:
+                    {
+                        if (finalizeLastFigure)
+                        {
+                            result.Append(indent2);
+                            result.AppendLine("</PathFigure>");
+                        }
+
+                        var indentPathFigureProperty = SourceGeneratorHelper.GetPropertyIndent(level + 1, pathFigureTag);
+
+                        result.Append(string.Format(CultureInfo.InvariantCulture, "{0}<{1} IsClosed=", indent2, pathFigureTag));
+                        AppendXamlBool(result, graphicMove.IsClosed);
+                        result.AppendLine();
+            
+                        result.Append(indentPathFigureProperty);
+                        result.Append("StartPoint=");
+                        AppendXamlPoint(result, graphicMove.StartPoint.X, graphicMove.StartPoint.Y);
+
+                        result.AppendLine(">");
+
+                        finalizeLastFigure = true;
+                        break;
+                    }
+
+                    case GraphicLineSegment graphicLineTo:
+                    {
+                        result.Append(indent3);
+                        result.Append("<LineSegment Point=");
+                        AppendXamlPoint(result, graphicLineTo.To);
+                        result.AppendLine(" />");
+                        break;
+                    }
+
+                    case GraphicCubicBezierSegment graphicCubicBezier:
+                    {
+                        var tag = "BezierSegment";
+                        var indentProperty = SourceGeneratorHelper.GetPropertyIndent(level + 2, tag);
+
+                        result.Append(string.Format(CultureInfo.InvariantCulture, "{0}<{1} Point1=", indent3, tag));
+                        AppendXamlPoint(result, graphicCubicBezier.ControlPoint1);
+                        result.AppendLine();
+
+                        result.Append(indentProperty);
+                        result.Append("Point2=");
+                        AppendXamlPoint(result, graphicCubicBezier.ControlPoint2);
+                        result.AppendLine();
+
+                        result.Append(indentProperty);
+                        result.Append("Point3=");
+                        AppendXamlPoint(result, graphicCubicBezier.EndPoint);
+
+                        result.AppendLine(" />");
+                        break;
+                    }
+
+                    case GraphicQuadraticBezierSegment graphicQuadraticBezier:
+                    {
+                        var tag = "QuadraticBezierSegment";
+                        var indentProperty = SourceGeneratorHelper.GetPropertyIndent(level + 2, tag);
+
+                        result.Append(string.Format(CultureInfo.InvariantCulture, "{0}<{1} Point1=", indent3, tag));
+                        AppendXamlPoint(result, graphicQuadraticBezier.ControlPoint);
+                        result.AppendLine();
+
+                        result.Append(indentProperty);
+                        result.Append("Point2=");
+                        AppendXamlPoint(result, graphicQuadraticBezier.EndPoint);
+
+                        result.AppendLine(" />");
+                        break;
+                    }
+
+                    default:
+                        break;
+                }
+            }
+
+            if (finalizeLastFigure)
+            {
+                result.Append(indent2);
+                result.AppendLine("</PathFigure>");
+            }
+
+            result.Append(indent1);
+            result.AppendLine("</PathGeometry>");
+
+            return result.ToString();
+        }
+
+        /// <summary>
         /// append a point to the stream
         /// </summary>
         private static void AppendPoint(StringBuilder output, double x, double y)
@@ -434,13 +540,37 @@ namespace ShapeConverter.BusinessLogic.Generators
         }
 
         /// <summary>
+        /// append a point to the stream
+        /// </summary>
+        private static void AppendXamlPoint(StringBuilder output, double x, double y)
+        {
+            string xstr = DoubleUtilities.FormatString(x);
+            string ystr = DoubleUtilities.FormatString(y);
+
+            output.Append("\"");
+            output.Append(xstr);
+            output.Append(',');
+            output.Append(ystr);
+            output.Append("\"");
+        }
+
+        /// <summary>
+        /// append a point to the stream
+        /// </summary>
+        private static void AppendXamlPoint(StringBuilder output, Point point)
+        {
+            AppendXamlPoint(output, point.X, point.Y);
+        }
+
+        /// <summary>
         /// Append a bool to the stream
         /// </summary>
-        private static void AppendBool(StringBuilder output, bool boolVal)
+        private static void AppendXamlBool(StringBuilder output, bool boolVal)
         {
-            string boolstr = boolVal ? "1" : "0";
+            string boolstr = boolVal ? "True" : "False";
+            output.Append("\"");
             output.Append(boolstr);
-            output.Append(' ');
+            output.Append("\"");
         }
     }
 }
