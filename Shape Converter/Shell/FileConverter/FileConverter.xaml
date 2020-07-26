@@ -253,7 +253,7 @@
                                   VerticalAlignment="Top"
                                   SelectedIndex="1"
                                   SelectionChanged="TypeSelectionChanged">
-                            <ComboBoxItem Content="pure" />
+                            <ComboBoxItem Content="raw" />
                             <ComboBoxItem Content="Path" />
                             <ComboBoxItem Content="PathGeometry" />
                             <ComboBoxItem Content="Geometry" />
