@@ -75,16 +75,21 @@ namespace ShapeConverter.BusinessLogic.Generators
         /// <summary>
         /// Generate the XAML source code (a <Path/> for a single graphic path
         /// </summary>
-        public static string GenerateGeometry(GraphicPath graphicPath)
+        public static string GenerateGeometry(GraphicVisual visual)
         {
             var tag = "Geometry";
-            var indentTag = SourceGeneratorHelper.GetTagIndent(0);
-            var indentProperty = SourceGeneratorHelper.GetPropertyIndent(0, tag);
             StringBuilder result = new StringBuilder();
 
-            result.Append($"<{tag} x:Key=\"xyzIcon\">");
-            result.Append(GenerateStreamGeometry(graphicPath.Geometry, false));
-            result.Append($"\"</{tag}>");
+            var geometries = GenerateStreamGeometries(visual);
+            int i = 1;
+
+            foreach (var geometry in geometries)
+            {
+                result.Append($"<{tag} x:Key=\"shape{i}\">");
+                result.Append(geometry);
+                result.AppendLine($"\"</{tag}>");
+                i++;
+            }
 
             return result.ToString();
         }
@@ -382,22 +387,61 @@ namespace ShapeConverter.BusinessLogic.Generators
             return result.ToString();
         }
 
-        /// <summary>
-        /// Generate the XAML source code (a <Path/> for a single graphic path
-        /// </summary>
-        public static string GeneratePathGeometry(GraphicPath graphicPath)
-        {
-            GraphicPathGeometry geometry = graphicPath.Geometry;
-            StringBuilder result = new StringBuilder();
-            bool finalizeLastFigure = false;
-            int level = 0;
 
-            var indent1 = SourceGeneratorHelper.GetTagIndent(level);
-            var indent2 = SourceGeneratorHelper.GetTagIndent(level + 1);
-            var indent3 = SourceGeneratorHelper.GetTagIndent(level + 2);
+
+
+
+
+
+
+
+        public static string GeneratePathGeometry(GraphicVisual visual)
+        {
+            StringBuilder result = new StringBuilder();
+
+            GeneratePathGeometry(result, visual);
+
+            return result.ToString();
+        }
+
+        /// <summary>
+        /// Generate a list of raw (pure) geometry streams without any code around recursively
+        /// </summary>
+        private static void GeneratePathGeometry(StringBuilder result, GraphicVisual visual)
+        {
+            switch (visual)
+            {
+                case GraphicGroup group:
+                {
+                    foreach (var childVisual in group.Childreen)
+                    {
+                        GeneratePathGeometry(result, childVisual);
+                    }
+
+                    break;
+                }
+
+                case GraphicPath graphicPath:
+                {
+                    GeneratePathGeometry(result, graphicPath.Geometry, 0);
+
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Generate the XAML source code for a PathFigure
+        /// </summary>
+        public static string GeneratePathGeometry(StringBuilder result, GraphicPathGeometry geometry, int level)
+        {
+            bool finalizeLastFigure = false;
+
+            var indent = SourceGeneratorHelper.GetTagIndent(level);
+            var indent1 = SourceGeneratorHelper.GetTagIndent(level + 1);
+            var indent2 = SourceGeneratorHelper.GetTagIndent(level + 2);
 
             var pathGeometryTag = "PathGeometry";
-            var pathFigureTag = "PathFigure";
 
             string fillRule = string.Empty;
 
@@ -412,7 +456,9 @@ namespace ShapeConverter.BusinessLogic.Generators
                     break;
             }
 
-            result.AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}<{1} FillRule=\"{2}\">", indent1, pathGeometryTag, fillRule));
+            result.AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}<{1} FillRule=\"{2}\">", indent, pathGeometryTag, fillRule));
+
+            var pathFigureTag = "PathFigure";
 
             foreach (var segment in geometry.Segments)
             {
@@ -422,16 +468,16 @@ namespace ShapeConverter.BusinessLogic.Generators
                     {
                         if (finalizeLastFigure)
                         {
-                            result.Append(indent2);
+                            result.Append(indent1);
                             result.AppendLine("</PathFigure>");
                         }
 
-                        var indentPathFigureProperty = SourceGeneratorHelper.GetPropertyIndent(level + 1, pathFigureTag);
+                        var indentPathFigureProperty = SourceGeneratorHelper.GetPropertyIndent(level +1, pathFigureTag);
 
-                        result.Append(string.Format(CultureInfo.InvariantCulture, "{0}<{1} IsClosed=", indent2, pathFigureTag));
+                        result.Append(string.Format(CultureInfo.InvariantCulture, "{0}<{1} IsClosed=", indent1, pathFigureTag));
                         AppendXamlBool(result, graphicMove.IsClosed);
                         result.AppendLine();
-            
+
                         result.Append(indentPathFigureProperty);
                         result.Append("StartPoint=");
                         AppendXamlPoint(result, graphicMove.StartPoint.X, graphicMove.StartPoint.Y);
@@ -444,7 +490,7 @@ namespace ShapeConverter.BusinessLogic.Generators
 
                     case GraphicLineSegment graphicLineTo:
                     {
-                        result.Append(indent3);
+                        result.Append(indent2);
                         result.Append("<LineSegment Point=");
                         AppendXamlPoint(result, graphicLineTo.To);
                         result.AppendLine(" />");
@@ -456,7 +502,7 @@ namespace ShapeConverter.BusinessLogic.Generators
                         var tag = "BezierSegment";
                         var indentProperty = SourceGeneratorHelper.GetPropertyIndent(level + 2, tag);
 
-                        result.Append(string.Format(CultureInfo.InvariantCulture, "{0}<{1} Point1=", indent3, tag));
+                        result.Append(string.Format(CultureInfo.InvariantCulture, "{0}<{1} Point1=", indent2, tag));
                         AppendXamlPoint(result, graphicCubicBezier.ControlPoint1);
                         result.AppendLine();
 
@@ -478,7 +524,7 @@ namespace ShapeConverter.BusinessLogic.Generators
                         var tag = "QuadraticBezierSegment";
                         var indentProperty = SourceGeneratorHelper.GetPropertyIndent(level + 2, tag);
 
-                        result.Append(string.Format(CultureInfo.InvariantCulture, "{0}<{1} Point1=", indent3, tag));
+                        result.Append(string.Format(CultureInfo.InvariantCulture, "{0}<{1} Point1=", indent2, tag));
                         AppendXamlPoint(result, graphicQuadraticBezier.ControlPoint);
                         result.AppendLine();
 
@@ -497,12 +543,11 @@ namespace ShapeConverter.BusinessLogic.Generators
 
             if (finalizeLastFigure)
             {
-                result.Append(indent2);
+                result.Append(indent1);
                 result.AppendLine($"</{pathFigureTag}>");
             }
 
-            result.Append(indent1);
-            result.AppendLine($"</{pathGeometryTag}>");
+            result.AppendLine($"{indent}</{pathGeometryTag}>");
 
             return result.ToString();
         }

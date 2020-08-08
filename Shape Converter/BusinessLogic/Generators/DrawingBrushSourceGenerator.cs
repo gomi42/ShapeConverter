@@ -31,7 +31,7 @@ namespace ShapeConverter.BusinessLogic.Generators
         /// <summary>
         /// Generates the drawing brush source code for a given graphic drawing.
         /// </summary>
-        public static string Generate(GraphicVisual visual)
+        public static string Generate(GraphicVisual visual, bool generatePathFigure)
         {
             StringBuilder result = new StringBuilder();
             var indentTag = SourceGeneratorHelper.GetTagIndent(1);
@@ -39,7 +39,7 @@ namespace ShapeConverter.BusinessLogic.Generators
             result.AppendLine("<DrawingBrush Stretch=\"Uniform\">");
             result.AppendLine($"{indentTag}<DrawingBrush.Drawing>");
 
-            Generate(visual, result, 2);
+            Generate(visual, result, 2, generatePathFigure);
 
             result.AppendLine($"{indentTag}</DrawingBrush.Drawing>");
             result.AppendLine("</DrawingBrush>");
@@ -50,7 +50,7 @@ namespace ShapeConverter.BusinessLogic.Generators
         /// <summary>
         /// Generates the drawing brush source code for a given geometry.
         /// </summary>
-        private static void Generate(GraphicVisual visual, StringBuilder result, int level)
+        private static void Generate(GraphicVisual visual, StringBuilder result, int level, bool generatePathFigure)
         {
             switch (visual)
             {
@@ -92,7 +92,7 @@ namespace ShapeConverter.BusinessLogic.Generators
 
                     foreach (var childVisual in group.Childreen)
                     {
-                        Generate(childVisual, result, level + 1);
+                        Generate(childVisual, result, level + 1, generatePathFigure);
                     }
 
                     result.AppendLine($"{indentTag}</{tag}>");
@@ -102,7 +102,7 @@ namespace ShapeConverter.BusinessLogic.Generators
 
                 case GraphicPath graphicPath:
                 {
-                    GeneratePath(graphicPath, result, level);
+                    GeneratePath(graphicPath, result, level, generatePathFigure);
                     break;
                 }
             }
@@ -111,7 +111,7 @@ namespace ShapeConverter.BusinessLogic.Generators
         /// <summary>
         /// Generate path
         /// </summary>
-        private static void GeneratePath(GraphicPath graphicPath, StringBuilder result, int level)
+        private static void GeneratePath(GraphicPath graphicPath, StringBuilder result, int level, bool generatePathFigure)
         {
             var tag = "GeometryDrawing";
             var indentTag = SourceGeneratorHelper.GetTagIndent(level);
@@ -120,15 +120,17 @@ namespace ShapeConverter.BusinessLogic.Generators
             result.Append($"{indentTag}<{tag} ");
 
             bool fillColorInExtendedProperties = false;
+            bool firstAttributSet = false;
 
             if (graphicPath.FillBrush != null)
             {
                 if (graphicPath.FillBrush is GraphicSolidColorBrush solidFillColor)
                 {
+                    firstAttributSet = true;
+
                     Color color = solidFillColor.Color;
                     var brush = string.Format("Brush=\"{0}\"", SourceGeneratorHelper.FormatColorParamter(color));
-                    result.AppendLine(brush);
-                    result.Append(indentProperty);
+                    result.Append(brush);
                 }
                 else
                 {
@@ -136,21 +138,45 @@ namespace ShapeConverter.BusinessLogic.Generators
                 }
             }
 
-            result.Append(string.Format("Geometry=\""));
-            var stream = StreamSourceGenerator.GenerateStreamGeometry(graphicPath.Geometry);
-            result.Append(stream);
-            result.Append("\"");
+            if (!generatePathFigure)
+            {
+                if (firstAttributSet)
+                {
+                    result.AppendLine();
+                    result.Append(indentProperty);
+                }
 
-            if (fillColorInExtendedProperties || graphicPath.StrokeBrush != null)
+                result.Append(string.Format("Geometry=\""));
+                var stream = StreamSourceGenerator.GenerateStreamGeometry(graphicPath.Geometry);
+                result.Append(stream);
+                result.Append("\"");
+            }
+
+            if (generatePathFigure || fillColorInExtendedProperties || graphicPath.StrokeBrush != null)
             {
                 result.AppendLine(">");
+
+                if (generatePathFigure)
+                {
+                    var indent1 = SourceGeneratorHelper.GetTagIndent(level + 1);
+                    result.Append(indent1);
+                    result.AppendLine("<GeometryDrawing.Geometry>");
+
+                    StreamSourceGenerator.GeneratePathGeometry(result, graphicPath.Geometry, level + 2);
+
+                    result.Append(indent1);
+                    result.AppendLine("</GeometryDrawing.Geometry>");
+                }
 
                 if (fillColorInExtendedProperties)
                 {
                     SourceGeneratorHelper.GenerateBrush(result, graphicPath.FillBrush, "GeometryDrawing.Brush", level + 1);
                 }
 
-                GeneratePen(result, graphicPath, level + 1);
+                if (graphicPath.StrokeBrush != null)
+                {
+                    GeneratePen(result, graphicPath, level + 1);
+                }
 
                 result.Append(indentTag);
                 result.AppendLine("</GeometryDrawing>");

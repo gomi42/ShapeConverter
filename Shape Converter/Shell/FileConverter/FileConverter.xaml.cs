@@ -299,8 +299,7 @@ namespace ShapeConverter
             UpdateStreamSourceCode();
 
             // update the drawing brush source code
-            var drawingBrushSource = DrawingBrushSourceGenerator.Generate(visual);
-            DrawingBrushCode.Text = drawingBrushSource;
+            UpdateDrawingBrushSourceCode();
 
             // update the geometry source code
             UpdateGeometrySourceCode();
@@ -325,7 +324,7 @@ namespace ShapeConverter
         /// <param name="e"></param>
         private void OnTypeStatusChanged(object sender, EventArgs e)
         {
-            SetTypeItemStatus();
+            //SetTypeItemStatus();
         }
 
         /// <summary>
@@ -363,7 +362,7 @@ namespace ShapeConverter
                     return;
                 }
 
-                item.IsEnabled = false;
+                //item.IsEnabled = false;
                 item = (ComboBoxItem)generator.ContainerFromIndex(3);
 
                 if (item == null)
@@ -392,60 +391,27 @@ namespace ShapeConverter
                 var normalizer = new NormalizeVisual();
                 visual = normalizer.Normalize(selectedVisual, NormalizeAspect.Both, 100);
             }
+
             string xamlStream;
-            GraphicPath graphicPath = visual as GraphicPath;
 
-            if (graphicPath != null)
-            {
-                enableAllItems = true;
-                SetTypeItemStatus();
-
-                StreamCode.TextWrapping = TextWrapping.NoWrap;
-            }
-            else
-            {
-                enableAllItems = false;
-                SetTypeItemStatus();
-
-                if (TypeComboBox.SelectedIndex >= 2)
-                {
-                    TypeComboBox.SelectedIndex = 1;
-                }
-
-                StreamCode.TextWrapping = TextWrapping.NoWrap;
-            }
-
-            if (graphicPath != null)
-            {
-                if (TypeComboBox.SelectedIndex == 0)
-                {
-                    var streams = StreamSourceGenerator.GenerateStreamGeometries(visual);
-                    xamlStream = string.Join("\n", streams);
-                }
-                else
-                if (TypeComboBox.SelectedIndex == 2)
-                {
-                    xamlStream = StreamSourceGenerator.GeneratePathGeometry(graphicPath);
-                }
-                else
-                if (TypeComboBox.SelectedIndex == 3)
-                {
-                    xamlStream = StreamSourceGenerator.GenerateGeometry(graphicPath);
-                }
-                else
-                {
-                    xamlStream = StreamSourceGenerator.GeneratePath(visual);
-                }
-            }
-            else
             if (TypeComboBox.SelectedIndex == 0)
             {
                 var streams = StreamSourceGenerator.GenerateStreamGeometries(visual);
                 xamlStream = string.Join("\n", streams);
             }
             else
+            if (TypeComboBox.SelectedIndex == 1)
+            {
+                xamlStream = StreamSourceGenerator.GeneratePathGeometry(visual);
+            }
+            else
+            if (TypeComboBox.SelectedIndex == 2)
             {
                 xamlStream = StreamSourceGenerator.GeneratePath(visual);
+            }
+            else
+            {
+                xamlStream = StreamSourceGenerator.GenerateGeometry(visual);
             }
 
             StreamCode.Text = xamlStream;
@@ -575,6 +541,28 @@ namespace ShapeConverter
         }
 
         /// <summary>
+        /// Update the drawing brush source code
+        /// </summary>
+        private void UpdateDrawingBrushSourceCode()
+        {
+            if (selectedVisual == null)
+            {
+                return;
+            }
+
+            GraphicVisual visual = selectedVisual;
+
+            if (DrawingBrushNormalizeCheckBox.IsChecked == true)
+            {
+                var normalizer = new NormalizeVisual();
+                visual = normalizer.Normalize(selectedVisual, NormalizeAspect.Both, 100);
+            }
+
+            var drawingBrushSource = DrawingBrushSourceGenerator.Generate(visual, TypeComboBoxDrawingBrush.SelectedIndex == 1);
+            DrawingBrushCode.Text = drawingBrushSource;
+        }
+
+        /// <summary>
         /// Update the geometry source code
         /// </summary>
         private void UpdateGeometrySourceCode()
@@ -616,17 +604,17 @@ namespace ShapeConverter
         /// <summary>
         /// Checkbox handler
         /// </summary>
-        private void OnNormalizeCheckBoxChecked(object sender, RoutedEventArgs e)
+        private void OnNormalizeCheckBoxChanged(object sender, RoutedEventArgs e)
         {
-            UpdateAll();
+            UpdateStreamSourceCode();
         }
 
         /// <summary>
         /// Checkbox handler
         /// </summary>
-        private void OnNormalizeCheckBoxUnchecked(object sender, RoutedEventArgs e)
+        private void OnDrawingBrushNormalizeCheckBoxChanged(object sender, RoutedEventArgs e)
         {
-            UpdateAll();
+            UpdateDrawingBrushSourceCode();
         }
 
         /// <summary>
@@ -651,6 +639,14 @@ namespace ShapeConverter
         private void TypeSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             UpdateStreamSourceCode();
+        }
+
+        /// <summary>
+        /// Type ComboBox selection change handler
+        /// </summary>
+        private void OnDrawingBrushTypeSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            UpdateDrawingBrushSourceCode();
         }
 
         /// <summary>

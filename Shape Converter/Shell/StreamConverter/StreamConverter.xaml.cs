@@ -130,7 +130,7 @@ namespace StreamConversion
             var xamlStream = StreamSourceGenerator.GeneratePath(path);
             StreamCode.Text = xamlStream;
 
-            var drawingBrushSource = DrawingBrushSourceGenerator.Generate(path);
+            var drawingBrushSource = DrawingBrushSourceGenerator.Generate(path, false);
             DrawingBrushCode.Text = drawingBrushSource;
 
             var geometry = GeometryBinaryGenerator.GenerateGeometry(path.Geometry);
