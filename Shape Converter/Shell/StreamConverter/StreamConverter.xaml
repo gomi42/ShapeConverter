@@ -135,11 +135,13 @@
                 </TabItem>
                 <TabItem Header="XAML">
                     <Grid>
-                        <CheckBox Margin="10,11,0,0"  x:Name="DrawingBrushNormalizeCheckBox"
+                        <CheckBox x:Name="DrawingBrushNormalizeCheckBox"
+                                  Margin="10,11,0,0"
                                   HorizontalAlignment="Left"
                                   VerticalAlignment="Top"
                                   Checked="OnDrawingBrushNormalizeCheckBoxChanged"
                                   Content="Normalize"
+                                  IsChecked="True"
                                   ToolTip="Normalize to Range 0..100"
                                   Unchecked="OnDrawingBrushNormalizeCheckBoxChanged" />
 
