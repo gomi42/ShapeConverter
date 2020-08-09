@@ -85,17 +85,33 @@
                               Stretch="Uniform" />
                     </Grid>
                 </TabItem>
-                <TabItem Header="Stream">
+                <TabItem Header="Resource">
                     <Grid>
                         <CheckBox x:Name="NormalizeCheckBox"
                                   Margin="10,11,0,0"
                                   HorizontalAlignment="Left"
                                   VerticalAlignment="Top"
-                                  Checked="OnNormalizeCheckBoxChecked"
+                                  Checked="OnNormalizeCheckBoxChanged"
                                   Content="Normalize"
                                   IsChecked="True"
                                   ToolTip="Normalize to Range 0..100"
-                                  Unchecked="OnNormalizeCheckBoxChecked" />
+                                  Unchecked="OnNormalizeCheckBoxChanged" />
+
+                        <TextBlock Margin="113,10,0,0"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Top"
+                                   Text="Type:"
+                                   TextWrapping="Wrap" />
+                        <ComboBox x:Name="TypeComboBox"
+                                  Margin="140,7,0,0"
+                                  HorizontalAlignment="Left"
+                                  VerticalAlignment="Top"
+                                  SelectedIndex="0"
+                                  SelectionChanged="TypeSelectionChanged">
+                            <ComboBoxItem Content="Stream" />
+                            <ComboBoxItem Content="Geometry" />
+                            <ComboBoxItem Content="PathGeometry" />
+                        </ComboBox>
                         <Button Margin="0,7,6,0"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Top"
@@ -117,16 +133,46 @@
                                  VerticalScrollBarVisibility="Auto" />
                     </Grid>
                 </TabItem>
-                <TabItem Header="DrawingBrush">
+                <TabItem Header="XAML">
                     <Grid>
-                        <CheckBox Margin="10,11,0,0"
+                        <CheckBox Margin="10,11,0,0"  x:Name="DrawingBrushNormalizeCheckBox"
                                   HorizontalAlignment="Left"
                                   VerticalAlignment="Top"
-                                  Checked="OnNormalizeCheckBoxChecked"
+                                  Checked="OnDrawingBrushNormalizeCheckBoxChanged"
                                   Content="Normalize"
-                                  IsChecked="{Binding IsChecked, ElementName=NormalizeCheckBox}"
                                   ToolTip="Normalize to Range 0..100"
-                                  Unchecked="OnNormalizeCheckBoxChecked" />
+                                  Unchecked="OnDrawingBrushNormalizeCheckBoxChanged" />
+
+                        <TextBlock Margin="113,10,0,0"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Top"
+                                   Text="Code:"
+                                   TextWrapping="Wrap" />
+                        <ComboBox x:Name="CodeComboBoxDrawingBrush"
+                                  Margin="144,7,0,0"
+                                  HorizontalAlignment="Left"
+                                  VerticalAlignment="Top"
+                                  SelectedIndex="0"
+                                  SelectionChanged="OnDrawingBrushCodeSelectionChanged">
+                            <ComboBoxItem Content="DrawingBrush" />
+                            <ComboBoxItem Content="Path" />
+                        </ComboBox>
+
+                        <TextBlock Margin="263,10,0,0"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Top"
+                                   Text="Type:"
+                                   TextWrapping="Wrap" />
+                        <ComboBox x:Name="TypeComboBoxDrawingBrush"
+                                  Margin="290,7,0,0"
+                                  HorizontalAlignment="Left"
+                                  VerticalAlignment="Top"
+                                  SelectedIndex="0"
+                                  SelectionChanged="OnDrawingBrushTypeSelectionChanged">
+                            <ComboBoxItem Content="Stream" />
+                            <ComboBoxItem Content="PathGeometry" />
+                        </ComboBox>
+
                         <Button Margin="0,7,6,0"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Top"
@@ -146,7 +192,7 @@
                     </Grid>
                 </TabItem>
                 <TabItem x:Name="FileGeometryTabItem"
-                         Header="Geometry">
+                         Header="C#">
                     <Grid>
                         <CheckBox x:Name="AddLeftTopCheckBox"
                                   Margin="336,12,0,0"

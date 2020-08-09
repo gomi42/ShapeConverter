@@ -74,7 +74,6 @@ namespace StreamConversion
                 if (path.Geometry.Segments.Count > 0)
                 {
                     ExportButton.IsEnabled = true;
-                    //ExportIcoButton.IsEnabled = true;
                 }
                 else
                 {
@@ -97,7 +96,6 @@ namespace StreamConversion
         private void DisableExportButtons()
         {
             ExportButton.IsEnabled = false;
-            //ExportIcoButton.IsEnabled = false;
         }
 
         /// <summary>
@@ -121,21 +119,12 @@ namespace StreamConversion
                 return;
             }
 
-            if (NormalizeCheckBox.IsChecked == true)
-            {
-                var normalizer = new NormalizeVisual();
-                path = (GraphicPath)normalizer.Normalize(selectedPath, NormalizeAspect.Both, 100);
-            }
-
-            var xamlStream = StreamSourceGenerator.GeneratePath(path, false);
-            StreamCode.Text = xamlStream;
-
-            var drawingBrushSource = DrawingBrushSourceGenerator.Generate(path, false);
-            DrawingBrushCode.Text = drawingBrushSource;
-
             var geometry = GeometryBinaryGenerator.GenerateGeometry(path.Geometry);
             Preview.Data = geometry;
             UpdatePreviewAll();
+
+            UpdateStreamSourceCode();
+            UpdateDrawingBrushSourceCode();
 
             UpdateGeometrySourceCode();
         }
@@ -192,6 +181,89 @@ namespace StreamConversion
         }
 
         /// <summary>
+        /// Update the resource source code
+        /// </summary>
+        private void UpdateStreamSourceCode()
+        {
+            if (StreamCode == null)
+            {
+                return;
+            }
+
+            var path = selectedPath;
+
+            if (path == null)
+            {
+                Preview.Data = null;
+                StreamCode.Text = string.Empty;
+                DrawingBrushCode.Text = string.Empty;
+                GeometryCode.Text = string.Empty;
+                return;
+            }
+
+            if (NormalizeCheckBox.IsChecked == true)
+            {
+                var normalizer = new NormalizeVisual();
+                path = (GraphicPath)normalizer.Normalize(selectedPath, NormalizeAspect.Both, 100);
+            }
+
+            string xamlStream;
+
+            if (TypeComboBox.SelectedIndex == 0)
+            {
+                var streams = StreamSourceGenerator.GenerateStreamGeometries(path);
+                xamlStream = string.Join("\n", streams);
+            }
+            else
+            if (TypeComboBox.SelectedIndex == 1)
+            {
+                xamlStream = StreamSourceGenerator.GenerateGeometry(path);
+            }
+            else
+            {
+                xamlStream = StreamSourceGenerator.GeneratePathGeometry(path);
+            }
+
+            StreamCode.Text = xamlStream;
+        }
+
+        /// <summary>
+        /// Update the XAML source code
+        /// </summary>
+        private void UpdateDrawingBrushSourceCode()
+        {
+            if (DrawingBrushCode == null)
+            {
+                return;
+            }
+
+            var path = selectedPath;
+
+            if (path == null)
+            {
+                DrawingBrushCode.Text = string.Empty;
+                return;
+            }
+
+            if (DrawingBrushNormalizeCheckBox.IsChecked == true)
+            {
+                var normalizer = new NormalizeVisual();
+                path = (GraphicPath)normalizer.Normalize(selectedPath, NormalizeAspect.Both, 100);
+            }
+
+            bool generatePathFigure = TypeComboBoxDrawingBrush.SelectedIndex == 1;
+
+            if (CodeComboBoxDrawingBrush.SelectedIndex == 0)
+            {
+                DrawingBrushCode.Text = DrawingBrushSourceGenerator.Generate(path, generatePathFigure);
+            }
+            else
+            {
+                DrawingBrushCode.Text = StreamSourceGenerator.GeneratePath(path, generatePathFigure);
+            }
+        }
+
+        /// <summary>
         /// Update the geometry source code
         /// </summary>
         private void UpdateGeometrySourceCode()
@@ -232,9 +304,41 @@ namespace StreamConversion
         /// <summary>
         /// Normalize checkbox handler
         /// </summary>
-        private void OnNormalizeCheckBoxChecked(object sender, RoutedEventArgs e)
+        private void OnNormalizeCheckBoxChanged(object sender, RoutedEventArgs e)
         {
-            UpdateAll();
+            UpdateStreamSourceCode();
+        }
+
+        /// <summary>
+        /// Type ComboBox selection change handler
+        /// </summary>
+        private void TypeSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            UpdateStreamSourceCode();
+        }
+
+        /// <summary>
+        /// Type ComboBox selection change handler
+        /// </summary>
+        private void OnDrawingBrushNormalizeCheckBoxChanged(object sender, RoutedEventArgs e)
+        {
+            UpdateDrawingBrushSourceCode();
+        }
+
+        /// <summary>
+        /// Type ComboBox selection change handler
+        /// </summary>
+        private void OnDrawingBrushCodeSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            UpdateDrawingBrushSourceCode();
+        }
+
+        /// <summary>
+        /// Type ComboBox selection change handler
+        /// </summary>
+        private void OnDrawingBrushTypeSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            UpdateDrawingBrushSourceCode();
         }
 
         /// <summary>
@@ -295,14 +399,6 @@ namespace StreamConversion
 
             VisualExporter.Export(selectedPath, width, MarginCheckBox.IsChecked == true, out string message);
         }
-
-        /// <summary>
-        /// Export to icon file
-        /// </summary>
-        //private void ExportIcoClick(object sender, RoutedEventArgs e)
-        //{
-        //    IcoExporter.ExportIco(selectedPath);
-        //}
 
         /// <summary>
         /// Copy stream code to the clipboard
