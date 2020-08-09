@@ -14,6 +14,7 @@ The ShapeConverter converts vector data into WPF/XAML shapes. The main intention
 * `StreamGeometry` for single color shapes, allows to set the color at runtime
 * `DrawingBrush` for multi color shapes
 * C# source code to generate a `Geometry` with variable dimensions at runtime
+* 24 output formats
 
 ##### All input files support
 
