@@ -117,7 +117,7 @@ namespace ShapeConverter.BusinessLogic.Generators
             var indentTag = SourceGeneratorHelper.GetTagIndent(level);
             var indentProperty = SourceGeneratorHelper.GetPropertyIndent(level, tag);
 
-            result.Append($"{indentTag}<{tag} ");
+            result.Append($"{indentTag}<{tag}");
 
             bool fillColorInExtendedProperties = false;
             bool firstAttributSet = false;
@@ -129,7 +129,7 @@ namespace ShapeConverter.BusinessLogic.Generators
                     firstAttributSet = true;
 
                     Color color = solidFillColor.Color;
-                    var brush = string.Format("Brush=\"{0}\"", SourceGeneratorHelper.FormatColorParamter(color));
+                    var brush = string.Format(" Brush=\"{0}\"", SourceGeneratorHelper.FormatColorParamter(color));
                     result.Append(brush);
                 }
                 else
@@ -144,6 +144,10 @@ namespace ShapeConverter.BusinessLogic.Generators
                 {
                     result.AppendLine();
                     result.Append(indentProperty);
+                }
+                else
+                {
+                    result.Append(" ");
                 }
 
                 result.Append(string.Format("Geometry=\""));

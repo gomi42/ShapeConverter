@@ -98,18 +98,18 @@ namespace ShapeConverter.BusinessLogic.Generators
         /// Generate the XAML path source code for all given graphic paths
         /// </summary>
         /// <returns></returns>
-        public static string GeneratePath(GraphicVisual visual)
+        public static string GeneratePath(GraphicVisual visual, bool generatePathFigure)
         {
             StringBuilder result = new StringBuilder();
 
             if (visual is GraphicPath graphicPath)
             {
-                result.AppendLine(GeneratePath(graphicPath, true, 0));
+                result.AppendLine(GeneratePath(graphicPath, true, 0, generatePathFigure));
             }
             else
             {
                 result.AppendLine("<Viewbox>");
-                GeneratePathGroup(visual, result, 1);
+                GeneratePathGroup(visual, result, 1, generatePathFigure);
                 result.AppendLine("</Viewbox>");
             }
 
@@ -119,7 +119,7 @@ namespace ShapeConverter.BusinessLogic.Generators
         /// <summary>
         /// Generate the XAML source code for a visual
         /// </summary>
-        private static void GeneratePathGroup(GraphicVisual visual, StringBuilder result, int level)
+        private static void GeneratePathGroup(GraphicVisual visual, StringBuilder result, int level, bool generatePathFigure)
         {
             switch (visual)
             {
@@ -161,7 +161,7 @@ namespace ShapeConverter.BusinessLogic.Generators
 
                     foreach (var childVisual in group.Childreen)
                     {
-                        GeneratePathGroup(childVisual, result, level + 1);
+                        GeneratePathGroup(childVisual, result, level + 1, generatePathFigure);
                     }
 
                     result.AppendLine($"{indentTag}</{tag}>");
@@ -171,7 +171,7 @@ namespace ShapeConverter.BusinessLogic.Generators
 
                 case GraphicPath graphicPath:
                 {
-                    result.AppendLine(GeneratePath(graphicPath, false, level));
+                    result.AppendLine(GeneratePath(graphicPath, false, level, generatePathFigure));
                     break;
                 }
             }
@@ -180,7 +180,7 @@ namespace ShapeConverter.BusinessLogic.Generators
         /// <summary>
         /// Generate the XAML source code (a <Path/> for a single graphic path
         /// </summary>
-        public static string GeneratePath(GraphicPath graphicPath, bool stretch, int level)
+        private static string GeneratePath(GraphicPath graphicPath, bool stretch, int level, bool generatePathFigure)
         {
             var tag = "Path";
             var indentTag = SourceGeneratorHelper.GetTagIndent(level);
@@ -188,7 +188,7 @@ namespace ShapeConverter.BusinessLogic.Generators
             StringBuilder result = new StringBuilder();
 
             string stretchParam = stretch ? "Uniform" : "None";
-            result.AppendLine($"{indentTag}<{tag} Stretch=\"{stretchParam}\"");
+            result.Append($"{indentTag}<{tag} Stretch=\"{stretchParam}\"");
 
             bool fillColorInExtendedProperties = false;
             bool strokeColorInExtendedProperties = false;
@@ -197,9 +197,11 @@ namespace ShapeConverter.BusinessLogic.Generators
             {
                 if (graphicPath.FillBrush is GraphicSolidColorBrush solidFillColor)
                 {
+                    result.AppendLine();
+
                     Color color = solidFillColor.Color;
                     result.Append(indentProperty);
-                    result.AppendLine(string.Format("Fill=\"{0}\"", SourceGeneratorHelper.FormatColorParamter(color)));
+                    result.Append(string.Format("Fill=\"{0}\"", SourceGeneratorHelper.FormatColorParamter(color)));
                 }
                 else
                 {
@@ -211,34 +213,40 @@ namespace ShapeConverter.BusinessLogic.Generators
             {
                 if (graphicPath.StrokeBrush is GraphicSolidColorBrush solidStrokeColor)
                 {
+                    result.AppendLine();
+
                     Color color = solidStrokeColor.Color;
                     result.Append(indentProperty);
-                    result.AppendLine(string.Format("Stroke=\"{0}\" ", SourceGeneratorHelper.FormatColorParamter(color)));
+                    result.Append(string.Format("Stroke=\"{0}\" ", SourceGeneratorHelper.FormatColorParamter(color)));
                 }
                 else
                 {
                     strokeColorInExtendedProperties = true;
                 }
 
+                result.AppendLine();
                 result.Append(indentProperty);
-                result.AppendLine(string.Format(CultureInfo.InvariantCulture, "StrokeThickness=\"{0}\" ", DoubleUtilities.FormatString(graphicPath.StrokeThickness)));
+                result.Append(string.Format(CultureInfo.InvariantCulture, "StrokeThickness=\"{0}\" ", DoubleUtilities.FormatString(graphicPath.StrokeThickness)));
 
                 if (graphicPath.StrokeLineCap != GraphicLineCap.Flat)
                 {
+                    result.AppendLine();
                     result.Append(indentProperty);
                     result.AppendLine(string.Format(CultureInfo.InvariantCulture, "StrokeStartLineCap=\"{0}\" ", Converter.ConvertToWPF(graphicPath.StrokeLineCap).ToString()));
                     result.Append(indentProperty);
-                    result.AppendLine(string.Format(CultureInfo.InvariantCulture, "StrokeEndLineCap=\"{0}\" ", Converter.ConvertToWPF(graphicPath.StrokeLineCap).ToString()));
+                    result.Append(string.Format(CultureInfo.InvariantCulture, "StrokeEndLineCap=\"{0}\" ", Converter.ConvertToWPF(graphicPath.StrokeLineCap).ToString()));
                 }
 
                 if (graphicPath.StrokeDashes != null)
                 {
                     if (graphicPath.StrokeLineCap != GraphicLineCap.Flat)
                     {
+                        result.AppendLine();
                         result.Append(indentProperty);
-                        result.AppendLine(string.Format(CultureInfo.InvariantCulture, "StrokeDashCap=\"{0}\" ", Converter.ConvertToWPF(graphicPath.StrokeLineCap).ToString()));
+                        result.Append(string.Format(CultureInfo.InvariantCulture, "StrokeDashCap=\"{0}\" ", Converter.ConvertToWPF(graphicPath.StrokeLineCap).ToString()));
                     }
 
+                    result.AppendLine();
                     result.Append(indentProperty);
                     result.Append("StrokeDashArray=\"");
 
@@ -256,32 +264,51 @@ namespace ShapeConverter.BusinessLogic.Generators
 
                     if (!DoubleUtilities.IsZero(graphicPath.StrokeDashOffset))
                     {
+                        result.AppendLine();
                         result.Append(indentProperty);
-                        result.AppendLine(string.Format(CultureInfo.InvariantCulture, "StrokeDashOffset=\"{0}\"", DoubleUtilities.FormatString(graphicPath.StrokeDashOffset)));
+                        result.Append(string.Format(CultureInfo.InvariantCulture, "StrokeDashOffset=\"{0}\"", DoubleUtilities.FormatString(graphicPath.StrokeDashOffset)));
                     }
                 }
 
                 if (graphicPath.StrokeLineJoin != GraphicLineJoin.Miter)
                 {
+                    result.AppendLine();
                     result.Append(indentProperty);
-                    result.AppendLine(string.Format(CultureInfo.InvariantCulture, "StrokeLineJoin=\"{0}\" ", Converter.ConvertToWpf(graphicPath.StrokeLineJoin).ToString()));
+                    result.Append(string.Format(CultureInfo.InvariantCulture, "StrokeLineJoin=\"{0}\" ", Converter.ConvertToWpf(graphicPath.StrokeLineJoin).ToString()));
                 }
                 else
                 if (!DoubleUtilities.IsEqual(graphicPath.StrokeMiterLimit, 10))
                 {
+                    result.AppendLine();
                     result.Append(indentProperty);
-                    result.AppendLine(string.Format(CultureInfo.InvariantCulture, "MiterLimit=\"{0}\"", DoubleUtilities.FormatString(graphicPath.StrokeMiterLimit)));
+                    result.Append(string.Format(CultureInfo.InvariantCulture, "MiterLimit=\"{0}\"", DoubleUtilities.FormatString(graphicPath.StrokeMiterLimit)));
                 }
             }
 
-            result.Append(indentProperty);
-            result.Append("Data=\"");
-            result.Append(GenerateStreamGeometry(graphicPath.Geometry));
-            result.Append("\"");
+            if (!generatePathFigure)
+            {
+                result.AppendLine();
+                result.Append(indentProperty);
+                result.Append("Data=\"");
+                result.Append(GenerateStreamGeometry(graphicPath.Geometry));
+                result.Append("\"");
+            }
 
-            if (fillColorInExtendedProperties || strokeColorInExtendedProperties)
+            if (generatePathFigure || fillColorInExtendedProperties || strokeColorInExtendedProperties)
             {
                 result.AppendLine(">");
+                
+                if (generatePathFigure)
+                {
+                    var indent1 = SourceGeneratorHelper.GetTagIndent(level + 1);
+                    result.Append(indent1);
+                    result.AppendLine("<Path.Data>");
+
+                    StreamSourceGenerator.GeneratePathGeometry(result, graphicPath.Geometry, level + 2);
+
+                    result.Append(indent1);
+                    result.AppendLine("</Path.Data>");
+                }
 
                 if (fillColorInExtendedProperties)
                 {
@@ -387,27 +414,23 @@ namespace ShapeConverter.BusinessLogic.Generators
             return result.ToString();
         }
 
-
-
-
-
-
-
-
-
+        /// <summary>
+        /// Generate the XAML source code for a PathGeometry
+        /// </summary>
         public static string GeneratePathGeometry(GraphicVisual visual)
         {
             StringBuilder result = new StringBuilder();
 
-            GeneratePathGeometry(result, visual);
+            int xKey = 1;
+            GeneratePathGeometry(result, visual, ref xKey);
 
             return result.ToString();
         }
 
         /// <summary>
-        /// Generate a list of raw (pure) geometry streams without any code around recursively
+        /// Generate the XAML source code for a PathGeometry
         /// </summary>
-        private static void GeneratePathGeometry(StringBuilder result, GraphicVisual visual)
+        private static void GeneratePathGeometry(StringBuilder result, GraphicVisual visual, ref int xKey)
         {
             switch (visual)
             {
@@ -415,7 +438,7 @@ namespace ShapeConverter.BusinessLogic.Generators
                 {
                     foreach (var childVisual in group.Childreen)
                     {
-                        GeneratePathGeometry(result, childVisual);
+                        GeneratePathGeometry(result, childVisual, ref xKey);
                     }
 
                     break;
@@ -423,7 +446,9 @@ namespace ShapeConverter.BusinessLogic.Generators
 
                 case GraphicPath graphicPath:
                 {
-                    GeneratePathGeometry(result, graphicPath.Geometry, 0);
+                    var shapeName = $"shape{xKey}";
+                    GeneratePathGeometry(result, graphicPath.Geometry, 0, shapeName);
+                    xKey++;
 
                     break;
                 }
@@ -431,9 +456,17 @@ namespace ShapeConverter.BusinessLogic.Generators
         }
 
         /// <summary>
-        /// Generate the XAML source code for a PathFigure
+        /// Generate the XAML source code for a PathGeometry
         /// </summary>
-        public static string GeneratePathGeometry(StringBuilder result, GraphicPathGeometry geometry, int level)
+        public static void GeneratePathGeometry(StringBuilder result, GraphicPathGeometry geometry, int level)
+        {
+            GeneratePathGeometry(result, geometry, level, string.Empty);
+        }
+
+        /// <summary>
+        /// Generate the XAML source code for a PathGeometry plus an optional xKey attribute
+        /// </summary>
+        private static void GeneratePathGeometry(StringBuilder result, GraphicPathGeometry geometry, int level, string xKey)
         {
             bool finalizeLastFigure = false;
 
@@ -456,7 +489,16 @@ namespace ShapeConverter.BusinessLogic.Generators
                     break;
             }
 
-            result.AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}<{1} FillRule=\"{2}\">", indent, pathGeometryTag, fillRule));
+            if (string.IsNullOrEmpty(xKey))
+            {
+                result.AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}<{1} FillRule=\"{2}\">", indent, pathGeometryTag, fillRule));
+            }
+            else
+            {
+                var indentPathGeometryProperty = SourceGeneratorHelper.GetPropertyIndent(level, pathGeometryTag);
+                result.AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}<{1} x:Key=\"{2}\"", indent, pathGeometryTag, xKey));
+                result.AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}FillRule=\"{1}\">", indentPathGeometryProperty, fillRule));
+            }
 
             var pathFigureTag = "PathFigure";
 
@@ -548,8 +590,6 @@ namespace ShapeConverter.BusinessLogic.Generators
             }
 
             result.AppendLine($"{indent}</{pathGeometryTag}>");
-
-            return result.ToString();
         }
 
         /// <summary>

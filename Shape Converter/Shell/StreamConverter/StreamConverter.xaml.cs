@@ -127,7 +127,7 @@ namespace StreamConversion
                 path = (GraphicPath)normalizer.Normalize(selectedPath, NormalizeAspect.Both, 100);
             }
 
-            var xamlStream = StreamSourceGenerator.GeneratePath(path);
+            var xamlStream = StreamSourceGenerator.GeneratePath(path, false);
             StreamCode.Text = xamlStream;
 
             var drawingBrushSource = DrawingBrushSourceGenerator.Generate(path, false);

@@ -55,7 +55,6 @@ namespace ShapeConverter
         public FileConverter()
         {
             InitializeComponent();
-            Loaded += OnLoaded;
             AllowDrop = true;
 
             fileParser = new FileParser();
@@ -308,73 +307,6 @@ namespace ShapeConverter
         }
 
         /// <summary>
-        /// The loaded handler
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnLoaded(object sender, RoutedEventArgs e)
-        {
-            TypeComboBox.ItemContainerGenerator.StatusChanged += OnTypeStatusChanged;
-        }
-
-        /// <summary>
-        /// The status of type items changed
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnTypeStatusChanged(object sender, EventArgs e)
-        {
-            //SetTypeItemStatus();
-        }
-
-        /// <summary>
-        /// Try to set the status of the type items
-        /// </summary>
-        private void SetTypeItemStatus()
-        {
-            if (enableAllItems)
-            {
-                var generator = TypeComboBox.ItemContainerGenerator;
-                var item = (ComboBoxItem)generator.ContainerFromIndex(2);
-
-                if (item == null)
-                {
-                    return;
-                }
-
-                item.IsEnabled = true;
-                item = (ComboBoxItem)generator.ContainerFromIndex(3);
-
-                if (item == null)
-                {
-                    return;
-                }
-
-                item.IsEnabled = true;
-            }
-            else
-            {
-                var generator = TypeComboBox.ItemContainerGenerator;
-                var item = (ComboBoxItem)generator.ContainerFromIndex(2);
-
-                if (item == null)
-                {
-                    return;
-                }
-
-                //item.IsEnabled = false;
-                item = (ComboBoxItem)generator.ContainerFromIndex(3);
-
-                if (item == null)
-                {
-                    return;
-                }
-
-                item.IsEnabled = false;
-            }
-        }
-
-        /// <summary>
         /// Update the Stream
         /// </summary>
         private void UpdateStreamSourceCode()
@@ -402,19 +334,83 @@ namespace ShapeConverter
             else
             if (TypeComboBox.SelectedIndex == 1)
             {
-                xamlStream = StreamSourceGenerator.GeneratePathGeometry(visual);
-            }
-            else
-            if (TypeComboBox.SelectedIndex == 2)
-            {
-                xamlStream = StreamSourceGenerator.GeneratePath(visual);
-            }
-            else
-            {
                 xamlStream = StreamSourceGenerator.GenerateGeometry(visual);
+            }
+            else
+            {
+                xamlStream = StreamSourceGenerator.GeneratePathGeometry(visual);
             }
 
             StreamCode.Text = xamlStream;
+        }
+
+        /// <summary>
+        /// Update the drawing brush source code
+        /// </summary>
+        private void UpdateDrawingBrushSourceCode()
+        {
+            if (selectedVisual == null)
+            {
+                return;
+            }
+
+            GraphicVisual visual = selectedVisual;
+
+            if (DrawingBrushNormalizeCheckBox.IsChecked == true)
+            {
+                var normalizer = new NormalizeVisual();
+                visual = normalizer.Normalize(selectedVisual, NormalizeAspect.Both, 100);
+            }
+
+            bool generatePathFigure = TypeComboBoxDrawingBrush.SelectedIndex == 1;
+
+            if (CodeComboBoxDrawingBrush.SelectedIndex == 0)
+            {
+                DrawingBrushCode.Text = DrawingBrushSourceGenerator.Generate(visual, generatePathFigure);
+            }
+            else
+            {
+                DrawingBrushCode.Text = StreamSourceGenerator.GeneratePath(visual, generatePathFigure);
+            }
+        }
+
+        /// <summary>
+        /// Update the geometry source code
+        /// </summary>
+        private void UpdateGeometrySourceCode()
+        {
+            if (selectedVisual == null || ParameterComboBox == null)
+            {
+                return;
+            }
+
+            GeometrySourceGenerator geometrySourceGenerator;
+
+            if (CreationComboBox.SelectedIndex == 0)
+            {
+                geometrySourceGenerator = new StreamGeometrySourceGenerator();
+            }
+            else
+            {
+                geometrySourceGenerator = new PathGeometrySourceGenerator();
+            }
+
+            geometrySourceGenerator.Filename = filename;
+            geometrySourceGenerator.IncludeOffset = AddLeftTopCheckBox.IsChecked == true;
+
+            if (ParameterComboBox.SelectedIndex == 0)
+            {
+                geometrySourceGenerator.NormalizeAspect = NormalizeGeometrySourceAspect.Height;
+            }
+            else
+            if (ParameterComboBox.SelectedIndex == 1)
+            {
+                geometrySourceGenerator.NormalizeAspect = NormalizeGeometrySourceAspect.Width;
+            }
+            else
+                geometrySourceGenerator.NormalizeAspect = NormalizeGeometrySourceAspect.Individual;
+
+            GeometryCode.Text = geometrySourceGenerator.GenerateSource(selectedVisual);
         }
 
         /// <summary>
@@ -541,67 +537,6 @@ namespace ShapeConverter
         }
 
         /// <summary>
-        /// Update the drawing brush source code
-        /// </summary>
-        private void UpdateDrawingBrushSourceCode()
-        {
-            if (selectedVisual == null)
-            {
-                return;
-            }
-
-            GraphicVisual visual = selectedVisual;
-
-            if (DrawingBrushNormalizeCheckBox.IsChecked == true)
-            {
-                var normalizer = new NormalizeVisual();
-                visual = normalizer.Normalize(selectedVisual, NormalizeAspect.Both, 100);
-            }
-
-            var drawingBrushSource = DrawingBrushSourceGenerator.Generate(visual, TypeComboBoxDrawingBrush.SelectedIndex == 1);
-            DrawingBrushCode.Text = drawingBrushSource;
-        }
-
-        /// <summary>
-        /// Update the geometry source code
-        /// </summary>
-        private void UpdateGeometrySourceCode()
-        {
-            if (selectedVisual == null || ParameterComboBox == null)
-            {
-                return;
-            }
-
-            GeometrySourceGenerator geometrySourceGenerator;
-
-            if (CreationComboBox.SelectedIndex == 0)
-            {
-                geometrySourceGenerator = new StreamGeometrySourceGenerator();
-            }
-            else
-            {
-                geometrySourceGenerator = new PathGeometrySourceGenerator();
-            }
-
-            geometrySourceGenerator.Filename = filename;
-            geometrySourceGenerator.IncludeOffset = AddLeftTopCheckBox.IsChecked == true;
-
-            if (ParameterComboBox.SelectedIndex == 0)
-            {
-                geometrySourceGenerator.NormalizeAspect = NormalizeGeometrySourceAspect.Height;
-            }
-            else
-            if (ParameterComboBox.SelectedIndex == 1)
-            {
-                geometrySourceGenerator.NormalizeAspect = NormalizeGeometrySourceAspect.Width;
-            }
-            else
-                geometrySourceGenerator.NormalizeAspect = NormalizeGeometrySourceAspect.Individual;
-
-            GeometryCode.Text = geometrySourceGenerator.GenerateSource(selectedVisual);
-        }
-
-        /// <summary>
         /// Checkbox handler
         /// </summary>
         private void OnNormalizeCheckBoxChanged(object sender, RoutedEventArgs e)
@@ -645,6 +580,14 @@ namespace ShapeConverter
         /// Type ComboBox selection change handler
         /// </summary>
         private void OnDrawingBrushTypeSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            UpdateDrawingBrushSourceCode();
+        }
+
+        /// <summary>
+        /// Type ComboBox selection change handler
+        /// </summary>
+        private void OnDrawingBrushCodeSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             UpdateDrawingBrushSourceCode();
         }
