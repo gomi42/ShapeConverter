@@ -2,7 +2,7 @@
 // Author:
 //   Michael Göricke
 //
-// Copyright (c) 2019
+// Copyright (c) 2020
 //
 // This file is part of ShapeConverter.
 //
@@ -19,13 +19,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see<http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using ShapeConverter.BusinessLogic.Generators;
-using ShapeConverter.BusinessLogic.Generators.GeometrySourceGenerator;
+using ShapeConverter.BusinessLogic.Generators.GeometryCSharpSourceGenerator;
 using ShapeConverter.Parser;
 using ShapeConverter.Shell.Exporter;
 using ShapeConverter.Shell.FileConverter;
@@ -334,11 +333,11 @@ namespace ShapeConverter
             else
             if (TypeComboBox.SelectedIndex == 1)
             {
-                xamlStream = StreamSourceGenerator.GenerateGeometry(visual);
+                xamlStream = GeometrySourceGenerator.GenerateGeometry(visual);
             }
             else
             {
-                xamlStream = StreamSourceGenerator.GeneratePathGeometry(visual);
+                xamlStream = PathGeometrySourceGenerator.GeneratePathGeometry(visual);
             }
 
             StreamCode.Text = xamlStream;
@@ -362,15 +361,15 @@ namespace ShapeConverter
                 visual = normalizer.Normalize(selectedVisual, NormalizeAspect.Both, 100);
             }
 
-            bool generatePathFigure = TypeComboBoxDrawingBrush.SelectedIndex == 1;
+            var geometryGeneratorType = TypeComboBoxDrawingBrush.SelectedIndex == 0 ? GeometryGeneratorType.Stream : GeometryGeneratorType.PathGeometry;
 
             if (CodeComboBoxDrawingBrush.SelectedIndex == 0)
             {
-                DrawingBrushCode.Text = DrawingBrushSourceGenerator.Generate(visual, generatePathFigure);
+                DrawingBrushCode.Text = DrawingBrushSourceGenerator.Generate(visual, geometryGeneratorType);
             }
             else
             {
-                DrawingBrushCode.Text = StreamSourceGenerator.GeneratePath(visual, generatePathFigure);
+                DrawingBrushCode.Text = PathSourceGenerator.GeneratePath(visual, geometryGeneratorType);
             }
         }
 
@@ -384,33 +383,25 @@ namespace ShapeConverter
                 return;
             }
 
-            GeometrySourceGenerator geometrySourceGenerator;
-
-            if (CreationComboBox.SelectedIndex == 0)
-            {
-                geometrySourceGenerator = new StreamGeometrySourceGenerator();
-            }
-            else
-            {
-                geometrySourceGenerator = new PathGeometrySourceGenerator();
-            }
-
-            geometrySourceGenerator.Filename = filename;
-            geometrySourceGenerator.IncludeOffset = AddLeftTopCheckBox.IsChecked == true;
+            NormalizeGeometrySourceAspect normalizeAspect;
 
             if (ParameterComboBox.SelectedIndex == 0)
             {
-                geometrySourceGenerator.NormalizeAspect = NormalizeGeometrySourceAspect.Height;
+                normalizeAspect = NormalizeGeometrySourceAspect.Height;
             }
             else
             if (ParameterComboBox.SelectedIndex == 1)
             {
-                geometrySourceGenerator.NormalizeAspect = NormalizeGeometrySourceAspect.Width;
+                normalizeAspect = NormalizeGeometrySourceAspect.Width;
             }
             else
-                geometrySourceGenerator.NormalizeAspect = NormalizeGeometrySourceAspect.Individual;
+            {
+                normalizeAspect = NormalizeGeometrySourceAspect.Individual;
+            }
 
-            GeometryCode.Text = geometrySourceGenerator.GenerateSource(selectedVisual);
+            var geometryGeneratorType = CreationComboBox.SelectedIndex == 0 ? GeometryGeneratorType.Stream : GeometryGeneratorType.PathGeometry;
+            var includeOffset = AddLeftTopCheckBox.IsChecked == true;
+            GeometryCode.Text = GeometryCSharpSourceGenerator.GenerateSource(selectedVisual, geometryGeneratorType, normalizeAspect, includeOffset, filename);
         }
 
         /// <summary>

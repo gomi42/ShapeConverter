@@ -2,7 +2,7 @@
 // Author:
 //   Michael Göricke
 //
-// Copyright (c) 2019
+// Copyright (c) 2020
 //
 // This file is part of ShapeConverter.
 //
@@ -231,7 +231,7 @@
                                   SelectedIndex="0"
                                   SelectionChanged="ParameterSelectionChanged">
                             <ComboBoxItem Content="Stream" />
-                            <ComboBoxItem Content="Path" />
+                            <ComboBoxItem Content="PathGeometry" />
                         </ComboBox>
                         <Rectangle Height="1"
                                    Margin="0,37,0,0"

@@ -2,7 +2,7 @@
 // Author:
 //   Michael Göricke
 //
-// Copyright (c) 2019
+// Copyright (c) 2020
 //
 // This file is part of ShapeConverter.
 //
@@ -104,7 +104,7 @@ namespace ShapeConverter.BusinessLogic.Generators
 
                     if (linearGradientBrush.MappingMode != GraphicBrushMappingMode.RelativeToBoundingBox)
                     {
-                        result.AppendLine("");
+                        result.AppendLine();
                         result.Append(string.Format(CultureInfo.InvariantCulture, "{0}MappingMode=\"{1}\"",
                                                     indentProperty,
                                                     Converter.ConvertToWpf(linearGradientBrush.MappingMode).ToString()));
@@ -142,7 +142,7 @@ namespace ShapeConverter.BusinessLogic.Generators
 
                     if (radialGradientBrush.MappingMode != GraphicBrushMappingMode.RelativeToBoundingBox)
                     {
-                        result.AppendLine("");
+                        result.AppendLine();
                         result.Append(string.Format(CultureInfo.InvariantCulture, "{0}MappingMode=\"{1}\"",
                                                         indentProperty,
                                                         Converter.ConvertToWpf(radialGradientBrush.MappingMode).ToString()));
@@ -199,6 +199,72 @@ namespace ShapeConverter.BusinessLogic.Generators
         public static string FormatColorParamter(Color color)
         {
             return string.Format(CultureInfo.InvariantCulture, "#{0:X2}{1:X2}{2:X2}{3:X2}", color.A, color.R, color.G, color.B);
+        }
+
+        /// <summary>
+        /// append a point to the stream
+        /// </summary>
+        public static void AppendPoint(StringBuilder output, double x, double y)
+        {
+            string xstr = DoubleUtilities.FormatString(x);
+            string ystr = DoubleUtilities.FormatString(y);
+
+            output.Append(xstr);
+            output.Append(',');
+            output.Append(ystr);
+            output.Append(' ');
+        }
+
+        /// <summary>
+        /// append a point to the stream
+        /// </summary>
+        public static void AppendPoint(StringBuilder output, Point point)
+        {
+            AppendPoint(output, point.X, point.Y);
+        }
+
+        /// <summary>
+        /// Append a numeric value to the stream
+        /// </summary>
+        public static void AppendValue(StringBuilder output, double val)
+        {
+            string valstr = DoubleUtilities.FormatString(val);
+            output.Append(valstr);
+            output.Append(' ');
+        }
+
+        /// <summary>
+        /// append a point to the stream
+        /// </summary>
+        public static void AppendXamlPoint(StringBuilder output, double x, double y)
+        {
+            string xstr = DoubleUtilities.FormatString(x);
+            string ystr = DoubleUtilities.FormatString(y);
+
+            output.Append("\"");
+            output.Append(xstr);
+            output.Append(',');
+            output.Append(ystr);
+            output.Append("\"");
+        }
+
+        /// <summary>
+        /// append a point to the stream
+        /// </summary>
+        public static void AppendXamlPoint(StringBuilder output, Point point)
+        {
+            AppendXamlPoint(output, point.X, point.Y);
+        }
+
+        /// <summary>
+        /// Append a bool to the stream
+        /// </summary>
+        public static void AppendXamlBool(StringBuilder output, bool boolVal)
+        {
+            string boolstr = boolVal ? "True" : "False";
+            output.Append("\"");
+            output.Append(boolstr);
+            output.Append("\"");
         }
     }
 }

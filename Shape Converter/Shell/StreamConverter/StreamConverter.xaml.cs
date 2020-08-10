@@ -2,7 +2,7 @@
 // Author:
 //   Michael Göricke
 //
-// Copyright (c) 2019
+// Copyright (c) 2020
 //
 // This file is part of ShapeConverter.
 //
@@ -24,7 +24,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using ShapeConverter;
 using ShapeConverter.BusinessLogic.Generators;
-using ShapeConverter.BusinessLogic.Generators.GeometrySourceGenerator;
+using ShapeConverter.BusinessLogic.Generators.GeometryCSharpSourceGenerator;
 using ShapeConverter.Parser.StreamGeometry;
 using ShapeConverter.Shell.Exporter;
 
@@ -217,11 +217,11 @@ namespace StreamConversion
             else
             if (TypeComboBox.SelectedIndex == 1)
             {
-                xamlStream = StreamSourceGenerator.GenerateGeometry(path);
+                xamlStream = GeometrySourceGenerator.GenerateGeometry(path);
             }
             else
             {
-                xamlStream = StreamSourceGenerator.GeneratePathGeometry(path);
+                xamlStream = PathGeometrySourceGenerator.GeneratePathGeometry(path);
             }
 
             StreamCode.Text = xamlStream;
@@ -251,15 +251,15 @@ namespace StreamConversion
                 path = (GraphicPath)normalizer.Normalize(selectedPath, NormalizeAspect.Both, 100);
             }
 
-            bool generatePathFigure = TypeComboBoxDrawingBrush.SelectedIndex == 1;
+            var geometryGeneratorType = TypeComboBoxDrawingBrush.SelectedIndex == 0 ? GeometryGeneratorType.Stream : GeometryGeneratorType.PathGeometry;
 
             if (CodeComboBoxDrawingBrush.SelectedIndex == 0)
             {
-                DrawingBrushCode.Text = DrawingBrushSourceGenerator.Generate(path, generatePathFigure);
+                DrawingBrushCode.Text = DrawingBrushSourceGenerator.Generate(path, geometryGeneratorType);
             }
             else
             {
-                DrawingBrushCode.Text = StreamSourceGenerator.GeneratePath(path, generatePathFigure);
+                DrawingBrushCode.Text = PathSourceGenerator.GeneratePath(path, geometryGeneratorType);
             }
         }
 
@@ -273,32 +273,25 @@ namespace StreamConversion
                 return;
             }
 
-            IGeometrySourceGenerator geometrySourceGenerator;
-
-            if (CreationComboBox.SelectedIndex == 0)
-            {
-                geometrySourceGenerator = new StreamGeometrySourceGenerator();
-            }
-            else
-            {
-                geometrySourceGenerator = new PathGeometrySourceGenerator();
-            }
-
-            geometrySourceGenerator.IncludeOffset = AddLeftTopCheckBox.IsChecked == true;
+            NormalizeGeometrySourceAspect normalizeAspect;
 
             if (ParameterComboBox.SelectedIndex == 0)
             {
-                geometrySourceGenerator.NormalizeAspect = NormalizeGeometrySourceAspect.Height;
+                normalizeAspect = NormalizeGeometrySourceAspect.Height;
             }
             else
             if (ParameterComboBox.SelectedIndex == 1)
             {
-                geometrySourceGenerator.NormalizeAspect = NormalizeGeometrySourceAspect.Width;
+                normalizeAspect = NormalizeGeometrySourceAspect.Width;
             }
             else
-                geometrySourceGenerator.NormalizeAspect = NormalizeGeometrySourceAspect.Individual;
+            {
+                normalizeAspect = NormalizeGeometrySourceAspect.Individual;
+            }
 
-            GeometryCode.Text = geometrySourceGenerator.GenerateSource(selectedPath);
+            var geometryGeneratorType = CreationComboBox.SelectedIndex == 0 ? GeometryGeneratorType.Stream : GeometryGeneratorType.PathGeometry;
+            var includeOffset = AddLeftTopCheckBox.IsChecked == true;
+            GeometryCode.Text = GeometryCSharpSourceGenerator.GenerateSource(selectedPath, geometryGeneratorType, normalizeAspect, includeOffset, string.Empty);
         }
 
         /// <summary>

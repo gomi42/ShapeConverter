@@ -2,7 +2,7 @@
 // Author:
 //   Michael Göricke
 //
-// Copyright (c) 2019
+// Copyright (c) 2020
 //
 // This file is part of ShapeConverter.
 //
@@ -31,7 +31,7 @@ namespace ShapeConverter.BusinessLogic.Generators
         /// <summary>
         /// Generates the drawing brush source code for a given graphic drawing.
         /// </summary>
-        public static string Generate(GraphicVisual visual, bool generatePathFigure)
+        public static string Generate(GraphicVisual visual, GeometryGeneratorType geometryGeneratorType)
         {
             StringBuilder result = new StringBuilder();
             var indentTag = SourceGeneratorHelper.GetTagIndent(1);
@@ -39,7 +39,7 @@ namespace ShapeConverter.BusinessLogic.Generators
             result.AppendLine("<DrawingBrush Stretch=\"Uniform\">");
             result.AppendLine($"{indentTag}<DrawingBrush.Drawing>");
 
-            Generate(visual, result, 2, generatePathFigure);
+            Generate(visual, result, 2, geometryGeneratorType);
 
             result.AppendLine($"{indentTag}</DrawingBrush.Drawing>");
             result.AppendLine("</DrawingBrush>");
@@ -50,7 +50,7 @@ namespace ShapeConverter.BusinessLogic.Generators
         /// <summary>
         /// Generates the drawing brush source code for a given geometry.
         /// </summary>
-        private static void Generate(GraphicVisual visual, StringBuilder result, int level, bool generatePathFigure)
+        private static void Generate(GraphicVisual visual, StringBuilder result, int level, GeometryGeneratorType geometryGeneratorType)
         {
             switch (visual)
             {
@@ -74,7 +74,7 @@ namespace ShapeConverter.BusinessLogic.Generators
                         if (tagIndent)
                         {
                             var indentProperty = SourceGeneratorHelper.GetPropertyIndent(level, tag);
-                            result.AppendLine("");
+                            result.AppendLine();
                             result.Append(indentProperty);
                         }
                         else
@@ -92,7 +92,7 @@ namespace ShapeConverter.BusinessLogic.Generators
 
                     foreach (var childVisual in group.Childreen)
                     {
-                        Generate(childVisual, result, level + 1, generatePathFigure);
+                        Generate(childVisual, result, level + 1, geometryGeneratorType);
                     }
 
                     result.AppendLine($"{indentTag}</{tag}>");
@@ -102,7 +102,7 @@ namespace ShapeConverter.BusinessLogic.Generators
 
                 case GraphicPath graphicPath:
                 {
-                    GeneratePath(graphicPath, result, level, generatePathFigure);
+                    GeneratePath(graphicPath, result, level, geometryGeneratorType);
                     break;
                 }
             }
@@ -111,7 +111,7 @@ namespace ShapeConverter.BusinessLogic.Generators
         /// <summary>
         /// Generate path
         /// </summary>
-        private static void GeneratePath(GraphicPath graphicPath, StringBuilder result, int level, bool generatePathFigure)
+        private static void GeneratePath(GraphicPath graphicPath, StringBuilder result, int level, GeometryGeneratorType geometryGeneratorType)
         {
             var tag = "GeometryDrawing";
             var indentTag = SourceGeneratorHelper.GetTagIndent(level);
@@ -138,7 +138,7 @@ namespace ShapeConverter.BusinessLogic.Generators
                 }
             }
 
-            if (!generatePathFigure)
+            if (geometryGeneratorType == GeometryGeneratorType.Stream)
             {
                 if (firstAttributSet)
                 {
@@ -156,17 +156,17 @@ namespace ShapeConverter.BusinessLogic.Generators
                 result.Append("\"");
             }
 
-            if (generatePathFigure || fillColorInExtendedProperties || graphicPath.StrokeBrush != null)
+            if (geometryGeneratorType == GeometryGeneratorType.PathGeometry || fillColorInExtendedProperties || graphicPath.StrokeBrush != null)
             {
                 result.AppendLine(">");
 
-                if (generatePathFigure)
+                if (geometryGeneratorType == GeometryGeneratorType.PathGeometry)
                 {
                     var indent1 = SourceGeneratorHelper.GetTagIndent(level + 1);
                     result.Append(indent1);
                     result.AppendLine("<GeometryDrawing.Geometry>");
 
-                    StreamSourceGenerator.GeneratePathGeometry(result, graphicPath.Geometry, level + 2);
+                    PathGeometrySourceGenerator.GeneratePathGeometry(result, graphicPath.Geometry, level + 2);
 
                     result.Append(indent1);
                     result.AppendLine("</GeometryDrawing.Geometry>");
@@ -214,7 +214,7 @@ namespace ShapeConverter.BusinessLogic.Generators
 
                 if (graphicPath.StrokeLineCap != GraphicLineCap.Flat)
                 {
-                    result.AppendLine("");
+                    result.AppendLine();
                     result.Append(indentPenProperty);
                     result.AppendLine(string.Format(CultureInfo.InvariantCulture, "StartLineCap=\"{0}\" ", Converter.ConvertToWPF(graphicPath.StrokeLineCap).ToString()));
                     result.Append(indentPenProperty);
@@ -225,7 +225,7 @@ namespace ShapeConverter.BusinessLogic.Generators
                 {
                     if (graphicPath.StrokeLineCap != GraphicLineCap.Square)
                     {
-                        result.AppendLine("");
+                        result.AppendLine();
                         result.Append(indentPenProperty);
                         result.Append(string.Format(CultureInfo.InvariantCulture, "DashCap=\"{0}\" ", Converter.ConvertToWPF(graphicPath.StrokeLineCap).ToString()));
                     }
@@ -233,21 +233,21 @@ namespace ShapeConverter.BusinessLogic.Generators
 
                 if (graphicPath.StrokeLineJoin != GraphicLineJoin.Miter)
                 {
-                    result.AppendLine("");
+                    result.AppendLine();
                     result.Append(indentPenProperty);
                     result.Append(string.Format(CultureInfo.InvariantCulture, "LineJoin=\"{0}\" ", Converter.ConvertToWpf(graphicPath.StrokeLineJoin).ToString()));
                 }
                 else
                 if (!DoubleUtilities.IsEqual(graphicPath.StrokeMiterLimit, 10))
                 {
-                    result.AppendLine("");
+                    result.AppendLine();
                     result.Append(indentPenProperty);
                     result.Append(string.Format(CultureInfo.InvariantCulture, "MiterLimit=\"{0}\"", DoubleUtilities.FormatString(graphicPath.StrokeMiterLimit)));
                 }
 
                 if (graphicPath.StrokeBrush is GraphicSolidColorBrush strokeColor)
                 {
-                    result.AppendLine("");
+                    result.AppendLine();
 
                     Color color = strokeColor.Color;
                     result.Append(indentPenProperty);
@@ -260,8 +260,7 @@ namespace ShapeConverter.BusinessLogic.Generators
 
                 if (strokeColorInExtendedProperties || graphicPath.StrokeDashes != null)
                 {
-                    result.Append(">");
-                    result.AppendLine("");
+                    result.AppendLine(">");
 
                     if (graphicPath.StrokeDashes != null)
                     {
@@ -291,7 +290,7 @@ namespace ShapeConverter.BusinessLogic.Generators
                         if (!DoubleUtilities.IsZero(graphicPath.StrokeDashOffset))
                         {
                             var indentDashStyleProperty = SourceGeneratorHelper.GetPropertyIndent(level + 3, tagDashStyle);
-                            result.AppendLine("");
+                            result.AppendLine();
                             result.Append(indentDashStyleProperty);
                             result.Append(string.Format(CultureInfo.InvariantCulture, "Offset=\"{0}\"", DoubleUtilities.FormatString(graphicPath.StrokeDashOffset)));
                         }

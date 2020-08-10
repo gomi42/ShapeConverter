@@ -103,10 +103,15 @@
     <Compile Include="BusinessLogic\Exporter\IcoExporter.cs" />
     <Compile Include="BusinessLogic\Exporter\ImageExporter.cs" />
     <Compile Include="BusinessLogic\Exporter\SvgExporter.cs" />
-    <Compile Include="BusinessLogic\Generators\GeometrySourceGenerator\IGeometrySourceGenerator.cs" />
-    <Compile Include="BusinessLogic\Generators\GeometrySourceGenerator\PathGeometrySourceGenerator.cs" />
-    <Compile Include="BusinessLogic\Generators\GeometrySourceGenerator\StreamGeometrySourceGenerator.cs" />
+    <Compile Include="BusinessLogic\Generators\GeometryCSharpSourceGenerator\GeometryCSharpSourceGeneratorBase.cs" />
+    <Compile Include="BusinessLogic\Generators\GeometryCSharpSourceGenerator\NormalizeGeometrySourceAspect.cs" />
+    <Compile Include="BusinessLogic\Generators\GeometryGeneratorType.cs" />
+    <Compile Include="BusinessLogic\Generators\GeometrySourceGenerator.cs" />
+    <Compile Include="BusinessLogic\Generators\GeometryCSharpSourceGenerator\PathGeometryCSharpSourceGenerator.cs" />
+    <Compile Include="BusinessLogic\Generators\GeometryCSharpSourceGenerator\StreamGeometryCSharpSourceGenerator.cs" />
     <Compile Include="BusinessLogic\Generators\GraphicToWpfConverter.cs" />
+    <Compile Include="BusinessLogic\Generators\PathGeometrySourceGenerator.cs" />
+    <Compile Include="BusinessLogic\Generators\PathSourceGenerator.cs" />
     <Compile Include="BusinessLogic\Generators\PreviewBrushGenerator.cs" />
     <Compile Include="BusinessLogic\Generators\SourceGeneratorHelper.cs" />
     <Compile Include="BusinessLogic\Helper\MatrixUtilities.cs" />
@@ -433,7 +438,7 @@
     <Compile Include="BusinessLogic\Generators\DrawingBrushBinaryGenerator.cs" />
     <Compile Include="BusinessLogic\Generators\DrawingBrushSourceGenerator.cs" />
     <Compile Include="BusinessLogic\Generators\GeometryBinaryGenerator.cs" />
-    <Compile Include="BusinessLogic\Generators\GeometrySourceGenerator\GeometrySourceGenerator.cs" />
+    <Compile Include="BusinessLogic\Generators\GeometryCSharpSourceGenerator\GeometryCSharpSourceGenerator.cs" />
     <Compile Include="BusinessLogic\Graphic\GraphicBrush.cs" />
     <Compile Include="BusinessLogic\Graphic\GraphicEnums.cs" />
     <Compile Include="BusinessLogic\Graphic\GraphicPathGeometry.cs" />
