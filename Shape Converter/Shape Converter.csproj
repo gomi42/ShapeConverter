@@ -103,17 +103,17 @@
     <Compile Include="BusinessLogic\Exporter\IcoExporter.cs" />
     <Compile Include="BusinessLogic\Exporter\ImageExporter.cs" />
     <Compile Include="BusinessLogic\Exporter\SvgExporter.cs" />
-    <Compile Include="BusinessLogic\Generators\GeometryCSharpSourceGenerator\GeometryCSharpSourceGeneratorBase.cs" />
-    <Compile Include="BusinessLogic\Generators\GeometryCSharpSourceGenerator\NormalizeGeometrySourceAspect.cs" />
+    <Compile Include="BusinessLogic\Generators\CSharp\GeometryCSharpSourceGeneratorBase.cs" />
+    <Compile Include="BusinessLogic\Generators\CSharp\NormalizeGeometrySourceAspect.cs" />
     <Compile Include="BusinessLogic\Generators\GeometryGeneratorType.cs" />
-    <Compile Include="BusinessLogic\Generators\GeometrySourceGenerator.cs" />
-    <Compile Include="BusinessLogic\Generators\GeometryCSharpSourceGenerator\PathGeometryCSharpSourceGenerator.cs" />
-    <Compile Include="BusinessLogic\Generators\GeometryCSharpSourceGenerator\StreamGeometryCSharpSourceGenerator.cs" />
+    <Compile Include="BusinessLogic\Generators\XAML\GeometrySourceGenerator.cs" />
+    <Compile Include="BusinessLogic\Generators\CSharp\PathGeometryCSharpSourceGenerator.cs" />
+    <Compile Include="BusinessLogic\Generators\CSharp\StreamGeometryCSharpSourceGenerator.cs" />
     <Compile Include="BusinessLogic\Generators\GraphicToWpfConverter.cs" />
-    <Compile Include="BusinessLogic\Generators\PathGeometrySourceGenerator.cs" />
-    <Compile Include="BusinessLogic\Generators\PathSourceGenerator.cs" />
-    <Compile Include="BusinessLogic\Generators\PreviewBrushGenerator.cs" />
-    <Compile Include="BusinessLogic\Generators\SourceGeneratorHelper.cs" />
+    <Compile Include="BusinessLogic\Generators\XAML\PathGeometrySourceGenerator.cs" />
+    <Compile Include="BusinessLogic\Generators\XAML\PathSourceGenerator.cs" />
+    <Compile Include="BusinessLogic\Generators\Binary\PreviewBrushGenerator.cs" />
+    <Compile Include="BusinessLogic\Generators\XAML\SourceGeneratorHelper.cs" />
     <Compile Include="BusinessLogic\Helper\MatrixUtilities.cs" />
     <Compile Include="BusinessLogic\Manipulation\OptimizeVisual.cs" />
     <Compile Include="BusinessLogic\Manipulation\TransformVisual.cs" />
@@ -435,10 +435,10 @@
     <Compile Include="BusinessLogic\Converter\RectToGeometryConverter.cs" />
     <Compile Include="Shell\Controls\Header.cs" />
     <Compile Include="Shell\FileConverter\PreviewShapeViewModel.cs" />
-    <Compile Include="BusinessLogic\Generators\DrawingBrushBinaryGenerator.cs" />
-    <Compile Include="BusinessLogic\Generators\DrawingBrushSourceGenerator.cs" />
-    <Compile Include="BusinessLogic\Generators\GeometryBinaryGenerator.cs" />
-    <Compile Include="BusinessLogic\Generators\GeometryCSharpSourceGenerator\GeometryCSharpSourceGenerator.cs" />
+    <Compile Include="BusinessLogic\Generators\Binary\DrawingBrushBinaryGenerator.cs" />
+    <Compile Include="BusinessLogic\Generators\XAML\DrawingBrushSourceGenerator.cs" />
+    <Compile Include="BusinessLogic\Generators\Binary\GeometryBinaryGenerator.cs" />
+    <Compile Include="BusinessLogic\Generators\CSharp\GeometryCSharpSourceGenerator.cs" />
     <Compile Include="BusinessLogic\Graphic\GraphicBrush.cs" />
     <Compile Include="BusinessLogic\Graphic\GraphicEnums.cs" />
     <Compile Include="BusinessLogic\Graphic\GraphicPathGeometry.cs" />
@@ -592,7 +592,7 @@
     <Compile Include="Shell\StreamConverter\StreamConverter.xaml.cs">
       <DependentUpon>StreamConverter.xaml</DependentUpon>
     </Compile>
-    <Compile Include="BusinessLogic\Generators\StreamSourceGenerator.cs" />
+    <Compile Include="BusinessLogic\Generators\XAML\StreamSourceGenerator.cs" />
     <Compile Include="Shell\Controls\UniformTabPanel.cs" />
     <Page Include="Shell\FileConverter\FileConverter.xaml">
       <SubType>Designer</SubType>
