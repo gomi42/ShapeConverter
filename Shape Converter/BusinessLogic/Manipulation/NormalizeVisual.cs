@@ -66,7 +66,7 @@ namespace ShapeConverter.BusinessLogic.Generators
         /// <summary>
         /// The aspect ration of the resulting graphic path(s)
         /// </summary>
-        public double AspectRatio { get; set; }
+        public double AspectRatio { get; private set; }
 
         /// <summary>
         /// Normalizes the given visual and creates a deep copy of the tree
