@@ -103,7 +103,7 @@ namespace ShapeConverter.BusinessLogic.Generators
                         }
 
                         result.Append("M");
-                        SourceGeneratorHelper.AppendPoint(result, graphicMove.StartPoint.X, graphicMove.StartPoint.Y);
+                        SourceFormatterHelper.AppendPoint(result, graphicMove.StartPoint.X, graphicMove.StartPoint.Y);
                         closeLastPath = graphicMove.IsClosed;
                         break;
                     }
@@ -111,24 +111,24 @@ namespace ShapeConverter.BusinessLogic.Generators
                     case GraphicLineSegment graphicLineTo:
                     {
                         result.Append("L");
-                        SourceGeneratorHelper.AppendPoint(result, graphicLineTo.To);
+                        SourceFormatterHelper.AppendPoint(result, graphicLineTo.To);
                         break;
                     }
 
                     case GraphicCubicBezierSegment graphicCubicBezier:
                     {
                         result.Append("C");
-                        SourceGeneratorHelper.AppendPoint(result, graphicCubicBezier.ControlPoint1);
-                        SourceGeneratorHelper.AppendPoint(result, graphicCubicBezier.ControlPoint2);
-                        SourceGeneratorHelper.AppendPoint(result, graphicCubicBezier.EndPoint);
+                        SourceFormatterHelper.AppendPoint(result, graphicCubicBezier.ControlPoint1);
+                        SourceFormatterHelper.AppendPoint(result, graphicCubicBezier.ControlPoint2);
+                        SourceFormatterHelper.AppendPoint(result, graphicCubicBezier.EndPoint);
                         break;
                     }
 
                     case GraphicQuadraticBezierSegment graphicQuadraticBezier:
                     {
                         result.Append("Q");
-                        SourceGeneratorHelper.AppendPoint(result, graphicQuadraticBezier.ControlPoint);
-                        SourceGeneratorHelper.AppendPoint(result, graphicQuadraticBezier.EndPoint);
+                        SourceFormatterHelper.AppendPoint(result, graphicQuadraticBezier.ControlPoint);
+                        SourceFormatterHelper.AppendPoint(result, graphicQuadraticBezier.EndPoint);
                         break;
                     }
 

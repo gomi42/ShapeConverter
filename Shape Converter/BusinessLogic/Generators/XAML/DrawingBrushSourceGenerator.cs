@@ -34,7 +34,7 @@ namespace ShapeConverter.BusinessLogic.Generators
         public static string Generate(GraphicVisual visual, GeometryGeneratorType geometryGeneratorType)
         {
             StringBuilder result = new StringBuilder();
-            var indentTag = SourceGeneratorHelper.GetTagIndent(1);
+            var indentTag = SourceFormatterHelper.GetTagIndent(1);
 
             result.AppendLine("<DrawingBrush Stretch=\"Uniform\">");
             result.AppendLine($"{indentTag}<DrawingBrush.Drawing>");
@@ -57,7 +57,7 @@ namespace ShapeConverter.BusinessLogic.Generators
                 case GraphicGroup group:
                 {
                     var tag = "DrawingGroup";
-                    var indentTag = SourceGeneratorHelper.GetTagIndent(level);
+                    var indentTag = SourceFormatterHelper.GetTagIndent(level);
                     result.Append($"{indentTag}<{tag}");
 
                     bool tagIndent = false;
@@ -73,7 +73,7 @@ namespace ShapeConverter.BusinessLogic.Generators
                     {
                         if (tagIndent)
                         {
-                            var indentProperty = SourceGeneratorHelper.GetPropertyIndent(level, tag);
+                            var indentProperty = SourceFormatterHelper.GetPropertyIndent(level, tag);
                             result.AppendLine();
                             result.Append(indentProperty);
                         }
@@ -114,8 +114,8 @@ namespace ShapeConverter.BusinessLogic.Generators
         private static void GeneratePath(GraphicPath graphicPath, StringBuilder result, int level, GeometryGeneratorType geometryGeneratorType)
         {
             var tag = "GeometryDrawing";
-            var indentTag = SourceGeneratorHelper.GetTagIndent(level);
-            var indentProperty = SourceGeneratorHelper.GetPropertyIndent(level, tag);
+            var indentTag = SourceFormatterHelper.GetTagIndent(level);
+            var indentProperty = SourceFormatterHelper.GetPropertyIndent(level, tag);
 
             result.Append($"{indentTag}<{tag}");
 
@@ -129,7 +129,7 @@ namespace ShapeConverter.BusinessLogic.Generators
                     firstAttributSet = true;
 
                     Color color = solidFillColor.Color;
-                    var brush = string.Format(" Brush=\"{0}\"", SourceGeneratorHelper.FormatColorParamter(color));
+                    var brush = string.Format(" Brush=\"{0}\"", SourceFormatterHelper.FormatColorParamter(color));
                     result.Append(brush);
                 }
                 else
@@ -162,7 +162,7 @@ namespace ShapeConverter.BusinessLogic.Generators
 
                 if (geometryGeneratorType == GeometryGeneratorType.PathGeometry)
                 {
-                    var indent1 = SourceGeneratorHelper.GetTagIndent(level + 1);
+                    var indent1 = SourceFormatterHelper.GetTagIndent(level + 1);
                     result.Append(indent1);
                     result.AppendLine("<GeometryDrawing.Geometry>");
 
@@ -174,7 +174,7 @@ namespace ShapeConverter.BusinessLogic.Generators
 
                 if (fillColorInExtendedProperties)
                 {
-                    SourceGeneratorHelper.GenerateBrush(result, graphicPath.FillBrush, "GeometryDrawing.Brush", level + 1);
+                    BrushSourceGenerator.GenerateBrush(result, graphicPath.FillBrush, "GeometryDrawing.Brush", level + 1);
                 }
 
                 if (graphicPath.StrokeBrush != null)
@@ -198,8 +198,8 @@ namespace ShapeConverter.BusinessLogic.Generators
         {
             if (graphicPath.StrokeBrush != null)
             {
-                var indent1 = SourceGeneratorHelper.GetTagIndent(level);
-                var indent2 = SourceGeneratorHelper.GetTagIndent(level + 1);
+                var indent1 = SourceFormatterHelper.GetTagIndent(level);
+                var indent2 = SourceFormatterHelper.GetTagIndent(level + 1);
 
                 bool strokeColorInExtendedProperties = false;
 
@@ -207,7 +207,7 @@ namespace ShapeConverter.BusinessLogic.Generators
                 result.AppendLine("<GeometryDrawing.Pen>");
 
                 var tag = "Pen";
-                var indentPenProperty = SourceGeneratorHelper.GetPropertyIndent(level + 1, tag);
+                var indentPenProperty = SourceFormatterHelper.GetPropertyIndent(level + 1, tag);
 
                 result.Append(indent2);
                 result.Append(string.Format(CultureInfo.InvariantCulture, "<{0} Thickness=\"{1}\"", tag, DoubleUtilities.FormatString(graphicPath.StrokeThickness)));
@@ -251,7 +251,7 @@ namespace ShapeConverter.BusinessLogic.Generators
 
                     Color color = strokeColor.Color;
                     result.Append(indentPenProperty);
-                    result.Append(string.Format("Brush=\"{0}\"", SourceGeneratorHelper.FormatColorParamter(color)));
+                    result.Append(string.Format("Brush=\"{0}\"", SourceFormatterHelper.FormatColorParamter(color)));
                 }
                 else
                 {
@@ -264,8 +264,8 @@ namespace ShapeConverter.BusinessLogic.Generators
 
                     if (graphicPath.StrokeDashes != null)
                     {
-                        var indent3 = SourceGeneratorHelper.GetTagIndent(level + 2);
-                        var indent4 = SourceGeneratorHelper.GetTagIndent(level + 3);
+                        var indent3 = SourceFormatterHelper.GetTagIndent(level + 2);
+                        var indent4 = SourceFormatterHelper.GetTagIndent(level + 3);
 
                         var tagDashStyle = "DashStyle";
 
@@ -289,7 +289,7 @@ namespace ShapeConverter.BusinessLogic.Generators
 
                         if (!DoubleUtilities.IsZero(graphicPath.StrokeDashOffset))
                         {
-                            var indentDashStyleProperty = SourceGeneratorHelper.GetPropertyIndent(level + 3, tagDashStyle);
+                            var indentDashStyleProperty = SourceFormatterHelper.GetPropertyIndent(level + 3, tagDashStyle);
                             result.AppendLine();
                             result.Append(indentDashStyleProperty);
                             result.Append(string.Format(CultureInfo.InvariantCulture, "Offset=\"{0}\"", DoubleUtilities.FormatString(graphicPath.StrokeDashOffset)));
@@ -302,7 +302,7 @@ namespace ShapeConverter.BusinessLogic.Generators
 
                     if (strokeColorInExtendedProperties)
                     {
-                        SourceGeneratorHelper.GenerateBrush(result, graphicPath.StrokeBrush, "Pen.Brush", level + 3);
+                        BrushSourceGenerator.GenerateBrush(result, graphicPath.StrokeBrush, "Pen.Brush", level + 3);
                     }
 
                     result.AppendLine($"{indent2}</{tag}>");

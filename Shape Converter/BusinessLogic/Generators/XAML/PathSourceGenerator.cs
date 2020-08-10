@@ -59,7 +59,7 @@ namespace ShapeConverter.BusinessLogic.Generators
                 case GraphicGroup group:
                 {
                     var tag = "Grid";
-                    var indentTag = SourceGeneratorHelper.GetTagIndent(level);
+                    var indentTag = SourceFormatterHelper.GetTagIndent(level);
                     result.Append($"{indentTag}<{tag}");
 
                     bool tagIndent = false;
@@ -75,7 +75,7 @@ namespace ShapeConverter.BusinessLogic.Generators
                     {
                         if (tagIndent)
                         {
-                            var indentProperty = SourceGeneratorHelper.GetPropertyIndent(level, tag);
+                            var indentProperty = SourceFormatterHelper.GetPropertyIndent(level, tag);
                             result.AppendLine();
                             result.Append(indentProperty);
                         }
@@ -116,8 +116,8 @@ namespace ShapeConverter.BusinessLogic.Generators
         private static string GeneratePath(GraphicPath graphicPath, bool stretch, int level, GeometryGeneratorType geometryGeneratorType)
         {
             var tag = "Path";
-            var indentTag = SourceGeneratorHelper.GetTagIndent(level);
-            var indentProperty = SourceGeneratorHelper.GetPropertyIndent(level, tag);
+            var indentTag = SourceFormatterHelper.GetTagIndent(level);
+            var indentProperty = SourceFormatterHelper.GetPropertyIndent(level, tag);
             StringBuilder result = new StringBuilder();
 
             string stretchParam = stretch ? "Uniform" : "None";
@@ -134,7 +134,7 @@ namespace ShapeConverter.BusinessLogic.Generators
 
                     Color color = solidFillColor.Color;
                     result.Append(indentProperty);
-                    result.Append(string.Format("Fill=\"{0}\"", SourceGeneratorHelper.FormatColorParamter(color)));
+                    result.Append(string.Format("Fill=\"{0}\"", SourceFormatterHelper.FormatColorParamter(color)));
                 }
                 else
                 {
@@ -150,7 +150,7 @@ namespace ShapeConverter.BusinessLogic.Generators
 
                     Color color = solidStrokeColor.Color;
                     result.Append(indentProperty);
-                    result.Append(string.Format("Stroke=\"{0}\" ", SourceGeneratorHelper.FormatColorParamter(color)));
+                    result.Append(string.Format("Stroke=\"{0}\" ", SourceFormatterHelper.FormatColorParamter(color)));
                 }
                 else
                 {
@@ -233,7 +233,7 @@ namespace ShapeConverter.BusinessLogic.Generators
 
                 if (geometryGeneratorType == GeometryGeneratorType.PathGeometry)
                 {
-                    var indent1 = SourceGeneratorHelper.GetTagIndent(level + 1);
+                    var indent1 = SourceFormatterHelper.GetTagIndent(level + 1);
                     result.Append(indent1);
                     result.AppendLine("<Path.Data>");
 
@@ -245,12 +245,12 @@ namespace ShapeConverter.BusinessLogic.Generators
 
                 if (fillColorInExtendedProperties)
                 {
-                    SourceGeneratorHelper.GenerateBrush(result, graphicPath.FillBrush, "Path.Fill", level + 1);
+                    BrushSourceGenerator.GenerateBrush(result, graphicPath.FillBrush, "Path.Fill", level + 1);
                 }
 
                 if (strokeColorInExtendedProperties)
                 {
-                    SourceGeneratorHelper.GenerateBrush(result, graphicPath.StrokeBrush, "Path.Stroke", level + 1);
+                    BrushSourceGenerator.GenerateBrush(result, graphicPath.StrokeBrush, "Path.Stroke", level + 1);
                 }
 
                 result.Append(indentTag);

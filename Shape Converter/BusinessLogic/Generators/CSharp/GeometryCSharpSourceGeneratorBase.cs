@@ -274,8 +274,8 @@ namespace ShapeConverter.BusinessLogic.Generators.GeometryCSharpSourceGenerator
         /// </summary>
         private void InitCode(GraphicVisual visual)
         {
-            indent1 = SourceGeneratorHelper.GetSourceIndent(1);
-            MethodBodyIndent = SourceGeneratorHelper.GetSourceIndent(2);
+            indent1 = SourceFormatterHelper.GetSourceIndent(1);
+            MethodBodyIndent = SourceFormatterHelper.GetSourceIndent(2);
             var indent2 = MethodBodyIndent;
 
             if (normalizeAspect != NormalizeGeometrySourceAspect.Individual)

@@ -85,9 +85,9 @@ namespace ShapeConverter.BusinessLogic.Generators
         {
             bool finalizeLastFigure = false;
 
-            var indent = SourceGeneratorHelper.GetTagIndent(level);
-            var indent1 = SourceGeneratorHelper.GetTagIndent(level + 1);
-            var indent2 = SourceGeneratorHelper.GetTagIndent(level + 2);
+            var indent = SourceFormatterHelper.GetTagIndent(level);
+            var indent1 = SourceFormatterHelper.GetTagIndent(level + 1);
+            var indent2 = SourceFormatterHelper.GetTagIndent(level + 2);
 
             var pathGeometryTag = "PathGeometry";
 
@@ -110,7 +110,7 @@ namespace ShapeConverter.BusinessLogic.Generators
             }
             else
             {
-                var indentPathGeometryProperty = SourceGeneratorHelper.GetPropertyIndent(level, pathGeometryTag);
+                var indentPathGeometryProperty = SourceFormatterHelper.GetPropertyIndent(level, pathGeometryTag);
                 result.AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}<{1} x:Key=\"{2}\"", indent, pathGeometryTag, xKey));
                 result.AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}FillRule=\"{1}\">", indentPathGeometryProperty, fillRule));
             }
@@ -129,15 +129,15 @@ namespace ShapeConverter.BusinessLogic.Generators
                             result.AppendLine("</PathFigure>");
                         }
 
-                        var indentPathFigureProperty = SourceGeneratorHelper.GetPropertyIndent(level + 1, pathFigureTag);
+                        var indentPathFigureProperty = SourceFormatterHelper.GetPropertyIndent(level + 1, pathFigureTag);
 
                         result.Append(string.Format(CultureInfo.InvariantCulture, "{0}<{1} IsClosed=", indent1, pathFigureTag));
-                        SourceGeneratorHelper.AppendXamlBool(result, graphicMove.IsClosed);
+                        SourceFormatterHelper.AppendXamlBool(result, graphicMove.IsClosed);
                         result.AppendLine();
 
                         result.Append(indentPathFigureProperty);
                         result.Append("StartPoint=");
-                        SourceGeneratorHelper.AppendXamlPoint(result, graphicMove.StartPoint.X, graphicMove.StartPoint.Y);
+                        SourceFormatterHelper.AppendXamlPoint(result, graphicMove.StartPoint.X, graphicMove.StartPoint.Y);
 
                         result.AppendLine(">");
 
@@ -149,7 +149,7 @@ namespace ShapeConverter.BusinessLogic.Generators
                     {
                         result.Append(indent2);
                         result.Append("<LineSegment Point=");
-                        SourceGeneratorHelper.AppendXamlPoint(result, graphicLineTo.To);
+                        SourceFormatterHelper.AppendXamlPoint(result, graphicLineTo.To);
                         result.AppendLine(" />");
                         break;
                     }
@@ -157,20 +157,20 @@ namespace ShapeConverter.BusinessLogic.Generators
                     case GraphicCubicBezierSegment graphicCubicBezier:
                     {
                         var tag = "BezierSegment";
-                        var indentProperty = SourceGeneratorHelper.GetPropertyIndent(level + 2, tag);
+                        var indentProperty = SourceFormatterHelper.GetPropertyIndent(level + 2, tag);
 
                         result.Append(string.Format(CultureInfo.InvariantCulture, "{0}<{1} Point1=", indent2, tag));
-                        SourceGeneratorHelper.AppendXamlPoint(result, graphicCubicBezier.ControlPoint1);
+                        SourceFormatterHelper.AppendXamlPoint(result, graphicCubicBezier.ControlPoint1);
                         result.AppendLine();
 
                         result.Append(indentProperty);
                         result.Append("Point2=");
-                        SourceGeneratorHelper.AppendXamlPoint(result, graphicCubicBezier.ControlPoint2);
+                        SourceFormatterHelper.AppendXamlPoint(result, graphicCubicBezier.ControlPoint2);
                         result.AppendLine();
 
                         result.Append(indentProperty);
                         result.Append("Point3=");
-                        SourceGeneratorHelper.AppendXamlPoint(result, graphicCubicBezier.EndPoint);
+                        SourceFormatterHelper.AppendXamlPoint(result, graphicCubicBezier.EndPoint);
 
                         result.AppendLine(" />");
                         break;
@@ -179,15 +179,15 @@ namespace ShapeConverter.BusinessLogic.Generators
                     case GraphicQuadraticBezierSegment graphicQuadraticBezier:
                     {
                         var tag = "QuadraticBezierSegment";
-                        var indentProperty = SourceGeneratorHelper.GetPropertyIndent(level + 2, tag);
+                        var indentProperty = SourceFormatterHelper.GetPropertyIndent(level + 2, tag);
 
                         result.Append(string.Format(CultureInfo.InvariantCulture, "{0}<{1} Point1=", indent2, tag));
-                        SourceGeneratorHelper.AppendXamlPoint(result, graphicQuadraticBezier.ControlPoint);
+                        SourceFormatterHelper.AppendXamlPoint(result, graphicQuadraticBezier.ControlPoint);
                         result.AppendLine();
 
                         result.Append(indentProperty);
                         result.Append("Point2=");
-                        SourceGeneratorHelper.AppendXamlPoint(result, graphicQuadraticBezier.EndPoint);
+                        SourceFormatterHelper.AppendXamlPoint(result, graphicQuadraticBezier.EndPoint);
 
                         result.AppendLine(" />");
                         break;
