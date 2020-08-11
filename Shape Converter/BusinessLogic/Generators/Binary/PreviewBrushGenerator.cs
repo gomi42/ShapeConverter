@@ -95,23 +95,9 @@ namespace ShapeConverter.BusinessLogic.Generators
                     break;
                 }
 
-                case GraphicLinearGradientBrush graphicLinearGradientBrush:
+                case GraphicGradientBrush graphicGradientBrush:
                 {
-                    foreach (var stop in graphicLinearGradientBrush.GradientStops)
-                    {
-                        if (!IsColorVisible(stop.Color))
-                        {
-                            isVisible = false;
-                            break;
-                        }
-                    }
-
-                    break;
-                }
-
-                case GraphicRadialGradientBrush graphicRadialGradientBrush:
-                {
-                    foreach (var stop in graphicRadialGradientBrush.GradientStops)
+                    foreach (var stop in graphicGradientBrush.GradientStops)
                     {
                         if (!IsColorVisible(stop.Color))
                         {
