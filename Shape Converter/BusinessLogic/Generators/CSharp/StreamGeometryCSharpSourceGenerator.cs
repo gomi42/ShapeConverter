@@ -85,7 +85,7 @@ namespace ShapeConverter.BusinessLogic.Generators.GeometryCSharpSourceGenerator
 
             code.AppendLine();
             code.AppendLine($"{MethodBodyIndent}ctx.Close();");
-            code.AppendLine("        geometry.Freeze();");
+            code.AppendLine($"{MethodBodyIndent}geometry.Freeze();");
             code.AppendLine();
             code.AppendLine($"{MethodBodyIndent}return geometry;");
         }
