@@ -2,7 +2,7 @@
 // Author:
 //   Michael Göricke
 //
-// Copyright (c) 2019
+// Copyright (c) 2020
 //
 // This file is part of ShapeConverter.
 //
@@ -38,13 +38,9 @@ namespace ShapeConverter.BusinessLogic.Generators
                 return null;
             }
 
-            PathGeometry pathGeometry = new PathGeometry();
-            pathGeometry.FillRule = ConvertFillRule(graphicPathGeometry.FillRule);
-
-            PathFigureCollection pathFigureCollection = new PathFigureCollection();
-            pathGeometry.Figures = pathFigureCollection;
-
-            PathSegmentCollection pathSegmentCollection = null;
+            StreamGeometry geometry = new StreamGeometry();
+            geometry.FillRule = ConvertFillRule(graphicPathGeometry.FillRule);
+            StreamGeometryContext ctx = geometry.Open();
 
             foreach (var segment in graphicPathGeometry.Segments)
             {
@@ -52,48 +48,34 @@ namespace ShapeConverter.BusinessLogic.Generators
                 {
                     case GraphicMoveSegment graphicMove:
                     {
-                        var pathFigure = new PathFigure();
-                        pathFigureCollection.Add(pathFigure);
-                        pathFigure.StartPoint = graphicMove.StartPoint;
-                        pathFigure.IsClosed = graphicMove.IsClosed;
-
-                        pathSegmentCollection = new PathSegmentCollection();
-                        pathFigure.Segments = pathSegmentCollection;
+                        ctx.BeginFigure(graphicMove.StartPoint, true, graphicMove.IsClosed);
                         break;
                     }
 
                     case GraphicLineSegment graphicLineTo:
                     {
-                        LineSegment lineSegment = new LineSegment();
-                        pathSegmentCollection.Add(lineSegment);
-                        lineSegment.Point = graphicLineTo.To;
+                        ctx.LineTo(graphicLineTo.To, true, true);
                         break;
                     }
 
                     case GraphicCubicBezierSegment graphicCubicBezier:
                     {
-                        BezierSegment bezierSegment = new BezierSegment();
-                        pathSegmentCollection.Add(bezierSegment);
-                        bezierSegment.Point1 = graphicCubicBezier.ControlPoint1;
-                        bezierSegment.Point2 = graphicCubicBezier.ControlPoint2;
-                        bezierSegment.Point3 = graphicCubicBezier.EndPoint;
+                        ctx.BezierTo(graphicCubicBezier.ControlPoint1, graphicCubicBezier.ControlPoint2, graphicCubicBezier.EndPoint, true, true);
                         break;
                     }
 
                     case GraphicQuadraticBezierSegment graphicQuadraticBezier:
                     {
-                        QuadraticBezierSegment quadraticBezierSegment = new QuadraticBezierSegment();
-                        pathSegmentCollection.Add(quadraticBezierSegment);
-                        quadraticBezierSegment.Point1 = graphicQuadraticBezier.ControlPoint;
-                        quadraticBezierSegment.Point2 = graphicQuadraticBezier.EndPoint;
+                        ctx.QuadraticBezierTo(graphicQuadraticBezier.ControlPoint, graphicQuadraticBezier.EndPoint, true, true);
                         break;
                     }
                 }
             }
 
-            pathGeometry.Freeze();
+            ctx.Close();
+            geometry.Freeze();
 
-            return pathGeometry;
+            return geometry;
         }
 
         /// <summary>
