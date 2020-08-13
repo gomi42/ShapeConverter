@@ -22,8 +22,9 @@
 <UserControl x:Class="ShapeConverter.FileConverter"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:controls="clr-namespace:ShapeConverter.Shell.Controls"
+             xmlns:commonviews="clr-namespace:ShapeConverter.Shell.CommonViews"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:ShapeConverter.Shell.FileConverter"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              d:DesignHeight="450"
              d:DesignWidth="750"
@@ -73,7 +74,8 @@
                                           Stretch="Uniform"
                                           Stroke="#FF909090"
                                           StrokeThickness="2"
-                                          Visibility="{Binding IsSelected, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                          Visibility="{Binding IsSelected,
+                                                               Converter={StaticResource BooleanToVisibilityConverter}}" />
                                 </Grid>
                             </Grid>
                         </Border>
@@ -88,32 +90,6 @@
             </Setter>
         </Style>
 
-        <Style x:Key="ColorPrecisionLabelStyle"
-               TargetType="{x:Type Label}">
-            <Setter Property="Padding" Value="0" />
-            <Setter Property="Height" Value="19" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type Label}">
-                        <Border Height="{TemplateBinding Height}"
-                                Padding="7,0"
-                                HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
-                                VerticalAlignment="{TemplateBinding VerticalAlignment}"
-                                Background="#FFF7F7F5"
-                                BorderBrush="#FFEADEBE"
-                                BorderThickness="1"
-                                CornerRadius="9">
-                            <TextBlock Margin="0,0,0,2"
-                                       VerticalAlignment="Top"
-                                       Foreground="{StaticResource ErrorTextBrush}"
-                                       Text="{TemplateBinding Content}"
-                                       TextWrapping="Wrap" />
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
     </UserControl.Resources>
     <Grid>
         <TextBlock Margin="173,11,0,0"
@@ -121,18 +97,17 @@
                    VerticalAlignment="Top"
                    Text="File"
                    TextWrapping="Wrap" />
-        <TextBox x:Name="FilenameTextBox"
-                 Height="23"
+        <TextBox Height="23"
                  Margin="172,27,41,0"
                  VerticalAlignment="Top"
-                 Text=""
-                 TextChanged="OnFilenameChanged" />
+                 Text="{Binding Filename,
+                                UpdateSourceTrigger=PropertyChanged}" />
         <Button Width="26"
                 Height="23"
                 Margin="0,27,10,0"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Top"
-                Click="OnFileSelect"
+                Command="{Binding SelectFile}"
                 Content="..." />
         <Grid Margin="0,79,0,0">
             <Grid.ColumnDefinitions>
@@ -141,15 +116,16 @@
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
             <!--
-                An ItemsControl would fine here. But we use a ListBox here because
+                An ItemsControl would be fine here. But we use a ListBox because
                 it supports virtualization out of the box. The loading time of big files
                 (1000 shapes or more per file) is reduced significantly by the virtualization.
                 Because of the virtualization we cannot select items from code, so we do that
                 with our own logic on view model level.
             -->
-            <ListBox x:Name="PathSelectionBox"
+            <ListBox x:Name="ShapeSelectionBox"
                      Margin="10,23,10,10"
                      ItemContainerStyle="{StaticResource ShapeListBoxItemStyle}"
+                     ItemsSource="{Binding PreviewIcons}"
                      VirtualizingPanel.IsContainerVirtualizable="True"
                      VirtualizingPanel.IsVirtualizing="True"
                      VirtualizingPanel.IsVirtualizingWhenGrouping="True"
@@ -173,309 +149,36 @@
             <TabControl Grid.Column="1"
                         Margin="0,0,10,10">
                 <TabItem Header="Preview">
-                    <Grid>
-                        <Rectangle x:Name="CheckerBoardBackground"
-                                   Margin="0,39,0,0"
-                                   Visibility="Collapsed">
-                            <Rectangle.Resources>
-                                <SolidColorBrush x:Key="Brush1"
-                                                 Color="#FFF9F9F9" />
-                                <SolidColorBrush x:Key="Brush2"
-                                                 Color="#FFE6E6E6" />
-                            </Rectangle.Resources>
-                            <Rectangle.Fill>
-                                <DrawingBrush Stretch="None"
-                                              TileMode="Tile"
-                                              Viewport="0,0,16,16"
-                                              ViewportUnits="Absolute">
-                                    <DrawingBrush.Drawing>
-                                        <DrawingGroup>
-                                            <DrawingGroup.Children>
-                                                <GeometryDrawing Brush="{StaticResource Brush1}"
-                                                                 Geometry="M0,0 L8,0 L8,8 L0,8 Z " />
-                                                <GeometryDrawing Brush="{StaticResource Brush2}"
-                                                                 Geometry="M8,0 L16,0 L16,8 L8,8 Z " />
-                                                <GeometryDrawing Brush="{StaticResource Brush2}"
-                                                                 Geometry="M0,8 L8,8 L8,16 L0,16 Z " />
-                                                <GeometryDrawing Brush="{StaticResource Brush1}"
-                                                                 Geometry="M8,8 L8,16 L16,16 L16,8 Z " />
-                                            </DrawingGroup.Children>
-                                        </DrawingGroup>
-                                    </DrawingBrush.Drawing>
-                                </DrawingBrush>
-                            </Rectangle.Fill>
-                        </Rectangle>
-
-                        <Label x:Name="ColorWarning1"
-                               Margin="0,9,40,0"
-                               HorizontalAlignment="Right"
-                               VerticalAlignment="Top"
-                               Style="{StaticResource ColorPrecisionLabelStyle}"
-                               Visibility="Collapsed" />
-
-                        <ToggleButton x:Name="CheckerBoardToggleButton"
-                                      Width="23"
-                                      Height="23"
-                                      Margin="7,7,6,0"
-                                      HorizontalAlignment="Right"
-                                      VerticalAlignment="Top"
-                                      Checked="OnCheckerBoardToggleButtonChanged"
-                                      Style="{StaticResource CheckerboardToggleButtonStyle}"
-                                      ToolTip="Show/Hide Checkerboard"
-                                      Unchecked="OnCheckerBoardToggleButtonChanged" />
-                        <Rectangle Height="1"
-                                   Margin="0,37,0,0"
-                                   VerticalAlignment="Top"
-                                   Fill="#FFACACAC" />
-                        <Rectangle x:Name="Preview"
-                                   Margin="10,48,10,10" />
-                    </Grid>
+                    <local:PreviewView DataContext="{Binding PreviewViewModel}" />
                 </TabItem>
                 <TabItem Header="Resource">
-                    <Grid>
-                        <CheckBox x:Name="NormalizeCheckBox"
-                                  Margin="10,11,0,0"
-                                  HorizontalAlignment="Left"
-                                  VerticalAlignment="Top"
-                                  Checked="OnNormalizeCheckBoxChanged"
-                                  Content="Normalize"
-                                  IsChecked="True"
-                                  ToolTip="Normalize to Range 0..100"
-                                  Unchecked="OnNormalizeCheckBoxChanged" />
-                        <TextBlock Margin="113,10,0,0"
-                                   HorizontalAlignment="Left"
-                                   VerticalAlignment="Top"
-                                   Text="Type:"
-                                   TextWrapping="Wrap" />
-                        <ComboBox x:Name="TypeComboBox"
-                                  Margin="140,7,0,0"
-                                  HorizontalAlignment="Left"
-                                  VerticalAlignment="Top"
-                                  SelectedIndex="0"
-                                  SelectionChanged="TypeSelectionChanged">
-                            <ComboBoxItem Content="Stream" />
-                            <ComboBoxItem Content="Geometry" />
-                            <ComboBoxItem Content="PathGeometry" />
-                        </ComboBox>
-                        <Button Margin="0,7,6,0"
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Top"
-                                Click="OnCopyStreamToClipBoard"
-                                Style="{StaticResource CopyButtonStyle}" />
-                        <Label x:Name="ColorWarning2"
-                               Margin="0,9,40,0"
-                               HorizontalAlignment="Right"
-                               VerticalAlignment="Top"
-                               Style="{StaticResource ColorPrecisionLabelStyle}"
-                               Visibility="Collapsed" />
-                        <Rectangle Height="1"
-                                   Margin="0,37,0,0"
-                                   VerticalAlignment="Top"
-                                   Fill="#FFACACAC" />
-                        <TextBox x:Name="StreamCode"
-                                 Margin="0,38,0,0"
-                                 FontFamily="Consolas"
-                                 HorizontalScrollBarVisibility="Auto"
-                                 IsReadOnly="True"
-                                 Style="{StaticResource BorderlessTextBoxStyle}"
-                                 TextWrapping="NoWrap"
-                                 VerticalScrollBarVisibility="Auto" />
-                    </Grid>
+                    <commonviews:ResourceView DataContext="{Binding ResourceViewModel}" />
                 </TabItem>
                 <TabItem Header="XAML">
-                    <Grid>
-                        <CheckBox x:Name="DrawingBrushNormalizeCheckBox"
-                                  Margin="10,11,0,0"
-                                  HorizontalAlignment="Left"
-                                  VerticalAlignment="Top"
-                                  Checked="OnDrawingBrushNormalizeCheckBoxChanged"
-                                  Content="Normalize"
-                                  IsChecked="True"
-                                  ToolTip="Normalize to Range 0..100"
-                                  Unchecked="OnDrawingBrushNormalizeCheckBoxChanged" />
-
-                        <TextBlock Margin="113,10,0,0"
-                                   HorizontalAlignment="Left"
-                                   VerticalAlignment="Top"
-                                   Text="Code:"
-                                   TextWrapping="Wrap" />
-                        <ComboBox x:Name="CodeComboBoxDrawingBrush"
-                                  Margin="144,7,0,0"
-                                  HorizontalAlignment="Left"
-                                  VerticalAlignment="Top"
-                                  SelectedIndex="0"
-                                  SelectionChanged="OnDrawingBrushCodeSelectionChanged">
-                            <ComboBoxItem Content="DrawingBrush" />
-                            <ComboBoxItem Content="Path" />
-                        </ComboBox>
-
-                        <TextBlock Margin="263,10,0,0"
-                                   HorizontalAlignment="Left"
-                                   VerticalAlignment="Top"
-                                   Text="Type:"
-                                   TextWrapping="Wrap" />
-                        <ComboBox x:Name="TypeComboBoxDrawingBrush"
-                                  Margin="290,7,0,0"
-                                  HorizontalAlignment="Left"
-                                  VerticalAlignment="Top"
-                                  SelectedIndex="0"
-                                  SelectionChanged="OnDrawingBrushTypeSelectionChanged">
-                            <ComboBoxItem Content="Stream" />
-                            <ComboBoxItem Content="PathGeometry" />
-                        </ComboBox>
-
-                        <Button Margin="0,7,6,0"
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Top"
-                                Click="OnCopyDrawingBrushToClipboard"
-                                Style="{StaticResource CopyButtonStyle}" />
-                        <Label x:Name="ColorWarning3"
-                               Margin="0,9,40,0"
-                               HorizontalAlignment="Right"
-                               VerticalAlignment="Top"
-                               Style="{StaticResource ColorPrecisionLabelStyle}"
-                               Visibility="Collapsed" />
-                        <Rectangle Height="1"
-                                   Margin="0,37,0,0"
-                                   VerticalAlignment="Top"
-                                   Fill="#FFACACAC" />
-                        <TextBox x:Name="DrawingBrushCode"
-                                 Margin="0,38,0,0"
-                                 FontFamily="Consolas"
-                                 HorizontalScrollBarVisibility="Auto"
-                                 IsReadOnly="True"
-                                 Style="{StaticResource BorderlessTextBoxStyle}"
-                                 VerticalScrollBarVisibility="Auto" />
-                    </Grid>
+                    <commonviews:XamlView DataContext="{Binding XamlViewModel}" />
                 </TabItem>
-                <TabItem x:Name="FileGeometryTabItem"
-                         Header="C#">
-                    <Grid>
-                        <CheckBox x:Name="AddLeftTopCheckBox"
-                                  Margin="350,12,0,0"
-                                  HorizontalAlignment="Left"
-                                  VerticalAlignment="Top"
-                                  Checked="OnUpdateGeometrySourceCode"
-                                  Content="Add left/top Offset"
-                                  Unchecked="OnUpdateGeometrySourceCode" />
-                        <TextBlock Margin="11,11,0,0"
-                                   HorizontalAlignment="Left"
-                                   VerticalAlignment="Top"
-                                   Text="Parameter:"
-                                   TextWrapping="Wrap" />
-                        <ComboBox x:Name="ParameterComboBox"
-                                  Margin="67,8,0,0"
-                                  HorizontalAlignment="Left"
-                                  VerticalAlignment="Top"
-                                  SelectedIndex="0"
-                                  SelectionChanged="ParameterSelectionChanged">
-                            <ComboBoxItem Content="Height" />
-                            <ComboBoxItem Content="Width" />
-                            <ComboBoxItem Content="Width and Height" />
-                        </ComboBox>
-
-                        <TextBlock Margin="204,11,0,0"
-                                   HorizontalAlignment="Left"
-                                   VerticalAlignment="Top"
-                                   Text="Type:"
-                                   TextWrapping="Wrap" />
-                        <ComboBox x:Name="CreationComboBox"
-                                  Margin="231,8,0,0"
-                                  HorizontalAlignment="Left"
-                                  VerticalAlignment="Top"
-                                  SelectedIndex="0"
-                                  SelectionChanged="ParameterSelectionChanged">
-                            <ComboBoxItem Content="Stream" />
-                            <ComboBoxItem Content="PathGeometry" />
-                        </ComboBox>
-
-                        <Button Margin="0,7,6,0"
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Top"
-                                Click="OnCopyGeometryToClipboard"
-                                Style="{StaticResource CopyButtonStyle}" />
-                        <Rectangle Height="1"
-                                   Margin="0,37,0,0"
-                                   VerticalAlignment="Top"
-                                   Fill="#FFACACAC" />
-                        <TextBox x:Name="GeometryCode"
-                                 Margin="0,38,0,0"
-                                 FontFamily="Consolas"
-                                 HorizontalScrollBarVisibility="Auto"
-                                 Style="{StaticResource BorderlessTextBoxStyle}"
-                                 VerticalScrollBarVisibility="Auto" />
-                    </Grid>
+                <TabItem Header="C#">
+                    <commonviews:CSharpView DataContext="{Binding CSharpViewModel}" />
                 </TabItem>
                 <TabItem Header="Export">
-                    <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                                  VerticalScrollBarVisibility="Auto">
-                        <Grid>
-                            <controls:Header Margin="32,22,32,0"
-                                             VerticalAlignment="Top"
-                                             Text="Export" />
-                            <TextBlock Margin="45,60,0,0"
-                                       HorizontalAlignment="Left"
-                                       VerticalAlignment="Top"
-                                       Text="Image Width"
-                                       TextWrapping="Wrap" />
-                            <TextBox x:Name="WidthTextBox"
-                                     Width="120"
-                                     Height="22"
-                                     Margin="45,77,0,0"
-                                     HorizontalAlignment="Left"
-                                     VerticalAlignment="Top"
-                                     Text="1000"
-                                     TextChanged="ExportWidthChanged"
-                                     TextWrapping="Wrap" />
-                            <Path x:Name="WidthEntryErrorIndicator"
-                                  Width="23.5"
-                                  Height="18"
-                                  Margin="167,79,0,0"
-                                  HorizontalAlignment="Left"
-                                  VerticalAlignment="Top"
-                                  Data="{StaticResource SadIcon}"
-                                  Fill="#FFD40B0B"
-                                  Stretch="Uniform"
-                                  Visibility="Collapsed" />
-                            <CheckBox x:Name="MarginCheckBox"
-                                      Margin="45,123,0,0"
-                                      HorizontalAlignment="Left"
-                                      VerticalAlignment="Top"
-                                      Content="Add Margin" />
-                            <Button x:Name="ExportButton"
-                                    Width="120"
-                                    Height="23"
-                                    Margin="45,168,0,0"
-                                    HorizontalAlignment="Left"
-                                    VerticalAlignment="Top"
-                                    Click="ExportClick"
-                                    Content="Export"
-                                    IsEnabled="False" />
-                            <Label x:Name="ExportMessage"
-                                   Margin="0,79,40,0"
-                                   HorizontalAlignment="Right"
-                                   VerticalAlignment="Top"
-                                   Style="{StaticResource ColorPrecisionLabelStyle}"
-                                   Visibility="Collapsed" />
-                        </Grid>
-                    </ScrollViewer>
+                    <commonviews:ExportView DataContext="{Binding ExportViewModel}" />
                 </TabItem>
             </TabControl>
-            <Path x:Name="ErrorIndicator"
-                  Grid.Column="1"
+            <Path Grid.Column="1"
                   Width="100"
                   HorizontalAlignment="Center"
                   VerticalAlignment="Center"
                   Data="{StaticResource SadIcon}"
                   Fill="{StaticResource SadTextBrush}"
                   Stretch="Uniform"
-                  Visibility="Collapsed" />
+                  Visibility="{Binding ShowError,
+                                       Converter={StaticResource BooleanToVisibilityConverter}}" />
         </Grid>
         <Button Width="140"
                 Margin="11,79,0,0"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"
-                Click="OnSelectAll"
+                Command="{Binding SelectAll}"
                 Content="Shapes"
                 Style="{StaticResource CheckButtonStyle}" />
     </Grid>

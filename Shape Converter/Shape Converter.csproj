@@ -434,7 +434,13 @@
     <Compile Include="BusinessLogic\Converter\ArcToGeometryConverter.cs" />
     <Compile Include="BusinessLogic\Converter\EllipseToGeometryConverter.cs" />
     <Compile Include="BusinessLogic\Converter\RectToGeometryConverter.cs" />
+    <Compile Include="Shell\CommonViews\ExportView.xaml.cs">
+      <DependentUpon>ExportView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Shell\CommonViews\ExportViewModel.cs" />
+    <Compile Include="Shell\CommonViews\Helper.cs" />
     <Compile Include="Shell\Controls\Header.cs" />
+    <Compile Include="Shell\FileConverter\FileConverterViewModel.cs" />
     <Compile Include="Shell\FileConverter\PreviewShapeViewModel.cs" />
     <Compile Include="BusinessLogic\Generators\Binary\DrawingBrushBinaryGenerator.cs" />
     <Compile Include="BusinessLogic\Generators\XAML\DrawingBrushSourceGenerator.cs" />
@@ -588,14 +594,44 @@
     <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\UnitType.cs" />
     <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\LazyDataReader.cs" />
     <Compile Include="BusinessLogic\Parser\Svg\SvgParserModule.cs" />
+    <Compile Include="Shell\FileConverter\PreviewView.xaml.cs">
+      <DependentUpon>PreviewView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Shell\FileConverter\PreviewViewModel.cs" />
     <Compile Include="Shell\MVVM\DelegateCommand.cs" />
     <Compile Include="Shell\MVVM\ViewModelBase.cs" />
+    <Compile Include="Shell\CommonViews\CSharpView.xaml.cs">
+      <DependentUpon>CSharpView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Shell\CommonViews\CSharpViewModel.cs" />
+    <Compile Include="Shell\CommonViews\GeometryTypeItem.cs" />
+    <Compile Include="Shell\StreamConverter\PreviewView.xaml.cs">
+      <DependentUpon>PreviewView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Shell\StreamConverter\PreviewViewModel.cs" />
+    <Compile Include="Shell\CommonViews\ResourceView.xaml.cs">
+      <DependentUpon>ResourceView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Shell\CommonViews\ResourceViewModel.cs" />
     <Compile Include="Shell\StreamConverter\StreamConverter.xaml.cs">
       <DependentUpon>StreamConverter.xaml</DependentUpon>
     </Compile>
     <Compile Include="BusinessLogic\Generators\XAML\StreamSourceGenerator.cs" />
     <Compile Include="Shell\Controls\UniformTabPanel.cs" />
+    <Compile Include="Shell\StreamConverter\StreamConverterViewModel.cs" />
+    <Compile Include="Shell\CommonViews\XamlView.xaml.cs">
+      <DependentUpon>XamlView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Shell\CommonViews\XamlViewModel.cs" />
+    <Page Include="Shell\CommonViews\ExportView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Shell\FileConverter\FileConverter.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Shell\FileConverter\PreviewView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -611,9 +647,25 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Shell\CommonViews\CSharpView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Shell\StreamConverter\PreviewView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Shell\CommonViews\ResourceView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Shell\StreamConverter\StreamConverter.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Shell\CommonViews\XamlView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Shell\Styles\Button.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -640,6 +692,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Shell\Styles\Icons.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Shell\Styles\Label.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

@@ -31,7 +31,6 @@
                 <ControlTemplate TargetType="{x:Type ToggleButton}">
                     <Grid x:Name="Icon">
                         <Ellipse Fill="#FF979797" />
-                        <!--  Fill="#FFB2B2B2"  -->
                         <Path x:Name="CheckedIndicator"
                               Margin="6"
                               Data="{StaticResource CheckerboardOnIcon}"

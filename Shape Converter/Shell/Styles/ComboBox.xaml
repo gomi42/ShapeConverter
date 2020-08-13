@@ -71,7 +71,8 @@
                                Grid.ColumnSpan="2"
                                Margin="1"
                                AllowsTransparency="true"
-                               IsOpen="{Binding Path=IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}"
+                               IsOpen="{Binding Path=IsDropDownOpen,
+                                                RelativeSource={RelativeSource TemplatedParent}}"
                                Placement="Bottom"
                                PopupAnimation="{DynamicResource {x:Static SystemParameters.ComboBoxPopupAnimationKey}}"
                                VerticalOffset="-9">
@@ -92,9 +93,12 @@
                                                     HorizontalAlignment="Left"
                                                     VerticalAlignment="Top">
                                                 <Rectangle Name="OpaqueRect"
-                                                           Width="{Binding ElementName=DropDownBorder, Path=ActualWidth}"
-                                                           Height="{Binding ElementName=DropDownBorder, Path=ActualHeight}"
-                                                           Fill="{Binding ElementName=DropDownBorder, Path=Background}" />
+                                                           Width="{Binding ElementName=DropDownBorder,
+                                                                           Path=ActualWidth}"
+                                                           Height="{Binding ElementName=DropDownBorder,
+                                                                            Path=ActualHeight}"
+                                                           Fill="{Binding ElementName=DropDownBorder,
+                                                                          Path=Background}" />
                                             </Canvas>
                                             <ItemsPresenter Name="ItemsPresenter"
                                                             KeyboardNavigation.DirectionalNavigation="Contained"
@@ -108,7 +112,9 @@
                                       Grid.ColumnSpan="2"
                                       Background="{TemplateBinding Background}"
                                       BorderBrush="{TemplateBinding BorderBrush}"
-                                      IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                      IsChecked="{Binding Path=IsDropDownOpen,
+                                                          Mode=TwoWay,
+                                                          RelativeSource={RelativeSource TemplatedParent}}"
                                       Style="{StaticResource ComboBoxReadonlyToggleButton}" />
                         <ContentPresenter x:Name="ContentPresenter"
                                           Margin="{TemplateBinding Padding}"

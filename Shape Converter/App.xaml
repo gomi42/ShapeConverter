@@ -42,6 +42,7 @@
                 <ResourceDictionary Source="Shell/Styles/CheckBox.xaml" />
                 <ResourceDictionary Source="Shell/Styles/Header.xaml" />
                 <ResourceDictionary Source="Shell/Styles/ComboBox.xaml" />
+                <ResourceDictionary Source="Shell/Styles/Label.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

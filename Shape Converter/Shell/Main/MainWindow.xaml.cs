@@ -24,6 +24,8 @@ using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows;
+using ShapeConverter.Shell.FileConverter;
+using ShapeConverter.Shell.StreamConverter;
 
 namespace ShapeConverter
 {
@@ -43,7 +45,9 @@ namespace ShapeConverter
             InitializeComponent();
 
             illustratorConverter = new FileConverter();
+            illustratorConverter.DataContext = new FileConverterViewModel();
             streamConverter = new StreamConversion.StreamConverter();
+            streamConverter.DataContext = new StreamConverterViewModel();
 
             ButtonFile.IsChecked = true;
 
