@@ -61,7 +61,8 @@
                    Margin="0,37,0,0"
                    VerticalAlignment="Top"
                    Fill="{StaticResource ParameterDeviderBrush}" />
-        <TextBox Grid.ColumnSpan="2"
+        <TextBox x:Name="SourceCode"
+                 Grid.ColumnSpan="2"
                  Margin="0,38,0,0"
                  FontFamily="Consolas"
                  HorizontalScrollBarVisibility="Auto"

@@ -31,12 +31,14 @@ namespace ShapeConverter.Shell.FileConverter
     public class FileConverterViewModel : ViewModelBase
     {
         private FileParser fileParser;
-        private List<PreviewShapeViewModel> previewIcons = new List<PreviewShapeViewModel>();
         private GraphicVisual graphicVisual;
         private GraphicVisual selectedVisual;
         private string filename;
-        private bool showError;
         private bool selectionChangedFromCode;
+
+        private List<PreviewShapeViewModel> previewIcons = new List<PreviewShapeViewModel>();
+        private bool showError;
+        private bool resetView;
 
         public FileConverterViewModel()
         {
@@ -64,6 +66,20 @@ namespace ShapeConverter.Shell.FileConverter
         public ExportViewModel ExportViewModel { get; set; }
 
         public DelegateCommand SelectFile { get; set; }
+
+        public bool ResetView
+        {
+            get
+            {
+                return resetView; 
+            }
+
+            set
+            {
+                resetView = value; 
+                NotifyPropertyChanged();
+            }
+        }
 
         public string Filename
         {
@@ -169,10 +185,10 @@ namespace ShapeConverter.Shell.FileConverter
 
                 if (previewIcons.Count > 0)
                 {
-                    //PathSelectionBox.ScrollIntoView(previewIcons[0]);
-                    //StreamCode.ScrollToHome();
-                    //DrawingBrushCode.ScrollToHome();
-                    //GeometryCode.ScrollToHome();
+                    ResetView = true;
+                    ResourceViewModel.Reset();
+                    XamlViewModel.Reset();
+                    CSharpViewModel.Reset();
                 }
 
                 SelectAllPreviewIcons(true);

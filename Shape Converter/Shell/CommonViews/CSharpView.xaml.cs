@@ -19,7 +19,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see<http://www.gnu.org/licenses/>.
 
+using System;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace ShapeConverter.Shell.CommonViews
 {
@@ -31,6 +34,49 @@ namespace ShapeConverter.Shell.CommonViews
         public CSharpView()
         {
             InitializeComponent();
+            DataContextChanged += OnDataContextChanged;
+        }
+
+        private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            Binding binding = new Binding();
+            binding.Source = DataContext;
+            binding.Path = new PropertyPath("ResetView");
+            binding.Mode = BindingMode.TwoWay;
+            BindingOperations.SetBinding(this, CSharpView.InitProperty, binding);
+        }
+
+        public bool Init
+        {
+            get
+            {
+                return (bool)GetValue(InitProperty);
+            }
+
+            set
+            {
+                SetValue(InitProperty, value);
+            }
+        }
+
+        public static readonly DependencyProperty InitProperty =
+            DependencyProperty.Register("Init", typeof(bool), typeof(CSharpView), new PropertyMetadata(false, InitChanged));
+
+        private static void InitChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((CSharpView)d).OnInitChanged();
+        }
+
+        private void OnInitChanged()
+        {
+            if (!Init)
+            {
+                return;
+            }
+
+            Dispatcher.BeginInvoke(new Action(() => Init = false));
+
+            SourceCode.ScrollToHome();
         }
     }
 }

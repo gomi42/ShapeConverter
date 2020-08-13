@@ -48,6 +48,7 @@ namespace ShapeConverter.Shell.CommonViews
         private CSharpParameterItem selectedParameterItem;
         private GeometryTypeItem selectedGeometryType;
         private bool includeOffset;
+        private bool resetView;
 
         /// <summary>
         /// Constructor
@@ -68,6 +69,20 @@ namespace ShapeConverter.Shell.CommonViews
             SelectedGeometryType = GeometryTypes[0];
 
             CopyToClipboard = new DelegateCommand(OnCopySourceCodeToClipboard);
+        }
+
+        public bool ResetView
+        {
+            get
+            {
+                return resetView;
+            }
+
+            set
+            {
+                resetView = value;
+                NotifyPropertyChanged();
+            }
         }
 
         public List<CSharpParameterItem> ParameterItems { get; set; }
@@ -134,6 +149,11 @@ namespace ShapeConverter.Shell.CommonViews
         }
 
         public DelegateCommand CopyToClipboard { get; set; }
+
+        public void Reset()
+        {
+            ResetView = true;
+        }
 
         public void SetFilename(string filename)
         {

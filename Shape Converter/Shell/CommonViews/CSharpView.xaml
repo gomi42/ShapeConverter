@@ -65,7 +65,8 @@
                    Margin="0,37,0,0"
                    VerticalAlignment="Top"
                    Fill="{StaticResource ParameterDeviderBrush}" />
-        <TextBox Margin="0,38,0,0"
+        <TextBox x:Name="SourceCode"
+                 Margin="0,38,0,0"
                  FontFamily="Consolas"
                  HorizontalScrollBarVisibility="Auto"
                  Style="{StaticResource BorderlessTextBoxStyle}"

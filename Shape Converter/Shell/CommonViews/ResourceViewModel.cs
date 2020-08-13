@@ -49,6 +49,7 @@ namespace ShapeConverter.Shell.CommonViews
         private List<ResourceGeometryTypeItem> geometryTypeItems;
         private ResourceGeometryTypeItem selectedGeometryTypeItem;
         private string colorPrecisionMessage;
+        private bool resetView;
 
         public ResourceViewModel()
         {
@@ -60,6 +61,20 @@ namespace ShapeConverter.Shell.CommonViews
             SelectedGeometryTypeItem = GeometryTypeItems[0];
 
             CopyToClipboard = new DelegateCommand(OnCopySourceCodeToClipboard);
+        }
+
+        public bool ResetView
+        {
+            get
+            {
+                return resetView; 
+            }
+
+            set
+            {
+                resetView = value;
+                NotifyPropertyChanged();
+            }
         }
 
         public string SourceCode
@@ -135,6 +150,11 @@ namespace ShapeConverter.Shell.CommonViews
         }
 
         public DelegateCommand CopyToClipboard { get; set; }
+
+        public void Reset()
+        {
+            ResetView = true;
+        }
 
         public void SetNewGraphicVisual(GraphicVisual visual, GraphicColorPrecision? colorPrecision = null)
         {
