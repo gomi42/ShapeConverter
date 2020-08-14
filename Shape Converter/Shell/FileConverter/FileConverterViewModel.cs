@@ -21,6 +21,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Input;
 using ShapeConverter.BusinessLogic.Generators;
 using ShapeConverter.Parser;
 using ShapeConverter.Shell.CommonViews;
@@ -36,10 +37,12 @@ namespace ShapeConverter.Shell.FileConverter
         private string filename;
         private bool selectionChangedFromCode;
 
-        private List<PreviewShapeViewModel> previewIcons = new List<PreviewShapeViewModel>();
+        private List<PreviewShapeViewModel> previewShapes = new List<PreviewShapeViewModel>();
         private bool showError;
-        private bool resetView;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public FileConverterViewModel()
         {
             PreviewViewModel = new PreviewViewModel();
@@ -55,32 +58,44 @@ namespace ShapeConverter.Shell.FileConverter
             fileParser.Init();
         }
 
+        /// <summary>
+        /// The preview view model
+        /// </summary>
         public PreviewViewModel PreviewViewModel { get; set; }
 
+        /// <summary>
+        /// The resource view model
+        /// </summary>
         public ResourceViewModel ResourceViewModel { get; set; }
 
+        /// <summary>
+        /// The XAML view model
+        /// </summary>
         public XamlViewModel XamlViewModel { get; set; }
 
+        /// <summary>
+        /// The export view model
+        /// </summary>
         public CSharpViewModel CSharpViewModel { get; set; }
 
+        /// <summary>
+        /// The export view model
+        /// </summary>
         public ExportViewModel ExportViewModel { get; set; }
 
+        /// <summary>
+        /// The select file command
+        /// </summary>
         public DelegateCommand SelectFile { get; set; }
 
-        public bool ResetView
-        {
-            get
-            {
-                return resetView; 
-            }
+        /// <summary>
+        /// Trigger to reset the view 
+        /// </summary>
+        public ITrigger TriggerResetView { get; set; }
 
-            set
-            {
-                resetView = value; 
-                NotifyPropertyChanged();
-            }
-        }
-
+        /// <summary>
+        /// The loaded filename
+        /// </summary>
         public string Filename
         {
             get
@@ -96,20 +111,26 @@ namespace ShapeConverter.Shell.FileConverter
             }
         }
 
-        public List<PreviewShapeViewModel> PreviewIcons
+        /// <summary>
+        /// List of preview shapes
+        /// </summary>
+        public List<PreviewShapeViewModel> PreviewShapes
         {
             get
             {
-                return previewIcons;
+                return previewShapes;
             }
 
             set
             {
-                previewIcons = value;
+                previewShapes = value;
                 NotifyPropertyChanged();
             }
         }
 
+        /// <summary>
+        /// Show general error
+        /// </summary>
         public bool ShowError
         {
             get
@@ -124,6 +145,9 @@ namespace ShapeConverter.Shell.FileConverter
             }
         }
 
+        /// <summary>
+        /// Select all command
+        /// </summary>
         public DelegateCommand SelectAll { get; set; }
 
         /// <summary>
@@ -180,12 +204,12 @@ namespace ShapeConverter.Shell.FileConverter
                 var previewIcons = new List<PreviewShapeViewModel>();
                 int index = 0;
 
-                PrepSelectionList(graphicVisual, previewIcons, ref index);
-                PreviewIcons = previewIcons;
+                CreateShapeSelectionList(graphicVisual, previewIcons, ref index);
+                PreviewShapes = previewIcons;
 
                 if (previewIcons.Count > 0)
                 {
-                    ResetView = true;
+                    TriggerResetView.Fire();
                     ResourceViewModel.Reset();
                     XamlViewModel.Reset();
                     CSharpViewModel.Reset();
@@ -195,7 +219,7 @@ namespace ShapeConverter.Shell.FileConverter
             }
             else
             {
-                PreviewIcons = null;
+                PreviewShapes = null;
                 PreviewViewModel.SetNewGraphicVisual(null);
                 ResourceViewModel.SetNewGraphicVisual(null);
                 XamlViewModel.SetNewGraphicVisual(null);
@@ -207,7 +231,7 @@ namespace ShapeConverter.Shell.FileConverter
         /// <summary>
         /// Get all graphic elements recursively
         /// </summary>
-        void PrepSelectionList(GraphicVisual visual, List<PreviewShapeViewModel> pathVms, ref int index)
+        void CreateShapeSelectionList(GraphicVisual visual, List<PreviewShapeViewModel> shapeVms, ref int index)
         {
             switch (visual)
             {
@@ -215,7 +239,7 @@ namespace ShapeConverter.Shell.FileConverter
                 {
                     foreach (var childVisual in group.Childreen)
                     {
-                        PrepSelectionList(childVisual, pathVms, ref index);
+                        CreateShapeSelectionList(childVisual, shapeVms, ref index);
                     }
 
                     break;
@@ -225,7 +249,7 @@ namespace ShapeConverter.Shell.FileConverter
                 {
                     var pathViewModel = new PreviewShapeViewModel(OnPreviewSelectionChanged);
                     pathViewModel.OriginalShape = graphicPath;
-                    pathVms.Add(pathViewModel);
+                    shapeVms.Add(pathViewModel);
 
                     break;
                 }
@@ -240,7 +264,7 @@ namespace ShapeConverter.Shell.FileConverter
         {
             var paths = new List<GraphicPath>();
 
-            foreach (var previewIcon in previewIcons)
+            foreach (var previewIcon in previewShapes)
             {
                 if (previewIcon.IsSelected)
                 {
@@ -378,7 +402,7 @@ namespace ShapeConverter.Shell.FileConverter
         /// </summary>
         private void OnSelectAll()
         {
-            var selectAll = previewIcons.Any(x => x.IsSelected == false);
+            var selectAll = previewShapes.Any(x => x.IsSelected == false);
             SelectAllPreviewIcons(selectAll);
         }
 
@@ -389,7 +413,7 @@ namespace ShapeConverter.Shell.FileConverter
         {
             selectionChangedFromCode = true;
 
-            foreach (var previewIcon in previewIcons)
+            foreach (var previewIcon in previewShapes)
             {
                 previewIcon.IsSelected = selectAll;
             }

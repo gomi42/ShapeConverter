@@ -24,6 +24,9 @@ using ShapeConverter.Shell.MVVM;
 
 namespace ShapeConverter.Shell.CommonViews
 {
+    /// <summary>
+    /// The ExportViewModel
+    /// </summary>
     public class ExportViewModel : ViewModelBase
     {
         private GraphicVisual selectedVisual;
@@ -32,12 +35,18 @@ namespace ShapeConverter.Shell.CommonViews
         private bool showValidationError;
         private string errorMessage;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public ExportViewModel()
         {
             Export = new DelegateCommand(OnExport, OnExportCanExecute);
             ExportWidth = "1000";
         }
 
+        /// <summary>
+        /// Export width
+        /// </summary>
         public string ExportWidth
         {
             get 
@@ -53,6 +62,9 @@ namespace ShapeConverter.Shell.CommonViews
             }
         }
 
+        /// <summary>
+        /// Add a margin
+        /// </summary>
         public bool AddMargin
         {
             get
@@ -67,8 +79,14 @@ namespace ShapeConverter.Shell.CommonViews
             }
         }
 
+        /// <summary>
+        /// The export command
+        /// </summary>
         public DelegateCommand Export { get; set; }
 
+        /// <summary>
+        /// Show validation error
+        /// </summary>
         public bool ShowValidationError
         {
             get
@@ -83,6 +101,9 @@ namespace ShapeConverter.Shell.CommonViews
             }
         }
 
+        /// <summary>
+        /// The error message
+        /// </summary>
         public string ErrorMessage
         {
             get
@@ -97,6 +118,9 @@ namespace ShapeConverter.Shell.CommonViews
             }
         }
 
+        /// <summary>
+        /// Set a new visual
+        /// </summary>
         public void SetNewGraphicVisual(GraphicVisual visual)
         {
             selectedVisual = visual;
@@ -138,6 +162,9 @@ namespace ShapeConverter.Shell.CommonViews
             }
         }
 
+        /// <summary>
+        /// Is export possible?
+        /// </summary>
         private bool OnExportCanExecute()
         {
             return !ShowValidationError && selectedVisual != null;

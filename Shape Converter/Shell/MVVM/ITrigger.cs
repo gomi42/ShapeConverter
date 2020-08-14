@@ -2,7 +2,7 @@
 // Author:
 //   Michael Göricke
 //
-// Copyright (c) 2020
+// Copyright (c) 2019
 //
 // This file is part of ShapeConverter.
 //
@@ -19,23 +19,18 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see<http://www.gnu.org/licenses/>.
 
-using ShapeConverter.BusinessLogic.Generators;
-
-namespace ShapeConverter.Shell.CommonViews
+namespace ShapeConverter.Shell.MVVM
 {
     /// <summary>
-    /// One geometry type item
+    /// ITrigger
+    /// It is amost identical to ICommand. This is used to trigger
+    /// the view from the viewmodel without any data
     /// </summary>
-    public class GeometryTypeItem
+    public interface ITrigger
     {
         /// <summary>
-        /// The text to display
+        /// Execute the trigger
         /// </summary>
-        public string Label { get; set; }
-
-        /// <summary>
-        /// The geometry type
-        /// </summary>
-        public GeometryGeneratorType GeometryGeneratorType { get; set; }
+        void Fire();
     }
 }

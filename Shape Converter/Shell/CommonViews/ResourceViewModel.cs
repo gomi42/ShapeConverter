@@ -21,11 +21,15 @@
 
 using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Input;
 using ShapeConverter.BusinessLogic.Generators;
 using ShapeConverter.Shell.MVVM;
 
 namespace ShapeConverter.Shell.CommonViews
 {
+    /// <summary>
+    /// Resource type
+    /// </summary>
     public enum ResourceGeometryGeneratorType
     {
         Stream,
@@ -33,13 +37,25 @@ namespace ShapeConverter.Shell.CommonViews
         PathGeometry
     }
 
+    /// <summary>
+    /// One entry of the resource type combobox
+    /// </summary>
     public class ResourceGeometryTypeItem
     {
+        /// <summary>
+        /// The text to display
+        /// </summary>
         public string Label { get; set; }
 
+        /// <summary>
+        /// The type
+        /// </summary>
         public ResourceGeometryGeneratorType GeometryGeneratorType { get; set; }
     }
 
+    /// <summary>
+    /// The ResourceViewModel
+    /// </summary>
     public class ResourceViewModel : ViewModelBase
     {
         private GraphicVisual selectedVisual;
@@ -49,7 +65,6 @@ namespace ShapeConverter.Shell.CommonViews
         private List<ResourceGeometryTypeItem> geometryTypeItems;
         private ResourceGeometryTypeItem selectedGeometryTypeItem;
         private string colorPrecisionMessage;
-        private bool resetView;
 
         public ResourceViewModel()
         {
@@ -63,20 +78,14 @@ namespace ShapeConverter.Shell.CommonViews
             CopyToClipboard = new DelegateCommand(OnCopySourceCodeToClipboard);
         }
 
-        public bool ResetView
-        {
-            get
-            {
-                return resetView; 
-            }
+        /// <summary>
+        /// Trigger to reset the view 
+        /// </summary>
+        public ITrigger TriggerResetView { get; set; }
 
-            set
-            {
-                resetView = value;
-                NotifyPropertyChanged();
-            }
-        }
-
+        /// <summary>
+        /// The source code
+        /// </summary>
         public string SourceCode
         {
             get
@@ -91,6 +100,9 @@ namespace ShapeConverter.Shell.CommonViews
             }
         }
 
+        /// <summary>
+        /// Normalize the visual
+        /// </summary>
         public bool Normalize
         {
             get
@@ -106,6 +118,9 @@ namespace ShapeConverter.Shell.CommonViews
             }
         }
 
+        /// <summary>
+        /// List of geometry types to create code for
+        /// </summary>
         public List<ResourceGeometryTypeItem> GeometryTypeItems
         {
             get
@@ -120,6 +135,9 @@ namespace ShapeConverter.Shell.CommonViews
             }
         }
 
+        /// <summary>
+        /// The selected geometry type
+        /// </summary>
         public ResourceGeometryTypeItem SelectedGeometryTypeItem
         {
             get
@@ -135,6 +153,9 @@ namespace ShapeConverter.Shell.CommonViews
             }
         }
 
+        /// <summary>
+        /// The color precision message
+        /// </summary>
         public string ColorPrecisionMessage
         {
             get
@@ -149,13 +170,22 @@ namespace ShapeConverter.Shell.CommonViews
             }
         }
 
+        /// <summary>
+        /// Copy to clipboard command
+        /// </summary>
         public DelegateCommand CopyToClipboard { get; set; }
 
+        /// <summary>
+        /// Reset the view
+        /// </summary>
         public void Reset()
         {
-            ResetView = true;
+            TriggerResetView.Fire();
         }
 
+        /// <summary>
+        /// Set a new visual
+        /// </summary>
         public void SetNewGraphicVisual(GraphicVisual visual, GraphicColorPrecision? colorPrecision = null)
         {
             selectedVisual = visual;

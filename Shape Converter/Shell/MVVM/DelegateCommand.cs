@@ -24,29 +24,30 @@ using System.Windows.Input;
 
 namespace ShapeConverter.Shell.MVVM
 {
+    /// <summary>
+    /// DelegateCommand
+    /// </summary>
     public class DelegateCommand : ICommand
     {
-        //////////////////////////////////////////////
-
         private readonly Action execute;
-
-        //////////////////////////////////////////////
-
         private readonly Func<bool> canExecute;
 
-        //////////////////////////////////////////////
-
+        /// <summary>
+        /// The CanExecuteChanged event
+        /// </summary>
         public event EventHandler CanExecuteChanged;
 
-        //////////////////////////////////////////////
-
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public DelegateCommand(Action execute)
             : this(execute, null)
         {
         }
 
-        //////////////////////////////////////////////
-
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public DelegateCommand(Action execute, Func<bool> canExecute)
         {
             if (execute == null)
@@ -58,25 +59,25 @@ namespace ShapeConverter.Shell.MVVM
             this.canExecute = canExecute;
         }
 
-        //////////////////////////////////////////////
-
+        /// <summary>
+        /// Raise the CanExecuteChanged event
+        /// </summary>
         public void RaiseCanExecuteChanged()
         {
-            if (CanExecuteChanged != null)
-            {
-                CanExecuteChanged(this, null);
-            }
+            CanExecuteChanged?.Invoke(this, null);
         }
 
-        //////////////////////////////////////////////
-
+        /// <summary>
+        /// Answer the CanExecute question
+        /// </summary>
         public bool CanExecute(object parameter)
         {
             return canExecute == null ? true : canExecute();
         }
 
-        //////////////////////////////////////////////
-
+        /// <summary>
+        /// Call the execute handler
+        /// </summary>
         public void Execute(object parameter)
         {
             execute();

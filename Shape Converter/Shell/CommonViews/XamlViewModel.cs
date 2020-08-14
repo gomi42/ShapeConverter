@@ -21,24 +21,40 @@
 
 using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Input;
 using ShapeConverter.BusinessLogic.Generators;
 using ShapeConverter.Shell.MVVM;
 
 namespace ShapeConverter.Shell.CommonViews
 {
+    /// <summary>
+    /// Code type
+    /// </summary>
     public enum XamlCodeGeneratorType
     {
         DrawingBrush,
         Path
     }
 
+    /// <summary>
+    /// One entry of the code type combobox
+    /// </summary>
     public class XamlCodeTypeItem
     {
+        /// <summary>
+        /// The text to display
+        /// </summary>
         public string Label { get; set; }
 
+        /// <summary>
+        /// The type
+        /// </summary>
         public XamlCodeGeneratorType CodeGeneratorType { get; set; }
     }
 
+    /// <summary>
+    /// The XamlViewModel
+    /// </summary>
     public class XamlViewModel : ViewModelBase
     {
         private GraphicVisual selectedVisual;
@@ -48,8 +64,10 @@ namespace ShapeConverter.Shell.CommonViews
         private GeometryTypeItem selectedGeometryCreationType;
         private XamlCodeTypeItem selectedCodeTypeItem;
         private string colorPrecisionMessage;
-        private bool resetView;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public XamlViewModel()
         {
             var xamlCodeTypeItems = new List<XamlCodeTypeItem>();
@@ -67,20 +85,14 @@ namespace ShapeConverter.Shell.CommonViews
             CopyToClipboard = new DelegateCommand(OnCopySourceCodeToClipboard);
         }
 
-        public bool ResetView
-        {
-            get
-            {
-                return resetView;
-            }
+        /// <summary>
+        /// Trigger to reset the view 
+        /// </summary>
+        public ITrigger TriggerResetView { get; set; }
 
-            set
-            {
-                resetView = value;
-                NotifyPropertyChanged();
-            }
-        }
-
+        /// <summary>
+        /// Normalize the visual
+        /// </summary>
         public bool Normalize
         {
             get
@@ -96,8 +108,14 @@ namespace ShapeConverter.Shell.CommonViews
             }
         }
 
+        /// <summary>
+        /// List of code types to create code for
+        /// </summary>
         public List<XamlCodeTypeItem> CodeTypeItems { get; set; }
 
+        /// <summary>
+        /// Selected code type
+        /// </summary>
         public XamlCodeTypeItem SelectedCodeTypeItem
         {
             get
@@ -113,9 +131,14 @@ namespace ShapeConverter.Shell.CommonViews
             }
         }
 
-
+        /// <summary>
+        /// List of geometry types to create code for
+        /// </summary>
         public List<GeometryTypeItem> GeometryTypes { get; set; }
 
+        /// <summary>
+        /// The selected geometry type
+        /// </summary>
         public GeometryTypeItem SelectedGeometryType
         {
             get
@@ -131,6 +154,9 @@ namespace ShapeConverter.Shell.CommonViews
             }
         }
 
+        /// <summary>
+        /// The source code
+        /// </summary>
         public string SourceCode
         {
             get
@@ -145,6 +171,9 @@ namespace ShapeConverter.Shell.CommonViews
             }
         }
 
+        /// <summary>
+        /// The color precision message
+        /// </summary>
         public string ColorPrecisionMessage
         {
             get
@@ -159,13 +188,22 @@ namespace ShapeConverter.Shell.CommonViews
             }
         }
 
+        /// <summary>
+        /// Copy to clipboard command
+        /// </summary>
         public DelegateCommand CopyToClipboard { get; set; }
 
+        /// <summary>
+        /// Reset the view
+        /// </summary>
         public void Reset()
         {
-            ResetView = true;
+            TriggerResetView.Fire();
         }
 
+        /// <summary>
+        /// Set a new visual
+        /// </summary>
         public void SetNewGraphicVisual(GraphicVisual visual, GraphicColorPrecision? colorPrecision = null)
         {
             selectedVisual = visual;

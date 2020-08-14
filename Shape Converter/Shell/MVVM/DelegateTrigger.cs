@@ -2,7 +2,7 @@
 // Author:
 //   Michael Göricke
 //
-// Copyright (c) 2020
+// Copyright (c) 2019
 //
 // This file is part of ShapeConverter.
 //
@@ -19,39 +19,38 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see<http://www.gnu.org/licenses/>.
 
-namespace ShapeConverter.Shell.CommonViews
+using System;
+
+namespace ShapeConverter.Shell.MVVM
 {
     /// <summary>
-    /// Helper class
+    /// DelegateTrigger
+    /// It is amost identical to DelegateCommand. This is used to trigger
+    /// the view from the viewmodel without any data
     /// </summary>
-    public static class Helper
+    public class DelegateTrigger : ITrigger
     {
+        private readonly Action trigger;
+
         /// <summary>
-        /// Convert GraphicColorPrecision enum to text
+        /// Constructor
         /// </summary>
-        public static string GetColorPrecisionText(GraphicColorPrecision? colorPrecision)
+        public DelegateTrigger(Action trigger)
         {
-            string text = string.Empty;
-
-            if (colorPrecision != null)
+            if (trigger == null)
             {
-                switch (colorPrecision)
-                {
-                    case GraphicColorPrecision.Precise:
-                        text = string.Empty;
-                        break;
-
-                    case GraphicColorPrecision.Estimated:
-                        text = "Colors are estimated";
-                        break;
-
-                    case GraphicColorPrecision.Placeholder:
-                        text = "Colors are placeholders";
-                        break;
-                }
+                throw new ArgumentNullException("execute");
             }
 
-            return text;
+            this.trigger = trigger;
+        }
+
+        /// <summary>
+        /// Call the execute handler
+        /// </summary>
+        public void Fire()
+        {
+            trigger();
         }
     }
 }

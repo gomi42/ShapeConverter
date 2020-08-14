@@ -21,6 +21,7 @@
 
 using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Input;
 using ShapeConverter.BusinessLogic.Generators;
 using ShapeConverter.BusinessLogic.Generators.GeometryCSharpSourceGenerator;
 using ShapeConverter.Shell.MVVM;
@@ -32,8 +33,14 @@ namespace ShapeConverter.Shell.CommonViews
     /// </summary>
     public class CSharpParameterItem
     {
+        /// <summary>
+        /// The text to display
+        /// </summary>
         public string Label { get; set; }
 
+        /// <summary>
+        /// The aspect
+        /// </summary>
         public NormalizeGeometrySourceAspect NormalizeAspect { get; set; }
     }
 
@@ -48,7 +55,6 @@ namespace ShapeConverter.Shell.CommonViews
         private CSharpParameterItem selectedParameterItem;
         private GeometryTypeItem selectedGeometryType;
         private bool includeOffset;
-        private bool resetView;
 
         /// <summary>
         /// Constructor
@@ -71,22 +77,19 @@ namespace ShapeConverter.Shell.CommonViews
             CopyToClipboard = new DelegateCommand(OnCopySourceCodeToClipboard);
         }
 
-        public bool ResetView
-        {
-            get
-            {
-                return resetView;
-            }
+        /// <summary>
+        /// Trigger to reset the view 
+        /// </summary>
+        public ITrigger TriggerResetView { get; set; }
 
-            set
-            {
-                resetView = value;
-                NotifyPropertyChanged();
-            }
-        }
-
+        /// <summary>
+        /// List of parameter items to create code for
+        /// </summary>
         public List<CSharpParameterItem> ParameterItems { get; set; }
 
+        /// <summary>
+        /// The selected parameter item
+        /// </summary>
         public CSharpParameterItem SelectedParameterItem
         {
             get
@@ -102,8 +105,14 @@ namespace ShapeConverter.Shell.CommonViews
             }
         }
 
+        /// <summary>
+        /// List of geometry types to create code for
+        /// </summary>
         public List<GeometryTypeItem> GeometryTypes { get; set; }
 
+        /// <summary>
+        /// The selected geometry type
+        /// </summary>
         public GeometryTypeItem SelectedGeometryType
         {
             get
@@ -119,6 +128,9 @@ namespace ShapeConverter.Shell.CommonViews
             }
         }
 
+        /// <summary>
+        /// Include offset
+        /// </summary>
         public bool IncludeOffset
         {
             get
@@ -134,6 +146,9 @@ namespace ShapeConverter.Shell.CommonViews
             }
         }
 
+        /// <summary>
+        /// The source code
+        /// </summary>
         public string SourceCode
         {
             get
@@ -148,18 +163,30 @@ namespace ShapeConverter.Shell.CommonViews
             }
         }
 
+        /// <summary>
+        /// Copy to clipboard command
+        /// </summary>
         public DelegateCommand CopyToClipboard { get; set; }
 
+        /// <summary>
+        /// Reset the view
+        /// </summary>
         public void Reset()
         {
-            ResetView = true;
+            TriggerResetView.Fire();
         }
 
+        /// <summary>
+        /// Set the filename
+        /// </summary>
         public void SetFilename(string filename)
         {
             this.filename = filename;
         }
 
+        /// <summary>
+        /// Set a new visual
+        /// </summary>
         public void SetNewGraphicVisual(GraphicVisual visual)
         {
             selectedVisual = visual;

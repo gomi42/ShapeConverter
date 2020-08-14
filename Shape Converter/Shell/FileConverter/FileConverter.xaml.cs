@@ -19,19 +19,16 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see<http://www.gnu.org/licenses/>.
 
-using System;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
+using System.Windows.Input;
+using ShapeConverter.Shell.MVVM;
 
 namespace ShapeConverter
 {
     /// <summary>
     /// Interaction logic for IllustratorConverter.xaml
-    /// At the moment we don't follow the MVVM paradigm that is more or less standard for
-    /// WPF applications. The main focus of the ShapeConverter are the algorithms. And it
-    /// turned out we don't need much UI logic to present the results. 
     /// </summary>
     public partial class FileConverter : UserControl
     {
@@ -45,34 +42,20 @@ namespace ShapeConverter
             DataContextChanged += OnDataContextChanged;
         }
 
+        /// <summary>
+        /// Handle DataContext changed
+        /// </summary>
         private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            Binding binding = new Binding();
-            binding.Source = DataContext;
-            binding.Path = new PropertyPath("ResetView");
-            binding.Mode = BindingMode.TwoWay;
-            BindingOperations.SetBinding(this, FileConverter.InitProperty, binding);
-        }
+            var triggerResetViewProp = DataContext.GetType().GetProperty("TriggerResetView", BindingFlags.Public | BindingFlags.Instance);
 
-        public bool Init
-        {
-            get
+            if (triggerResetViewProp == null || triggerResetViewProp.PropertyType != typeof(ITrigger))
             {
-                return (bool)GetValue(InitProperty); 
+                return;
             }
 
-            set
-            {
-                SetValue(InitProperty, value); 
-            }
-        }
-
-        public static readonly DependencyProperty InitProperty =
-            DependencyProperty.Register("Init", typeof(bool), typeof(FileConverter), new PropertyMetadata(false, InitChanged));
-
-        private static void InitChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            ((FileConverter)d).OnInitChanged();
+            var command = new DelegateTrigger(OnReset);
+            triggerResetViewProp.SetValue(DataContext, command, null);
         }
 
         /// <summary>
@@ -114,15 +97,12 @@ namespace ShapeConverter
             }
         }
 
-        private void OnInitChanged()
+        /// <summary>
+        /// Handle view reset request
+        /// We move up the preview shape list to the first entry
+        /// </summary>
+        private void OnReset()
         {
-            if (!Init)
-            {
-                return;
-            }
-
-            Dispatcher.BeginInvoke(new Action(() => Init = false));
-
             var enumerator = ShapeSelectionBox.ItemsSource.GetEnumerator();
             enumerator.Reset();
 

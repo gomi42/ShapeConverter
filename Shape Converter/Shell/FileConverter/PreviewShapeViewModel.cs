@@ -2,7 +2,7 @@
 // Author:
 //   Michael Göricke
 //
-// Copyright (c) 2019
+// Copyright (c) 2020
 //
 // This file is part of ShapeConverter.
 //
@@ -35,15 +35,15 @@ namespace ShapeConverter.Shell.FileConverter
     {
         private Brush brush;
         private bool isSelected;
-        Action previewSelectionChanged;
+        Action selectionChanged;
 
         /// <summary>
         /// Constructor
         /// </summary>
-        public PreviewShapeViewModel(Action previewSelectionChanged)
+        public PreviewShapeViewModel(Action selectionChanged)
         {
-            this.previewSelectionChanged = previewSelectionChanged;
-            PreviewSelectionChange = new DelegateCommand(OnPreviewSelectionChange);
+            this.selectionChanged = selectionChanged;
+            ChangeSelection = new DelegateCommand(OnSelectionChange);
         }
 
         /// <summary>
@@ -61,14 +61,14 @@ namespace ShapeConverter.Shell.FileConverter
                 isSelected = value;
                 NotifyPropertyChanged();
 
-                previewSelectionChanged();
+                selectionChanged();
             }
         }
 
         /// <summary>
         /// The preview selection changed
         /// </summary>
-        public ICommand PreviewSelectionChange { get; }
+        public ICommand ChangeSelection { get; }
 
         /// <summary>
         /// Reference to the original path data
@@ -76,7 +76,7 @@ namespace ShapeConverter.Shell.FileConverter
         public GraphicPath OriginalShape { get; set; }
 
         /// <summary>
-        /// The brush to show the graph with
+        /// The brush to show the shape with
         /// </summary>
         public Brush Brush
         {
@@ -94,7 +94,7 @@ namespace ShapeConverter.Shell.FileConverter
         /// <summary>
         /// Called when the user toggles the selection state of a preview shape
         /// </summary>
-        private void OnPreviewSelectionChange()
+        private void OnSelectionChange()
         {
             IsSelected = !IsSelected;
         }

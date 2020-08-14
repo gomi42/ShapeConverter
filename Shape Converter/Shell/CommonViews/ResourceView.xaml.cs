@@ -20,9 +20,12 @@
 // along with this program. If not, see<http://www.gnu.org/licenses/>.
 
 using System;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
+using ShapeConverter.Shell.MVVM;
 
 namespace ShapeConverter.Shell.CommonViews
 {
@@ -31,51 +34,37 @@ namespace ShapeConverter.Shell.CommonViews
     /// </summary>
     public partial class ResourceView : UserControl
     {
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public ResourceView()
         {
             InitializeComponent();
             DataContextChanged += OnDataContextChanged;
         }
 
+        /// <summary>
+        /// Handle DataContext changed
+        /// </summary>
         private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            Binding binding = new Binding();
-            binding.Source = DataContext;
-            binding.Path = new PropertyPath("ResetView");
-            binding.Mode = BindingMode.TwoWay;
-            BindingOperations.SetBinding(this, ResourceView.InitProperty, binding);
-        }
+            var triggerResetViewProp = DataContext.GetType().GetProperty("TriggerResetView", BindingFlags.Public | BindingFlags.Instance);
 
-        public bool Init
-        {
-            get
-            {
-                return (bool)GetValue(InitProperty);
-            }
-
-            set
-            {
-                SetValue(InitProperty, value);
-            }
-        }
-
-        public static readonly DependencyProperty InitProperty =
-            DependencyProperty.Register("Init", typeof(bool), typeof(ResourceView), new PropertyMetadata(false, InitChanged));
-
-        private static void InitChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            ((ResourceView)d).OnInitChanged();
-        }
-
-        private void OnInitChanged()
-        {
-            if (!Init)
+            if (triggerResetViewProp == null || triggerResetViewProp.PropertyType != typeof(ITrigger))
             {
                 return;
             }
 
-            Dispatcher.BeginInvoke(new Action(() => Init = false));
+            var command = new DelegateTrigger(OnReset);
+            triggerResetViewProp.SetValue(DataContext, command, null);
+        }
 
+        /// <summary>
+        /// Handle view reset request
+        /// We move up the source code to the beginning
+        /// </summary>
+        private void OnReset()
+        {
             SourceCode.ScrollToHome();
         }
     }

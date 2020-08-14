@@ -25,10 +25,19 @@ using System.Runtime.CompilerServices;
 
 namespace ShapeConverter.Shell.MVVM
 {
+    /// <summary>
+    /// view model base
+    /// </summary>
     public class ViewModelBase : INotifyPropertyChanged
     {
+        /// <summary>
+        /// The PropertyChanged event
+        /// </summary>
         public event PropertyChangedEventHandler PropertyChanged;
 
+        /// <summary>
+        /// Notify the change of a property
+        /// </summary>
         protected void NotifyPropertyChanged([CallerMemberName]String info = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(info));
