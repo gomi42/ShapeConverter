@@ -599,7 +599,7 @@
     </Compile>
     <Compile Include="Shell\FileConverter\PreviewViewModel.cs" />
     <Compile Include="Shell\MVVM\DelegateCommand.cs" />
-    <Compile Include="Shell\MVVM\DelegateTrigger.cs" />
+    <Compile Include="Shell\MVVM\FireTrigger.cs" />
     <Compile Include="Shell\MVVM\ITrigger.cs" />
     <Compile Include="Shell\MVVM\ViewModelBase.cs" />
     <Compile Include="Shell\CommonViews\CSharpView.xaml.cs">

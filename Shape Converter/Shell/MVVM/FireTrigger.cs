@@ -19,14 +19,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see<http://www.gnu.org/licenses/>.
 
-using System;
-
 namespace ShapeConverter.Shell.MVVM
 {
     /// <summary>
-    /// DelegateTrigger
+    /// FireTrigger
     /// </summary>
-    public class DelegateTrigger : ITrigger
+    public class FireTrigger : ITrigger
     {
         public event TriggerFiredHandler TriggerFired;
 

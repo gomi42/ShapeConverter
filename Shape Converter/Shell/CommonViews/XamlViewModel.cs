@@ -82,13 +82,13 @@ namespace ShapeConverter.Shell.CommonViews
             SelectedGeometryType = GeometryTypes[0];
 
             CopyToClipboard = new DelegateCommand(OnCopySourceCodeToClipboard);
-            TriggerResetView = new DelegateTrigger();
+            TriggerResetView = new FireTrigger();
         }
 
         /// <summary>
         /// Trigger to reset the view 
         /// </summary>
-        public DelegateTrigger TriggerResetView { get; set; }
+        public FireTrigger TriggerResetView { get; set; }
 
         /// <summary>
         /// Normalize the visual
