@@ -29,8 +29,6 @@ namespace ShapeConverter.Shell.MVVM
 
     /// <summary>
     /// ITrigger
-    /// It is amost identical to ICommand. This is used to trigger
-    /// the view from the viewmodel without any data
     /// </summary>
     public interface ITrigger
     {

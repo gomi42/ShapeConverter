@@ -25,8 +25,6 @@ namespace ShapeConverter.Shell.MVVM
 {
     /// <summary>
     /// DelegateTrigger
-    /// It is amost identical to DelegateCommand. This is used to trigger
-    /// the view from the viewmodel without any data
     /// </summary>
     public class DelegateTrigger : ITrigger
     {
