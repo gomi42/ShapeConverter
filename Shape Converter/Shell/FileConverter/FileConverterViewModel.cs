@@ -21,7 +21,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Input;
 using ShapeConverter.BusinessLogic.Generators;
 using ShapeConverter.Parser;
 using ShapeConverter.Shell.CommonViews;

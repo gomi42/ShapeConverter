@@ -21,7 +21,6 @@
 
 using System.Collections.Generic;
 using System.Windows;
-using System.Windows.Input;
 using ShapeConverter.BusinessLogic.Generators;
 using ShapeConverter.Shell.MVVM;
 
