@@ -52,6 +52,7 @@ namespace ShapeConverter.Shell.FileConverter
 
             SelectFile = new DelegateCommand(OnSelectFile);
             SelectAll = new DelegateCommand(OnSelectAll);
+            TriggerResetView = new DelegateTrigger();
 
             fileParser = new FileParser();
             fileParser.Init();
@@ -90,7 +91,7 @@ namespace ShapeConverter.Shell.FileConverter
         /// <summary>
         /// Trigger to reset the view 
         /// </summary>
-        public ITrigger TriggerResetView { get; set; }
+        public DelegateTrigger TriggerResetView { get; set; }
 
         /// <summary>
         /// The loaded filename

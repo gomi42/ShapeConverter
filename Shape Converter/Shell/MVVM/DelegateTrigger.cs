@@ -30,27 +30,14 @@ namespace ShapeConverter.Shell.MVVM
     /// </summary>
     public class DelegateTrigger : ITrigger
     {
-        private readonly Action trigger;
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        public DelegateTrigger(Action trigger)
-        {
-            if (trigger == null)
-            {
-                throw new ArgumentNullException("execute");
-            }
-
-            this.trigger = trigger;
-        }
+        public event TriggerFiredHandler TriggerFired;
 
         /// <summary>
         /// Call the execute handler
         /// </summary>
         public void Fire()
         {
-            trigger();
+            TriggerFired?.Invoke();
         }
     }
 }

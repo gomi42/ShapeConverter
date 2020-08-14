@@ -48,13 +48,13 @@ namespace ShapeConverter
         {
             var triggerResetViewProp = DataContext.GetType().GetProperty("TriggerResetView", BindingFlags.Public | BindingFlags.Instance);
 
-            if (triggerResetViewProp == null || triggerResetViewProp.PropertyType != typeof(ITrigger))
+            if (!typeof(ITrigger).IsAssignableFrom(triggerResetViewProp.PropertyType))
             {
                 return;
             }
 
-            var command = new DelegateTrigger(OnReset);
-            triggerResetViewProp.SetValue(DataContext, command, null);
+            var trigger = (ITrigger)triggerResetViewProp.GetValue(DataContext);
+            trigger.TriggerFired += OnReset;
         }
 
         /// <summary>

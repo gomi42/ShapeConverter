@@ -22,6 +22,12 @@
 namespace ShapeConverter.Shell.MVVM
 {
     /// <summary>
+    /// Represents the method that will handle the ITrigger.TriggerFired
+    /// event raised when a trigger is fired.
+    /// </summary>
+    public delegate void TriggerFiredHandler();
+
+    /// <summary>
     /// ITrigger
     /// It is amost identical to ICommand. This is used to trigger
     /// the view from the viewmodel without any data
@@ -29,8 +35,8 @@ namespace ShapeConverter.Shell.MVVM
     public interface ITrigger
     {
         /// <summary>
-        /// Execute the trigger
+        /// Occurs when a trigger is fired
         /// </summary>
-        void Fire();
+        event TriggerFiredHandler TriggerFired;
     }
 }
