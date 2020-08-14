@@ -47,7 +47,7 @@ namespace ShapeConverter.Shell.CommonViews
         {
             var triggerResetViewProp = DataContext.GetType().GetProperty("TriggerResetView", BindingFlags.Public | BindingFlags.Instance);
 
-            if (!typeof(ITrigger).IsAssignableFrom(triggerResetViewProp.PropertyType))
+            if (triggerResetViewProp == null || !typeof(ITrigger).IsAssignableFrom(triggerResetViewProp.PropertyType))
             {
                 return;
             }
