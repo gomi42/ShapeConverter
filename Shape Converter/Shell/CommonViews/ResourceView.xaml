@@ -28,7 +28,7 @@
              d:DesignHeight="450"
              d:DesignWidth="800"
              mc:Ignorable="d">
-    <HeaderedContentControl Style="{StaticResource MainViewLayout}">
+    <HeaderedContentControl Style="{StaticResource MainViewLayoutStyle}">
         <HeaderedContentControl.Header>
             <Grid>
                 <CheckBox Margin="10,11,0,0"
