@@ -19,13 +19,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see<http://www.gnu.org/licenses/>.
 
-using System.Collections;
 using System.Windows;
 using System.Windows.Controls;
 
 namespace ShapeConverter.Shell.Controls
 {
-    public class LabelComboBox : Control
+    public class LabelComboBox : ComboBox
     {
         /// <summary>
         /// The Label
@@ -41,50 +40,5 @@ namespace ShapeConverter.Shell.Controls
         /// </summary>
         public static readonly DependencyProperty LabelProperty =
             DependencyProperty.Register("Label", typeof(string), typeof(LabelComboBox), new PropertyMetadata(string.Empty));
-
-        /// <summary>
-        /// The DisplayMemberPath
-        /// </summary>
-        public string DisplayMemberPath
-        {
-            get => (string)GetValue(DisplayMemberPathProperty);
-            set => SetValue(DisplayMemberPathProperty, value);
-        }
-
-        /// <summary>
-        /// The LabelProperty
-        /// </summary>
-        public static readonly DependencyProperty DisplayMemberPathProperty =
-            DependencyProperty.Register("DisplayMemberPath", typeof(string), typeof(LabelComboBox), new PropertyMetadata(null));
-
-        /// <summary>
-        /// The ItemsSourceProperty
-        /// </summary>
-        public IEnumerable ItemsSource
-        {
-            get => (IEnumerable)GetValue(ItemsSourceProperty);
-            set => SetValue(ItemsSourceProperty, value);
-        }
-
-        /// <summary>
-        /// The LabelProperty
-        /// </summary>
-        public static readonly DependencyProperty ItemsSourceProperty =
-            DependencyProperty.Register("ItemsSource", typeof(IEnumerable), typeof(LabelComboBox), new PropertyMetadata(null));
-
-        /// <summary>
-        /// The DisplayMemberPath
-        /// </summary>
-        public object SelectedItem
-        {
-            get => (object)GetValue(SelectedItemProperty);
-            set => SetValue(SelectedItemProperty, value);
-        }
-
-        /// <summary>
-        /// The DisplayMemberPathProperty
-        /// </summary>
-        public static readonly DependencyProperty SelectedItemProperty =
-            DependencyProperty.Register("SelectedItem", typeof(object), typeof(LabelComboBox), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
     }
 }

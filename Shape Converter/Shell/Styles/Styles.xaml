@@ -32,7 +32,6 @@
         <ResourceDictionary Source="/Shell/Styles/ToggleButton.xaml" />
         <ResourceDictionary Source="/Shell/Styles/CheckBox.xaml" />
         <ResourceDictionary Source="/Shell/Styles/Header.xaml" />
-        <ResourceDictionary Source="/Shell/Styles/ComboBox.xaml" />
         <ResourceDictionary Source="/Shell/Styles/Label.xaml" />
         <ResourceDictionary Source="/Shell/Styles/LabelCombobox.xaml" />
         <ResourceDictionary Source="/Shell/Styles/HeaderedContentControl.xaml" />

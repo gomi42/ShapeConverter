@@ -682,10 +682,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Shell\Styles\ComboBox.xaml" Condition="'$(DesignTime)'=='true' AND '$(BuildingInsideVisualStudio)'!='true' AND '$(BuildingInsideExpressionBlend)'!='true'">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="Shell\Styles\Converter.xaml" Condition="'$(DesignTime)'=='true' AND '$(BuildingInsideVisualStudio)'!='true' AND '$(BuildingInsideExpressionBlend)'!='true'">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
