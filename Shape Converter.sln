@@ -18,33 +18,65 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Settings.XamlStyler = Settings.XamlStyler
 	EndProjectSection
 EndProject
+Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "ResMerger", "Tools\ResMerger.exe", "{4FDBCE3C-7021-49AA-B2FD-5A47263BFD43}"
+	ProjectSection(DebuggerProjectSystem) = preProject
+		PortSupplier = 00000000-0000-0000-0000-000000000000
+		Executable = D:\Programme\Tools\Shape Converter\Shape Converter\Tools\ResMerger.exe
+		RemoteMachine = PC
+		StartingDirectory = D:\Programme\Tools\Shape Converter\Shape Converter\Tools
+		Environment = Default
+		LaunchingEngine = 00000000-0000-0000-0000-000000000000
+		UseLegacyDebugEngines = No
+		LaunchSQLEngine = No
+		AttachLaunchAction = No
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{A9491E59-4D31-4456-8D49-1BF89107560D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A9491E59-4D31-4456-8D49-1BF89107560D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A9491E59-4D31-4456-8D49-1BF89107560D}.Debug|x64.ActiveCfg = Debug|x64
 		{A9491E59-4D31-4456-8D49-1BF89107560D}.Debug|x64.Build.0 = Debug|x64
+		{A9491E59-4D31-4456-8D49-1BF89107560D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A9491E59-4D31-4456-8D49-1BF89107560D}.Debug|x86.Build.0 = Debug|Any CPU
 		{A9491E59-4D31-4456-8D49-1BF89107560D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A9491E59-4D31-4456-8D49-1BF89107560D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A9491E59-4D31-4456-8D49-1BF89107560D}.Release|x64.ActiveCfg = Release|x64
 		{A9491E59-4D31-4456-8D49-1BF89107560D}.Release|x64.Build.0 = Release|x64
+		{A9491E59-4D31-4456-8D49-1BF89107560D}.Release|x86.ActiveCfg = Release|Any CPU
+		{A9491E59-4D31-4456-8D49-1BF89107560D}.Release|x86.Build.0 = Release|Any CPU
 		{02FCC0BB-2AA2-43BA-8D2F-66D168B87A1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{02FCC0BB-2AA2-43BA-8D2F-66D168B87A1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{02FCC0BB-2AA2-43BA-8D2F-66D168B87A1D}.Debug|x64.ActiveCfg = Debug|x64
 		{02FCC0BB-2AA2-43BA-8D2F-66D168B87A1D}.Debug|x64.Build.0 = Debug|x64
+		{02FCC0BB-2AA2-43BA-8D2F-66D168B87A1D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{02FCC0BB-2AA2-43BA-8D2F-66D168B87A1D}.Debug|x86.Build.0 = Debug|Any CPU
 		{02FCC0BB-2AA2-43BA-8D2F-66D168B87A1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{02FCC0BB-2AA2-43BA-8D2F-66D168B87A1D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{02FCC0BB-2AA2-43BA-8D2F-66D168B87A1D}.Release|x64.ActiveCfg = Release|x64
 		{02FCC0BB-2AA2-43BA-8D2F-66D168B87A1D}.Release|x64.Build.0 = Release|x64
+		{02FCC0BB-2AA2-43BA-8D2F-66D168B87A1D}.Release|x86.ActiveCfg = Release|Any CPU
+		{02FCC0BB-2AA2-43BA-8D2F-66D168B87A1D}.Release|x86.Build.0 = Release|Any CPU
+		{4FDBCE3C-7021-49AA-B2FD-5A47263BFD43}.Debug|Any CPU.ActiveCfg = Release|x86
+		{4FDBCE3C-7021-49AA-B2FD-5A47263BFD43}.Debug|x64.ActiveCfg = Release|x86
+		{4FDBCE3C-7021-49AA-B2FD-5A47263BFD43}.Debug|x86.ActiveCfg = Release|x86
+		{4FDBCE3C-7021-49AA-B2FD-5A47263BFD43}.Release|Any CPU.ActiveCfg = Release|x86
+		{4FDBCE3C-7021-49AA-B2FD-5A47263BFD43}.Release|x64.ActiveCfg = Release|x86
+		{4FDBCE3C-7021-49AA-B2FD-5A47263BFD43}.Release|x86.ActiveCfg = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4FDBCE3C-7021-49AA-B2FD-5A47263BFD43} = {79861DB8-3A8C-44D0-88F0-66F29DF2DD08}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5F38355F-B206-4862-86AB-4C8CB58330F6}

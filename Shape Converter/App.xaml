@@ -2,7 +2,7 @@
 // Author:
 //   Michael Göricke
 //
-// Copyright (c) 2019
+// Copyright (c) 2020
 //
 // This file is part of ShapeConverter.
 //
@@ -24,27 +24,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              StartupUri="Shell\Main\MainWindow.xaml">
     <Application.Resources>
-        <!--
-            unfortunately we need to include all styles here
-            a separate styles.xaml in the Shell/Styles folder doesn't work
-            without further effort
-        -->
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Shell/Styles/Colors.xaml" />
-                <ResourceDictionary Source="Shell/Styles/Icons.xaml" />
-                <ResourceDictionary Source="Shell/Styles/Converter.xaml" />
-                <ResourceDictionary Source="Shell/Styles/TextBox.xaml" />
-                <ResourceDictionary Source="Shell/Styles/TabControl.xaml" />
-                <ResourceDictionary Source="Shell/Styles/Button.xaml" />
-                <ResourceDictionary Source="Shell/Styles/RadioButton.xaml" />
-                <ResourceDictionary Source="Shell/Styles/ToggleButton.xaml" />
-                <ResourceDictionary Source="Shell/Styles/CheckBox.xaml" />
-                <ResourceDictionary Source="Shell/Styles/Header.xaml" />
-                <ResourceDictionary Source="Shell/Styles/ComboBox.xaml" />
-                <ResourceDictionary Source="Shell/Styles/Label.xaml" />
-                <ResourceDictionary Source="Shell/Styles/LabelCombobox.xaml" />
-                <ResourceDictionary Source="Shell/Styles/HeaderedContentControl.xaml" />
+                <ResourceDictionary Source="/Shell/Styles/FullStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

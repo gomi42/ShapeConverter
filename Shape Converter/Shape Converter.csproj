@@ -670,59 +670,67 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Shell\Styles\Button.xaml">
+    <Page Include="Shell\Styles\Button.xaml" Condition="'$(DesignTime)'=='true' AND '$(BuildingInsideVisualStudio)'!='true' AND '$(BuildingInsideExpressionBlend)'!='true'">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Shell\Styles\CheckBox.xaml">
+    <Page Include="Shell\Styles\CheckBox.xaml" Condition="'$(DesignTime)'=='true' AND '$(BuildingInsideVisualStudio)'!='true' AND '$(BuildingInsideExpressionBlend)'!='true'">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Shell\Styles\Colors.xaml">
+    <Page Include="Shell\Styles\Colors.xaml" Condition="'$(DesignTime)'=='true' AND '$(BuildingInsideVisualStudio)'!='true' AND '$(BuildingInsideExpressionBlend)'!='true'">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Shell\Styles\ComboBox.xaml">
+    <Page Include="Shell\Styles\ComboBox.xaml" Condition="'$(DesignTime)'=='true' AND '$(BuildingInsideVisualStudio)'!='true' AND '$(BuildingInsideExpressionBlend)'!='true'">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Shell\Styles\Converter.xaml">
+    <Page Include="Shell\Styles\Converter.xaml" Condition="'$(DesignTime)'=='true' AND '$(BuildingInsideVisualStudio)'!='true' AND '$(BuildingInsideExpressionBlend)'!='true'">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Shell\Styles\Header.xaml">
+    <Page Include="Shell\Styles\Header.xaml" Condition="'$(DesignTime)'=='true' AND '$(BuildingInsideVisualStudio)'!='true' AND '$(BuildingInsideExpressionBlend)'!='true'">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Shell\Styles\HeaderedContentControl.xaml">
+    <Page Include="Shell\Styles\HeaderedContentControl.xaml" Condition="'$(DesignTime)'=='true' AND '$(BuildingInsideVisualStudio)'!='true' AND '$(BuildingInsideExpressionBlend)'!='true'">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Shell\Styles\Icons.xaml">
+    <Page Include="Shell\Styles\Icons.xaml" Condition="'$(DesignTime)'=='true' AND '$(BuildingInsideVisualStudio)'!='true' AND '$(BuildingInsideExpressionBlend)'!='true'">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Shell\Styles\Label.xaml">
+    <Page Include="Shell\Styles\Label.xaml" Condition="'$(DesignTime)'=='true' AND '$(BuildingInsideVisualStudio)'!='true' AND '$(BuildingInsideExpressionBlend)'!='true'">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Shell\Styles\LabelCombobox.xaml">
+    <Page Include="Shell\Styles\LabelCombobox.xaml" Condition="'$(DesignTime)'=='true' AND '$(BuildingInsideVisualStudio)'!='true' AND '$(BuildingInsideExpressionBlend)'!='true'">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Shell\Styles\RadioButton.xaml">
+    <Page Include="Shell\Styles\RadioButton.xaml" Condition="'$(DesignTime)'=='true' AND '$(BuildingInsideVisualStudio)'!='true' AND '$(BuildingInsideExpressionBlend)'!='true'">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Shell\Styles\TabControl.xaml">
+    <None Include="Shell\Styles\Styles.xaml">
+      <SubType>Designer</SubType>
+    </None>
+    <Page Include="Shell\Styles\TabControl.xaml" Condition="'$(DesignTime)'=='true' AND '$(BuildingInsideVisualStudio)'!='true' AND '$(BuildingInsideExpressionBlend)'!='true'">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Shell\Styles\TextBox.xaml">
+    <Page Include="Shell\Styles\TextBox.xaml" Condition="'$(DesignTime)'=='true' AND '$(BuildingInsideVisualStudio)'!='true' AND '$(BuildingInsideExpressionBlend)'!='true'">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Shell\Styles\ToggleButton.xaml">
+    <Page Include="Shell\Styles\ToggleButton.xaml" Condition="'$(DesignTime)'=='true' AND '$(BuildingInsideVisualStudio)'!='true' AND '$(BuildingInsideExpressionBlend)'!='true'">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Shell\Styles\FullStyles.xaml">
+      <DependentUpon>Styles.xaml</DependentUpon>
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -780,4 +788,7 @@
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>"$(SolutionDir)\Tools\ResMerger.exe" "$(ProjectDir)\"  "ShapeConverter" "Shell\Styles\Styles.xaml" "Shell\Styles\FullStyles.xaml"</PreBuildEvent>
+  </PropertyGroup>
 </Project>

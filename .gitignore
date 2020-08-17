@@ -10,6 +10,7 @@
 *.userosscache
 *.sln.docstates
 PdfSharpReader.dll
+FullStyles.xaml
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

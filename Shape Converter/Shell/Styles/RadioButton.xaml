@@ -22,15 +22,6 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <Color x:Key="PressedBackgroundColor">#FF808080</Color>
-    <Color x:Key="DustyGrayColor">#FFA0A0A0</Color>
-    <Color x:Key="SelectionBackgroundColor">#FF808080</Color>
-
-    <SolidColorBrush x:Key="PressedBackgroundBrush"
-                     Color="{StaticResource PressedBackgroundColor}" />
-    <SolidColorBrush x:Key="DustyGrayBrush"
-                     Color="{StaticResource DustyGrayColor}" />
-
     <Style x:Key="RadioButtonLeft"
            TargetType="{x:Type RadioButton}">
         <Setter Property="FontWeight" Value="SemiBold" />
