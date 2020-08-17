@@ -44,6 +44,7 @@
                 <ResourceDictionary Source="Shell/Styles/ComboBox.xaml" />
                 <ResourceDictionary Source="Shell/Styles/Label.xaml" />
                 <ResourceDictionary Source="Shell/Styles/LabelCombobox.xaml" />
+                <ResourceDictionary Source="Shell/Styles/HeaderedContentControl.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

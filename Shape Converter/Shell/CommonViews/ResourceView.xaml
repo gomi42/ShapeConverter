@@ -28,38 +28,36 @@
              d:DesignHeight="450"
              d:DesignWidth="800"
              mc:Ignorable="d">
-    <Grid>
-        <CheckBox Margin="10,11,0,0"
-                  HorizontalAlignment="Left"
-                  VerticalAlignment="Top"
-                  Content="Normalize"
-                  IsChecked="{Binding Normalize}"
-                  ToolTip="Normalize to Range 0..100" />
-        <controls:LabelComboBox Margin="113,7,0,0"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Top"
-                                DisplayMemberPath="Label"
-                                ItemsSource="{Binding GeometryTypeItems}"
-                                Label="Type:"
-                                SelectedItem="{Binding SelectedGeometryTypeItem}" />
-        <Label Margin="0,9,40,0"
-               HorizontalAlignment="Right"
-               VerticalAlignment="Top"
-               Content="{Binding ColorPrecisionMessage}"
-               Style="{StaticResource ColorPrecisionLabelStyle}" />
-        <Button Margin="0,7,6,0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Command="{Binding CopyToClipboard}"
-                Style="{StaticResource CopyButtonStyle}" />
-        <Rectangle Grid.ColumnSpan="2"
-                   Height="1"
-                   Margin="0,37,0,0"
-                   VerticalAlignment="Top"
-                   Fill="{StaticResource ParameterDeviderBrush}" />
+    <HeaderedContentControl Style="{StaticResource MainViewLayout}">
+        <HeaderedContentControl.Header>
+            <Grid>
+                <CheckBox Margin="10,11,0,0"
+                          HorizontalAlignment="Left"
+                          VerticalAlignment="Top"
+                          Content="Normalize"
+                          IsChecked="{Binding Normalize}"
+                          ToolTip="Normalize to Range 0..100" />
+                <controls:LabelComboBox Margin="113,7,0,0"
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Top"
+                                        DisplayMemberPath="Label"
+                                        ItemsSource="{Binding GeometryTypeItems}"
+                                        Label="Type:"
+                                        SelectedItem="{Binding SelectedGeometryTypeItem}" />
+                <Label Margin="0,9,40,0"
+                       HorizontalAlignment="Right"
+                       VerticalAlignment="Top"
+                       Content="{Binding ColorPrecisionMessage}"
+                       Style="{StaticResource ColorPrecisionLabelStyle}" />
+                <Button Margin="0,7,6,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Command="{Binding CopyToClipboard}"
+                        Style="{StaticResource CopyButtonStyle}" />
+            </Grid>
+        </HeaderedContentControl.Header>
         <TextBox x:Name="SourceCode"
                  Grid.ColumnSpan="2"
-                 Margin="0,38,0,0"
                  FontFamily="Consolas"
                  HorizontalScrollBarVisibility="Auto"
                  IsReadOnly="True"
@@ -67,5 +65,5 @@
                  Text="{Binding SourceCode}"
                  TextWrapping="NoWrap"
                  VerticalScrollBarVisibility="Auto" />
-    </Grid>
+    </HeaderedContentControl>
 </UserControl>

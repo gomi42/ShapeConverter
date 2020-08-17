@@ -28,36 +28,36 @@
              d:DesignHeight="450"
              d:DesignWidth="800"
              mc:Ignorable="d">
-    <UserControl.Resources />
-    <Grid>
-        <controls:LabelComboBox Margin="11,8,0,0"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Top"
-                                DisplayMemberPath="Label"
-                                ItemsSource="{Binding FillStrokeItems}"
-                                Label="Show:"
-                                SelectedItem="{Binding SelectedFillStrokeItem}" />
-        <ToggleButton x:Name="ToggleCheckerBoard"
-                      Width="23"
-                      Height="23"
-                      Margin="7,7,6,0"
-                      HorizontalAlignment="Right"
-                      VerticalAlignment="Top"
-                      Style="{StaticResource CheckerboardToggleButtonStyle}"
-                      ToolTip="Show/Hide Checkerboard" />
-        <Rectangle Margin="0,39,0,0"
-                   Fill="{StaticResource CheckerBoardBrush}"
-                   Visibility="{Binding IsChecked,
-                                        ElementName=ToggleCheckerBoard,
-                                        Converter={StaticResource BooleanToVisibilityConverter}}" />
-        <Rectangle Height="1"
-                   Margin="0,37,0,0"
-                   VerticalAlignment="Top"
-                   Fill="{StaticResource ParameterDeviderBrush}" />
-        <Path Margin="10,48,10,10"
-              Data="{Binding Preview}"
-              Fill="{Binding PreviewFill}"
-              Stretch="Uniform"
-              Stroke="{Binding PreviewStroke}" />
-    </Grid>
+    <HeaderedContentControl Style="{StaticResource MainViewLayout}">
+        <HeaderedContentControl.Header>
+            <Grid>
+                <controls:LabelComboBox Margin="11,8,0,0"
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Top"
+                                        DisplayMemberPath="Label"
+                                        ItemsSource="{Binding FillStrokeItems}"
+                                        Label="Show:"
+                                        SelectedItem="{Binding SelectedFillStrokeItem}" />
+                <ToggleButton x:Name="ToggleCheckerBoard"
+                              Width="23"
+                              Height="23"
+                              Margin="7,7,6,0"
+                              HorizontalAlignment="Right"
+                              VerticalAlignment="Top"
+                              Style="{StaticResource CheckerboardToggleButtonStyle}"
+                              ToolTip="Show/Hide Checkerboard" />
+            </Grid>
+        </HeaderedContentControl.Header>
+        <Grid>
+            <Rectangle Fill="{StaticResource CheckerBoardBrush}"
+                       Visibility="{Binding IsChecked,
+                                            ElementName=ToggleCheckerBoard,
+                                            Converter={StaticResource BooleanToVisibilityConverter}}" />
+            <Path Margin="10"
+                  Data="{Binding Preview}"
+                  Fill="{Binding PreviewFill}"
+                  Stretch="Uniform"
+                  Stroke="{Binding PreviewStroke}" />
+        </Grid>
+    </HeaderedContentControl>
 </UserControl>
