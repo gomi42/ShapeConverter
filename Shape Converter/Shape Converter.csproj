@@ -440,6 +440,7 @@
     <Compile Include="Shell\CommonViews\ExportViewModel.cs" />
     <Compile Include="Shell\CommonViews\Helper.cs" />
     <Compile Include="Shell\Controls\Header.cs" />
+    <Compile Include="Shell\Controls\LabelComboBox.cs" />
     <Compile Include="Shell\FileConverter\FileConverterViewModel.cs" />
     <Compile Include="Shell\FileConverter\PreviewShapeViewModel.cs" />
     <Compile Include="BusinessLogic\Generators\Binary\DrawingBrushBinaryGenerator.cs" />
@@ -698,6 +699,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Shell\Styles\Label.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Shell\Styles\LabelCombobox.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

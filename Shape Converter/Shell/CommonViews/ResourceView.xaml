@@ -22,6 +22,7 @@
 <UserControl x:Class="ShapeConverter.Shell.CommonViews.ResourceView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:ShapeConverter.Shell.Controls"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              d:DesignHeight="450"
@@ -34,18 +35,13 @@
                   Content="Normalize"
                   IsChecked="{Binding Normalize}"
                   ToolTip="Normalize to Range 0..100" />
-
-        <TextBlock Margin="113,10,0,0"
-                   HorizontalAlignment="Left"
-                   VerticalAlignment="Top"
-                   Text="Type:"
-                   TextWrapping="Wrap" />
-        <ComboBox Margin="140,7,0,0"
-                  HorizontalAlignment="Left"
-                  VerticalAlignment="Top"
-                  DisplayMemberPath="Label"
-                  ItemsSource="{Binding GeometryTypeItems}"
-                  SelectedItem="{Binding SelectedGeometryTypeItem}" />
+        <controls:LabelComboBox Margin="113,7,0,0"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Top"
+                                DisplayMemberPath="Label"
+                                ItemsSource="{Binding GeometryTypeItems}"
+                                Label="Type:"
+                                SelectedItem="{Binding SelectedGeometryTypeItem}" />
         <Label Margin="0,9,40,0"
                HorizontalAlignment="Right"
                VerticalAlignment="Top"
