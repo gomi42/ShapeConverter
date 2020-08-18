@@ -29,19 +29,18 @@ namespace ShapeConverter.Shell.Controls
     /// </summary>
     public class Header : Control
     {
+        /// <summary>
+        /// The text to show in the header
+        /// </summary>
         public string Text
         {
-            get
-            {
-                return (string)GetValue(TextProperty);
-            }
-
-            set
-            {
-                SetValue(TextProperty, value);
-            }
+            get => (string)GetValue(TextProperty);
+            set => SetValue(TextProperty, value);
         }
 
+        /// <summary>
+        /// The TextProperty
+        /// </summary>
         public static readonly DependencyProperty TextProperty =
             DependencyProperty.Register("Text", typeof(string), typeof(Header), new PropertyMetadata(string.Empty));
     }

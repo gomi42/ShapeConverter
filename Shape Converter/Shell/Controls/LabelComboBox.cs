@@ -24,6 +24,9 @@ using System.Windows.Controls;
 
 namespace ShapeConverter.Shell.Controls
 {
+    /// <summary>
+    /// The LabelComboBox
+    /// </summary>
     public class LabelComboBox : ComboBox
     {
         /// <summary>

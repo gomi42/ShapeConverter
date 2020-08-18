@@ -20,12 +20,37 @@
 // along with this program. If not, see<http://www.gnu.org/licenses/>.
 
 using ShapeConverter.BusinessLogic.Generators;
+using ShapeConverter.Shell.CommonViews;
 using ShapeConverter.Shell.MVVM;
 using System.Collections.Generic;
 using System.Windows.Media;
 
 namespace ShapeConverter.Shell.StreamConverter
 {
+    /// <summary>
+    /// One entry in the fill/stroke ComboBox selection
+    /// </summary>
+    public class FillStrokeItem
+    {
+        /// <summary>
+        /// the label to display
+        /// </summary>
+        public string Label { get; set; }
+
+        /// <summary>
+        /// true if the shape is to be shown filled
+        /// </summary>
+        public bool Fill { get; set; }
+
+        /// <summary>
+        /// true if the shape is to be shown stroked
+        /// </summary>
+        public bool Stroke { get; set; }
+    }
+    
+    /// <summary>
+    /// The PreviewViewModel
+    /// </summary>
     public class PreviewViewModel : ViewModelBase
     {
         private Geometry preview;
@@ -35,6 +60,9 @@ namespace ShapeConverter.Shell.StreamConverter
         private Brush previewStroke;
         private double previewStrokeThickness;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public PreviewViewModel()
         {
             var fillStrokeItems = new List<FillStrokeItem>();
@@ -45,6 +73,9 @@ namespace ShapeConverter.Shell.StreamConverter
             SelectedFillStrokeItem = FillStrokeItems[0];
         }
 
+        /// <summary>
+        /// The preview of the shape as a Geometry
+        /// </summary>
         public Geometry Preview
         {
             get
@@ -59,6 +90,9 @@ namespace ShapeConverter.Shell.StreamConverter
             }
         }
 
+        /// <summary>
+        /// List of visualization items of the shape
+        /// </summary>
         public List<FillStrokeItem> FillStrokeItems
         {
             get
@@ -73,6 +107,9 @@ namespace ShapeConverter.Shell.StreamConverter
             }
         }
 
+        /// <summary>
+        /// Selected visualization of the shape
+        /// </summary>
         public FillStrokeItem SelectedFillStrokeItem
         {
             get
@@ -88,6 +125,9 @@ namespace ShapeConverter.Shell.StreamConverter
             }
         }
 
+        /// <summary>
+        /// The fill brush of the preview
+        /// </summary>
         public Brush PreviewFill
         {
             get
@@ -102,6 +142,9 @@ namespace ShapeConverter.Shell.StreamConverter
             }
         }
 
+        /// <summary>
+        /// The stroke brush of the preview
+        /// </summary>
         public Brush PreviewStroke
         {
             get
@@ -116,6 +159,9 @@ namespace ShapeConverter.Shell.StreamConverter
             }
         }
 
+        /// <summary>
+        /// The stroke thickness of the preview
+        /// </summary>
         public double PreviewStrokeThickness
         {
             get
@@ -130,6 +176,9 @@ namespace ShapeConverter.Shell.StreamConverter
             }
         }
 
+        /// <summary>
+        /// Set a new visual
+        /// </summary>
         public void SetNewGraphicPath(GraphicPath path)
         {
             if (path == null)

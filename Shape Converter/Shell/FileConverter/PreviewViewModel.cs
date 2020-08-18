@@ -19,24 +19,24 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see<http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Media;
 using ShapeConverter.BusinessLogic.Generators;
 using ShapeConverter.Shell.MVVM;
-using ShapeConverter.Shell.CommonViews;
 
 
 namespace ShapeConverter.Shell.FileConverter
 {
+    /// <summary>
+    /// The PreviewViewModel
+    /// </summary>
     public class PreviewViewModel :ViewModelBase
     {
         private Brush preview;
         private string colorPrecisionMessage;
 
+        /// <summary>
+        /// The preview of the shape as a brush
+        /// </summary>
         public Brush Preview
         {
             get 
@@ -51,6 +51,9 @@ namespace ShapeConverter.Shell.FileConverter
             }
         }
 
+        /// <summary>
+        /// Show color precision warning message
+        /// </summary>
         public string ColorPrecisionMessage
         {
             get
@@ -65,6 +68,9 @@ namespace ShapeConverter.Shell.FileConverter
             }
         }
 
+        /// <summary>
+        /// Set a new visual
+        /// </summary>
         public void SetNewGraphicVisual(GraphicVisual visual, GraphicColorPrecision? colorPrecision = null)
         {
             if (visual == null)

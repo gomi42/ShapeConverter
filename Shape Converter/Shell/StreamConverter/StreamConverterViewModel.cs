@@ -27,18 +27,6 @@ using System.Windows.Media;
 namespace ShapeConverter.Shell.StreamConverter
 {
     /// <summary>
-    /// One entry in the fill/stroke ComboBox selection
-    /// </summary>
-    public class FillStrokeItem
-    {
-        public string Label { get; set; }
-        
-        public bool Fill { get; set; }
-        
-        public bool Stroke { get; set; }
-    }
-
-    /// <summary>
     /// The StreamConverterViewModel
     /// </summary>
     public class StreamConverterViewModel : ViewModelBase
@@ -46,6 +34,9 @@ namespace ShapeConverter.Shell.StreamConverter
         private string streamInput;
         private bool showError;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public StreamConverterViewModel()
         {
             PreviewViewModel = new PreviewViewModel();
@@ -55,16 +46,34 @@ namespace ShapeConverter.Shell.StreamConverter
             ExportViewModel = new ExportViewModel();
         }
 
+        /// <summary>
+        /// The preview view model
+        /// </summary>
         public PreviewViewModel PreviewViewModel { get; set; }
 
+        /// <summary>
+        /// The resource view model
+        /// </summary>
         public ResourceViewModel ResourceViewModel { get; set; }
 
+        /// <summary>
+        /// The XAML view model
+        /// </summary>
         public XamlViewModel XamlViewModel { get; set; }
-        
+
+        /// <summary>
+        /// The export view model
+        /// </summary>
         public CSharpViewModel CSharpViewModel { get; set; }
 
+        /// <summary>
+        /// The export view model
+        /// </summary>
         public ExportViewModel ExportViewModel { get; set; }
 
+        /// <summary>
+        /// The stream input data
+        /// </summary>
         public string StreamInput
         {
             get 
@@ -80,6 +89,9 @@ namespace ShapeConverter.Shell.StreamConverter
             }
         }
 
+        /// <summary>
+        /// Show general error
+        /// </summary>
         public bool ShowError
         {
             get 
