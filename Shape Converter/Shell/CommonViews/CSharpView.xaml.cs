@@ -64,5 +64,13 @@ namespace ShapeConverter.Shell.CommonViews
         {
             SourceCode.ScrollToHome();
         }
+
+        /// <summary>
+        /// Turn off default drag handling of the TextBox so that the main window gets all drag messages
+        /// </summary>
+        private void SourceCodePreviewDragEnter(object sender, DragEventArgs e)
+        {
+            e.Handled = true;
+        }
     }
 }

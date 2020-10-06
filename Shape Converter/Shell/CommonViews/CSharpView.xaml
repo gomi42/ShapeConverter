@@ -61,6 +61,8 @@
         <TextBox x:Name="SourceCode"
                  FontFamily="Consolas"
                  HorizontalScrollBarVisibility="Auto"
+                 PreviewDragEnter="SourceCodePreviewDragEnter"
+                 PreviewDragOver="SourceCodePreviewDragEnter"
                  Style="{StaticResource BorderlessTextBoxStyle}"
                  Text="{Binding SourceCode}"
                  VerticalScrollBarVisibility="Auto" />

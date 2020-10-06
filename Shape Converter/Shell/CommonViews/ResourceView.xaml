@@ -61,6 +61,8 @@
                  FontFamily="Consolas"
                  HorizontalScrollBarVisibility="Auto"
                  IsReadOnly="True"
+                 PreviewDragEnter="SourceCodePreviewDragEnter"
+                 PreviewDragOver="SourceCodePreviewDragEnter"
                  Style="{StaticResource BorderlessTextBoxStyle}"
                  Text="{Binding SourceCode}"
                  TextWrapping="NoWrap"
