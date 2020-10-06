@@ -19,6 +19,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see<http://www.gnu.org/licenses/>.
 
+using System;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
@@ -31,6 +32,8 @@ namespace ShapeConverter
     /// </summary>
     public partial class FileConverter : UserControl
     {
+        ITrigger trigger;
+
         /// <summary>
         /// Constructor
         /// </summary>
@@ -46,15 +49,18 @@ namespace ShapeConverter
         /// </summary>
         private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            var triggerResetViewProp = DataContext.GetType().GetProperty("TriggerResetView", BindingFlags.Public | BindingFlags.Instance);
-
-            if (triggerResetViewProp == null || !typeof(ITrigger).IsAssignableFrom(triggerResetViewProp.PropertyType))
+            if (trigger != null)
             {
-                return;
+                trigger.TriggerFired -= OnReset;
             }
 
-            var trigger = (ITrigger)triggerResetViewProp.GetValue(DataContext);
-            trigger.TriggerFired += OnReset;
+            var triggerResetViewProp = DataContext.GetType().GetProperty("TriggerResetView", BindingFlags.Public | BindingFlags.Instance);
+
+            if (triggerResetViewProp != null && typeof(ITrigger).IsAssignableFrom(triggerResetViewProp.PropertyType))
+            {
+                trigger = (ITrigger)triggerResetViewProp.GetValue(DataContext);
+                trigger.TriggerFired += OnReset;
+            }
         }
 
         /// <summary>
@@ -109,6 +115,8 @@ namespace ShapeConverter
             {
                 ShapeSelectionBox.ScrollIntoView(enumerator.Current);
             }
+
+            tabControl.SelectedIndex = 0;
         }
     }
 }

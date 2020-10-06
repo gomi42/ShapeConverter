@@ -146,7 +146,7 @@
                 </ListBox.ItemTemplate>
             </ListBox>
 
-            <TabControl Grid.Column="1"
+            <TabControl Grid.Column="1" x:Name="tabControl"
                         Margin="0,0,10,10">
                 <TabItem Header="Preview">
                     <local:PreviewView DataContext="{Binding PreviewViewModel}" />
