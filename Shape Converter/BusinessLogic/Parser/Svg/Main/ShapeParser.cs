@@ -83,9 +83,9 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
                     Clipping.SetClipPath(group, currentTransformationMatrix, cssStyleCascade, globalDefinitions);
                 }
-
-                cssStyleCascade.Pop();
             }
+
+            cssStyleCascade.Pop();
 
             return graphicVisual;
         }
