@@ -118,7 +118,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
                         red = (byte)ParseColorValue(redStr);
                         green = (byte)ParseColorValue(greenStr);
                         blue = (byte)ParseColorValue(blueStr);
-                        alphaD = DoubleWithUnitParser.Parse(alphaStr);
+                        DoubleParser.ParseNumberPercent(alphaStr, out alphaD);
                     }
 
                     color = Color.FromArgb((byte)(alpha * alphaD * 255), red, green, blue);
@@ -158,9 +158,9 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
                     }
                     else
                     {
-                        var hue = DoubleWithUnitParser.Parse(hueStr);
-                        var saturation = DoubleWithUnitParser.Parse(saturationStr);
-                        var luminosity = DoubleWithUnitParser.Parse(luminosityStr);
+                        var hue = DoubleParser.ParseNumber(hueStr);
+                        DoubleParser.ParseNumberPercent(saturationStr, out double saturation);
+                        DoubleParser.ParseNumberPercent(luminosityStr, out double luminosity);
 
                         color = ColorSpaceConverter.ConvertHlsToRgb(alpha, hue, saturation, luminosity);
                         return true;

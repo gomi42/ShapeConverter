@@ -23,12 +23,15 @@ using System.Xml.Linq;
 
 namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
 {
+    /// <summary>
+    /// Simple helpers to not duplicate code
+    /// </summary>
     internal static class DoubleAttributeParser
     {
         /// <summary>
         /// Converts the specified attribute to a double value
         /// </summary>
-        public static double GetDouble(XElement element, string name, double defaultValue)
+        public static double GetLength(XElement element, string name, double defaultValue)
         {
             double retVal = defaultValue;
             XAttribute xAttr = element.Attribute(name);
@@ -36,10 +39,28 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
             if (xAttr != null)
             {
                 var dblStr = xAttr.Value;
-                retVal = DoubleWithUnitParser.Parse(dblStr);
+                retVal = DoubleParser.ParseLength(dblStr);
             }
 
             return retVal;
+        }
+
+        /// <summary>
+        /// Converts the specified attribute to a double value
+        /// </summary>
+        public static bool GetNumberPercent(XElement element, string name, double defaultValue, out double retVal)
+        {
+            bool isPercentage = false;
+            retVal = defaultValue;
+            XAttribute xAttr = element.Attribute(name);
+
+            if (xAttr != null)
+            {
+                var dblStr = xAttr.Value;
+                isPercentage = DoubleParser.ParseNumberPercent(dblStr, out retVal);
+            }
+
+            return isPercentage;
         }
     }
 }

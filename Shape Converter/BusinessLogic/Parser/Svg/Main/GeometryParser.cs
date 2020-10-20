@@ -195,7 +195,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                 {
                     if (rx.IsPercentage)
                     {
-                        rxVal = width * rx.Value / 100.0;
+                        rxVal = width * rx.Value;
                     }
                     else
                     {
@@ -207,7 +207,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                 {
                     if (ry.IsPercentage)
                     {
-                        ryVal = height * ry.Value / 100.0;
+                        ryVal = height * ry.Value;
                     }
                     else
                     {
@@ -300,7 +300,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         /// </summary>
         private static double GetDoubleAttr(XElement path, string attrName)
         {
-            return DoubleAttributeParser.GetDouble(path, attrName, 0.0);
+            return DoubleAttributeParser.GetLength(path, attrName, 0.0);
         }
 
         /// <summary>
@@ -334,18 +334,8 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                 }
                 else
                 {
-                    var hasPercent = strVal.EndsWith("%", StringComparison.OrdinalIgnoreCase);
-
-                    if (hasPercent)
-                    {
-                        radius.IsPercentage = true;
-                        strVal = strVal.Substring(0, strVal.Length - 1);
-                        radius.Value = double.Parse(strVal, CultureInfo.InvariantCulture);
-                    }
-                    else
-                    {
-                        radius.Value = double.Parse(strVal, CultureInfo.InvariantCulture);
-                    }
+                    radius.IsPercentage = DoubleParser.ParseLengthPercent(strVal, out double retVal);
+                    radius.Value = retVal;
                 }
             }
             else

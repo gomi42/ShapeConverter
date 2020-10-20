@@ -98,7 +98,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             }
 
             Clipping.SetClipPath(group, currentTransformationMatrix, cssStyleCascade, globalDefinitions);
-            group.Opacity = cssStyleCascade.GetDoubleFromTop("opacity", 1);
+            group.Opacity = cssStyleCascade.GetNumberPercentFromTop("opacity", 1);
 
             var shapeParser = new ShapeParser();
 

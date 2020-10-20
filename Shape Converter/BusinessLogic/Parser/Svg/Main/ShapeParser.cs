@@ -103,11 +103,11 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
             if (graphicPath.StrokeBrush != null)
             {
-                graphicPath.StrokeThickness = MatrixUtilities.TransformScale(cssStyleCascade.GetDouble("stroke-width", 1), currentTransformationMatrix);
-                graphicPath.StrokeMiterLimit = MatrixUtilities.TransformScale(cssStyleCascade.GetDouble("stroke-miterlimit", 4), currentTransformationMatrix);
+                graphicPath.StrokeThickness = MatrixUtilities.TransformScale(cssStyleCascade.GetLength("stroke-width", 1), currentTransformationMatrix);
+                graphicPath.StrokeMiterLimit = MatrixUtilities.TransformScale(cssStyleCascade.GetNumber("stroke-miterlimit", 4), currentTransformationMatrix);
                 graphicPath.StrokeLineCap = GetLineCap();
                 graphicPath.StrokeLineJoin = GetLineJoin();
-                graphicPath.StrokeDashOffset = MatrixUtilities.TransformScale(cssStyleCascade.GetDouble("stroke-dashoffset", 0), currentTransformationMatrix) / graphicPath.StrokeThickness;
+                graphicPath.StrokeDashOffset = MatrixUtilities.TransformScale(cssStyleCascade.GetNumber("stroke-dashoffset", 0), currentTransformationMatrix) / graphicPath.StrokeThickness;
                 graphicPath.StrokeDashes = GetDashes(graphicPath.StrokeThickness);
             }
         }
@@ -274,8 +274,8 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
         /// </summary>
         private double GetAlpha(string name)
         {
-            var alpha1 = cssStyleCascade.GetDoubleFromTop($"{name}-opacity", 1);
-            double alpha2 = cssStyleCascade.GetDoubleFromTop("opacity", 1);
+            var alpha1 = cssStyleCascade.GetNumberPercentFromTop($"{name}-opacity", 1);
+            double alpha2 = cssStyleCascade.GetNumberPercentFromTop("opacity", 1);
             var alpha = alpha1 * alpha2;
 
             return alpha;
@@ -306,12 +306,12 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
                     Matrix matrix = GetTransformMatrix(gradientElem);
 
-                    var x = DoubleAttributeParser.GetDouble(gradientElem, "x1", 0);
-                    var y = DoubleAttributeParser.GetDouble(gradientElem, "y1", 0);
+                    var x = DoubleAttributeParser.GetLength(gradientElem, "x1", 0);
+                    var y = DoubleAttributeParser.GetLength(gradientElem, "y1", 0);
                     gradient.StartPoint = new Point(x, y) * matrix;
 
-                    x = DoubleAttributeParser.GetDouble(gradientElem, "x2", 1);
-                    y = DoubleAttributeParser.GetDouble(gradientElem, "y2", 0);
+                    x = DoubleAttributeParser.GetLength(gradientElem, "x2", 1);
+                    y = DoubleAttributeParser.GetLength(gradientElem, "y2", 0);
                     gradient.EndPoint = new Point(x, y) * matrix;
 
                     // see comment in LinearGradientShading.cs of the pdf parser in GetBrush for more details
@@ -336,15 +336,15 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
                     Matrix matrix = GetTransformMatrix(gradientElem);
 
-                    var x = DoubleAttributeParser.GetDouble(gradientElem, "cx", 0.5);
-                    var y = DoubleAttributeParser.GetDouble(gradientElem, "cy", 0.5);
+                    var x = DoubleAttributeParser.GetLength(gradientElem, "cx", 0.5);
+                    var y = DoubleAttributeParser.GetLength(gradientElem, "cy", 0.5);
                     gradient.EndPoint = new Point(x, y) * matrix;
 
-                    x = DoubleAttributeParser.GetDouble(gradientElem, "fx", x);
-                    y = DoubleAttributeParser.GetDouble(gradientElem, "fy", y);
+                    x = DoubleAttributeParser.GetLength(gradientElem, "fx", x);
+                    y = DoubleAttributeParser.GetLength(gradientElem, "fy", y);
                     gradient.StartPoint = new Point(x, y) * matrix;
 
-                    var r = DoubleAttributeParser.GetDouble(gradientElem, "r", 0);
+                    var r = DoubleAttributeParser.GetLength(gradientElem, "r", 0);
                     gradient.RadiusX = r;
                     gradient.RadiusY = r;
 
@@ -477,8 +477,12 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
                 var stop = new GraphicGradientStop();
                 gradientBrush.GradientStops.Add(stop);
 
-                stop.Position = DoubleAttributeParser.GetDouble(stopElem, "offset", 0);
-                var stopOpacity = DoubleAttributeParser.GetDouble(stopElem, "stop-opacity", 1);
+                double retVal;
+                DoubleAttributeParser.GetNumberPercent(stopElem, "offset", 0, out retVal);
+                stop.Position = retVal;
+
+                DoubleAttributeParser.GetNumberPercent(stopElem, "stop-opacity", 1, out retVal);
+                var stopOpacity = retVal;
 
                 XAttribute colorAttr = stopElem.Attribute("stop-color");
 

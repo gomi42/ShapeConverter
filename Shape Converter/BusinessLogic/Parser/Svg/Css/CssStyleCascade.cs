@@ -242,7 +242,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
         /// <summary>
         /// Get an attribute as double from the cascade
         /// </summary>
-        public double GetDouble(string name, double defaultValue)
+        public double GetLength(string name, double defaultValue)
         {
             double retVal = defaultValue;
 
@@ -250,7 +250,24 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
             if (!string.IsNullOrEmpty(strVal))
             {
-                retVal = DoubleWithUnitParser.Parse(strVal);
+                retVal = DoubleParser.ParseLength(strVal);
+            }
+
+            return retVal;
+        }
+
+        /// <summary>
+        /// Get an attribute as double from the cascade
+        /// </summary>
+        public double GetNumber(string name, double defaultValue)
+        {
+            double retVal = defaultValue;
+
+            var strVal = GetProperty(name);
+
+            if (!string.IsNullOrEmpty(strVal))
+            {
+                retVal = DoubleParser.ParseNumber(strVal);
             }
 
             return retVal;
@@ -259,7 +276,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
         /// <summary>
         /// Get an attribute as double from the top of cascade only
         /// </summary>
-        public double GetDoubleFromTop(string name, double defaultValue)
+        public double GetNumberPercentFromTop(string name, double defaultValue)
         {
             double retVal = defaultValue;
 
@@ -267,7 +284,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
             if (!string.IsNullOrEmpty(strVal))
             {
-                retVal = DoubleWithUnitParser.Parse(strVal);
+                DoubleParser.ParseNumberPercent(strVal, out retVal);
             }
 
             return retVal;
