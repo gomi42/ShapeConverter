@@ -194,19 +194,11 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
         /// </summary>
         private static int ParseColorValue(string colorValue)
         {
-            int retVal;
+            double retVal;
 
-            var hasPercent = colorValue.EndsWith("%", StringComparison.OrdinalIgnoreCase);
-
-            if (hasPercent)
+            if (DoubleParser.ParseNumberPercent(colorValue, out retVal))
             {
-                colorValue = colorValue.Substring(0, colorValue.Length - 1);
-                var percent = double.Parse(colorValue, CultureInfo.InvariantCulture);
-                retVal = (int)Math.Round(255.0 * percent / 100.0);
-            }
-            else
-            {
-                retVal = int.Parse(colorValue, CultureInfo.InvariantCulture);
+                retVal = (int)Math.Round(255.0 * retVal);
             }
 
             if (retVal > 255)
@@ -219,7 +211,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
                 retVal = 0;
             }
 
-            return retVal;
+            return (int)Math.Round(retVal);
         }
     }
 }
