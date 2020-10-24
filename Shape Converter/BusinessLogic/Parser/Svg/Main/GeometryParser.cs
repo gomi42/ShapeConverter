@@ -178,8 +178,8 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             var y = GetDoubleAttr(path, "y");
             var width = GetDoubleAttr(path, "width");
             var height = GetDoubleAttr(path, "height");
-            var rx = GetRadiusAttr(path, "rx");
-            var ry = GetRadiusAttr(path, "ry");
+            var rx = DoubleAttributeParser.GetLengthPercentAuto(path, "rx");
+            var ry = DoubleAttributeParser.GetLengthPercentAuto(path, "ry");
 
             double rxVal = 0.0;
             double ryVal;
@@ -261,8 +261,8 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         {
             var cx = GetDoubleAttr(path, "cx");
             var cy = GetDoubleAttr(path, "cy");
-            var rx = GetRadiusAttr(path, "rx");
-            var ry = GetRadiusAttr(path, "ry");
+            var rx = DoubleAttributeParser.GetLengthPercentAuto(path, "rx");
+            var ry = DoubleAttributeParser.GetLengthPercentAuto(path, "ry");
 
             double rxVal;
             double ryVal;
@@ -301,49 +301,6 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         private static double GetDoubleAttr(XElement path, string attrName)
         {
             return DoubleAttributeParser.GetLength(path, attrName, 0.0);
-        }
-
-        /// <summary>
-        /// A radius desciption
-        /// </summary>
-        private struct Radius
-        {
-            public bool IsAuto { get; set; }
-
-            public bool IsPercentage { get; set; }
-
-            public double Value { get; set; }
-        }
-
-        /// <summary>
-        /// Get a radius attribute
-        /// </summary>
-        private static Radius GetRadiusAttr(XElement path, string attrName)
-        {
-            Radius radius = new Radius();
-
-            XAttribute xAttr = path.Attribute(attrName);
-
-            if (xAttr != null)
-            {
-                var strVal = xAttr.Value;
-
-                if (strVal == "auto")
-                {
-                    radius.IsAuto = true;
-                }
-                else
-                {
-                    radius.IsPercentage = DoubleParser.ParseLengthPercent(strVal, out double retVal);
-                    radius.Value = retVal;
-                }
-            }
-            else
-            {
-                radius.IsAuto = true;
-            }
-
-            return radius;
         }
     }
 }

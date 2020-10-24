@@ -23,6 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Windows.Media;
 using System.Xml.Linq;
 using ShapeConverter.BusinessLogic.Parser.Svg.CSS;
 using ShapeConverter.BusinessLogic.Parser.Svg.Helper;
@@ -288,6 +289,22 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             }
 
             return retVal;
+        }
+
+        /// <summary>
+        /// Get the transformation matrix from top of the cascade
+        /// </summary>
+        /// <returns></returns>
+        public Matrix GetTransformMatrixFromTop()
+        {
+            var transform = GetPropertyFromTop("transform");
+
+            if (!string.IsNullOrEmpty(transform))
+            {
+                return TransformMatrixParser.GetTransformMatrix(transform);
+            }
+
+            return Matrix.Identity;
         }
 
         /// <summary>

@@ -62,5 +62,14 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
 
             return isPercentage;
         }
+
+        /// <summary>
+        /// Get a LengthPercentAuto attribute
+        /// </summary>
+        public static DoubleLengthPercentAuto GetLengthPercentAuto(XElement path, string attrName)
+        {
+            XAttribute xAttr = path.Attribute(attrName);
+            return DoubleParser.GetLengthPercentAuto(xAttr?.Value);
+        }
     }
 }

@@ -22,9 +22,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 using System.Windows.Media;
 using System.Xml.Linq;
 using ShapeConverter.BusinessLogic.Generators;
+using ShapeConverter.BusinessLogic.Parser.Svg.Helper;
 using ShapeConverter.BusinessLogic.Parser.Svg.Main;
 using ShapeConverter.Parser;
 
@@ -72,34 +74,59 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             cssStyleCascade = new CssStyleCascade(root);
 
             ReadGlobalDefinitions(root);
-            GraphicVisual visual = ParseGroup(defaultNamespace, root, currentTransformationMatrix);
+            GraphicVisual visual = ParseSVG(defaultNamespace, root, currentTransformationMatrix);
             visual = OptimizeVisual.Optimize(visual);
 
             return visual;
         }
 
         /// <summary>
+        /// Parse an SVG document fragment
+        /// </summary>
+        private GraphicGroup ParseSVG(XNamespace ns, XElement element, Matrix matrix)
+        {
+            cssStyleCascade.PushStyles(element);
+
+            var vbMatrix = GetViewBoxMatrix(element);
+            matrix = vbMatrix * matrix;
+
+            var elementTransformationMatrix = cssStyleCascade.GetTransformMatrixFromTop();
+            elementTransformationMatrix = elementTransformationMatrix * matrix;
+
+            var group = ParseGroupChildren(ns, element, elementTransformationMatrix);
+
+            group.Opacity = cssStyleCascade.GetNumberPercentFromTop("opacity", 1);
+            Clipping.SetClipPath(group, elementTransformationMatrix, cssStyleCascade, globalDefinitions);
+
+            cssStyleCascade.Pop();
+            return group;
+        }
+
+        /// <summary>
+        /// Parse an g container
+        /// </summary>
+        private GraphicGroup ParseGContainer(XNamespace ns, XElement element, Matrix matrix)
+        {
+            cssStyleCascade.PushStyles(element);
+
+            var elementTransformationMatrix = cssStyleCascade.GetTransformMatrixFromTop();
+            elementTransformationMatrix = elementTransformationMatrix * matrix;
+
+            var group = ParseGroupChildren(ns, element, elementTransformationMatrix);
+
+            group.Opacity = cssStyleCascade.GetNumberPercentFromTop("opacity", 1);
+            Clipping.SetClipPath(group, elementTransformationMatrix, cssStyleCascade, globalDefinitions);
+
+            cssStyleCascade.Pop();
+            return group;
+        }
+
+        /// <summary>
         /// Parse all graphic elements
         /// </summary>
-        private GraphicGroup ParseGroup(XNamespace ns, XElement groupElement, Matrix matrix)
+        private GraphicGroup ParseGroupChildren(XNamespace ns, XElement groupElement, Matrix matrix)
         {
             var group = new GraphicGroup();
-
-            cssStyleCascade.PushStyles(groupElement);
-
-            Matrix currentTransformationMatrix = matrix;
-
-            var transform = cssStyleCascade.GetPropertyFromTop("transform");
-
-            if (!string.IsNullOrEmpty(transform))
-            {
-                var transformMatrix = TransformMatrixParser.GetTransformMatrix(transform);
-                currentTransformationMatrix = transformMatrix * currentTransformationMatrix;
-            }
-
-            Clipping.SetClipPath(group, currentTransformationMatrix, cssStyleCascade, globalDefinitions);
-            group.Opacity = cssStyleCascade.GetNumberPercentFromTop("opacity", 1);
-
             var shapeParser = new ShapeParser();
 
             foreach (var element in groupElement.Elements())
@@ -108,20 +135,28 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
                 {
                     case "defs":
                     case "style":
+                    {
                         // already read, ignore
                         break;
+                    }
 
-                    case "g":
                     case "svg":
                     {
-                        var childGroup = ParseGroup(ns, element, currentTransformationMatrix);
+                        var childGroup = ParseSVG(ns, element, matrix);
+                        group.Childreen.Add(childGroup);
+                        break;
+                    }
+
+                    case "g":
+                    {
+                        var childGroup = ParseGContainer(ns, element, matrix);
                         group.Childreen.Add(childGroup);
                         break;
                     }
 
                     default:
                     {
-                        var shape = shapeParser.Parse(element, ns, currentTransformationMatrix, cssStyleCascade, globalDefinitions);
+                        var shape = shapeParser.Parse(element, ns, matrix, cssStyleCascade, globalDefinitions);
 
                         if (shape != null)
                         {
@@ -132,9 +167,180 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
                 }
             }
 
-            cssStyleCascade.Pop();
-
             return group;
+        }
+
+        /// <summary>
+        /// Get the viewbox transformation matrix
+        /// </summary>
+        private Matrix GetViewBoxMatrix(XElement element)
+        {
+            var viewPort2 = GetViewPort(element);
+            var viewBox2 = GetViewBox(element);
+            var (align, slice) = GetAlignSlice(element);
+
+            if (!viewPort2.HasValue || !viewBox2.HasValue)
+            {
+                return Matrix.Identity;
+            }
+
+            var viewPort = viewPort2.Value;
+            var viewBox = viewBox2.Value;
+
+            var scaleX = viewPort.Width / viewBox.Width;
+            var scaleY = viewPort.Height / viewBox.Height;
+
+            if (align != "none")
+            {
+                switch (slice)
+                {
+                    case "meet":
+                        if (scaleX < scaleY)
+                        {
+                            scaleY = scaleX;
+                        }
+                        else
+                        {
+                            scaleX = scaleY;
+                        }
+                        break;
+
+                    case "slice":
+                        if (scaleX > scaleY)
+                        {
+                            scaleY = scaleX;
+                        }
+                        else
+                        {
+                            scaleX = scaleY;
+                        }
+                        break;
+
+                    default:
+                        throw new ArgumentException("invalid argument");
+                }
+            }
+
+            Matrix matrix = Matrix.Identity;
+
+            if (align == "none")
+            {
+                matrix = Matrix.Identity;
+                matrix.Translate(-viewBox.X, -viewBox.Y);
+                matrix.Scale(scaleX, scaleY);
+                matrix.Translate(viewPort.X, viewPort.Y);
+            }
+            else
+            {
+                var xOperation = align.Substring(0, 4);
+                var yOperation = align.Substring(4, 4);
+
+                double translateX;
+                double translateY;
+
+                switch (xOperation)
+                {
+                    case "xmid":
+                        translateX = viewBox.Width / 2;
+                        break;
+
+                    case "xmax":
+                        translateX = viewBox.Width;
+                        break;
+
+                    default:
+                        throw new ArgumentException("invalid argument");
+                }
+
+                switch (yOperation)
+                {
+                    case "ymid":
+                        translateY = viewBox.Height / 2;
+                        break;
+
+                    case "ymax":
+                        translateY = viewBox.Height;
+                        break;
+
+                    default:
+                        throw new ArgumentException("invalid argument");
+                }
+
+                matrix.Translate(-viewBox.X - translateX, -viewBox.Y - translateY);
+                matrix.Scale(scaleX, scaleY);
+                matrix.Translate(viewPort.X + viewPort.Width / 2, viewPort.Y + viewPort.Height / 2);
+            }
+
+            return matrix;
+        }
+
+        /// <summary>
+        /// Get the viewport definition
+        /// </summary>
+        private Rect? GetViewPort(XElement element)
+        {
+            var x = DoubleAttributeParser.GetLength(element, "x", 0.0);
+            var y = DoubleAttributeParser.GetLength(element, "y", 0.0);
+
+            var width = DoubleAttributeParser.GetLengthPercentAuto(element, "width");
+            var height = DoubleAttributeParser.GetLengthPercentAuto(element, "height");
+
+            if (width.IsAuto || height.IsAuto)
+            {
+                return null;
+            }
+
+            return new Rect(new Point(x, y), new Size(width.Value, height.Value));
+        }
+
+        /// <summary>
+        /// Get the viewbox definition
+        /// </summary>
+        private Rect? GetViewBox(XElement element)
+        {
+            var viewBoxAttr = element.Attribute("viewBox");
+
+            if (viewBoxAttr == null)
+            {
+                return null;
+            }
+
+            var parser = new DoubleListParser();
+            var viewBox = parser.ParseDoubleList(viewBoxAttr.Value);
+
+            return new Rect(new Point(viewBox[0], viewBox[1]), new Size(viewBox[2], viewBox[3]));
+        }
+
+        /// <summary>
+        /// Get the align and slice parameter
+        /// </summary>
+        private (string, string) GetAlignSlice(XElement element)
+        {
+            string align;
+            string slice;
+            var preserveAspectRatioAttr = element.Attribute("preserveAspectRatio");
+
+            if (preserveAspectRatioAttr != null)
+            {
+                var list = preserveAspectRatioAttr.Value.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                align = list[0].ToLower();
+
+                if (list.Length > 1)
+                {
+                    slice = list[1];
+                }
+                else
+                {
+                    slice = "meet";
+                }
+            }
+            else
+            {
+                align = "xmidymid";
+                slice = "meet";
+            }
+
+            return (align, slice);
         }
 
         /// <summary>

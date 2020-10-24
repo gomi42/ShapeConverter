@@ -51,13 +51,8 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
             cssStyleCascade.PushStyles(shape);
 
-            var transform = cssStyleCascade.GetPropertyFromTop("transform");
-
-            if (!string.IsNullOrEmpty(transform))
-            {
-                var transformMatrix = TransformMatrixParser.GetTransformMatrix(transform);
-                currentTransformationMatrix = transformMatrix * currentTransformationMatrix;
-            }
+            var transformMatrix = cssStyleCascade.GetTransformMatrixFromTop();
+            currentTransformationMatrix = transformMatrix * currentTransformationMatrix;
 
             var geometry = GeometryParser.Parse(shape, currentTransformationMatrix);
 
