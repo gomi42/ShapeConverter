@@ -285,7 +285,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
             if (!string.IsNullOrEmpty(strVal))
             {
-                DoubleParser.ParseNumberPercent(strVal, out retVal);
+                (_, retVal) = DoubleParser.ParseNumberPercent(strVal);
             }
 
             return retVal;

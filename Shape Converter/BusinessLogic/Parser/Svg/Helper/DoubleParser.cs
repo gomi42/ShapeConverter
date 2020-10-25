@@ -47,10 +47,10 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
         /// <summary>
         /// Parse a value as length or percentage.
         /// </summary>
-        public static bool ParseLengthPercent(string strVal, out double retVal)
+        public static (bool, double) ParseLengthPercent(string strVal)
         {
             bool isPercentage = false;
-            retVal = 0;
+            double retVal = 0;
 
             var match = unitSplit.Match(strVal);
 
@@ -100,7 +100,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
                 }
             }
 
-            return isPercentage;
+            return (isPercentage, retVal);
         }
 
         /// <summary>
@@ -108,7 +108,9 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
         /// </summary>
         public static double ParseLength(string strVal)
         {
-            if (ParseLengthPercent(strVal, out double retVal))
+            var (percent, retVal) = ParseLengthPercent(strVal);
+
+            if (percent)
             {
                 throw new ArgumentException("unit not supported");
             }
@@ -119,10 +121,10 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
         /// <summary>
         /// Parse a value as number or percent.
         /// </summary>
-        public static bool ParseNumberPercent(string strVal, out double retVal)
+        public static (bool, double) ParseNumberPercent(string strVal)
         {
             bool isPercentage = false;
-            retVal = 0;
+            double retVal = 0;
 
             var match = unitSplit.Match(strVal);
 
@@ -147,7 +149,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
                 }
             }
 
-            return isPercentage;
+            return (isPercentage, retVal);
         }
 
         /// <summary>
@@ -163,26 +165,25 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
         /// </summary>
         public static DoubleLengthPercentAuto GetLengthPercentAuto(string strVal)
         {
-            DoubleLengthPercentAuto radius = new DoubleLengthPercentAuto();
+            DoubleLengthPercentAuto retVal = new DoubleLengthPercentAuto();
 
             if (strVal != null)
             {
                 if (strVal == "auto")
                 {
-                    radius.IsAuto = true;
+                    retVal.IsAuto = true;
                 }
                 else
                 {
-                    radius.IsPercentage = DoubleParser.ParseLengthPercent(strVal, out double retVal);
-                    radius.Value = retVal;
+                    (retVal.IsPercentage, retVal.Value) = ParseLengthPercent(strVal);
                 }
             }
             else
             {
-                radius.IsAuto = true;
+                retVal.IsAuto = true;
             }
 
-            return radius;
+            return retVal;
         }
     }
 }

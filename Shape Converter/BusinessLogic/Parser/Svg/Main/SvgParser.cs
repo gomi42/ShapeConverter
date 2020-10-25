@@ -26,6 +26,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Xml.Linq;
 using ShapeConverter.BusinessLogic.Generators;
+using ShapeConverter.BusinessLogic.Helper;
 using ShapeConverter.BusinessLogic.Parser.Svg.Helper;
 using ShapeConverter.BusinessLogic.Parser.Svg.Main;
 using ShapeConverter.Parser;
@@ -37,6 +38,14 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
     /// </summary>
     internal class SvgParser : IFileParser
     {
+        private class SvgViewBox
+        {
+            public Rect ViewBox;
+            public string Align;
+            public string Slice;
+        }
+
+        private Stack<SvgViewBox> svgViewBoxStack;
         CssStyleCascade cssStyleCascade;
         Dictionary<string, XElement> globalDefinitions;
 
@@ -73,8 +82,17 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             Matrix currentTransformationMatrix = Matrix.Identity;
             cssStyleCascade = new CssStyleCascade(root);
 
+            svgViewBoxStack = new Stack<SvgViewBox>();
+            var svgViewBox = new SvgViewBox
+            {
+                ViewBox = new Rect(0, 0, 100, 100),
+                Align = "none",
+                Slice = "meet"
+            };
+            svgViewBoxStack.Push(svgViewBox);
+
             ReadGlobalDefinitions(root);
-            GraphicVisual visual = ParseSVG(defaultNamespace, root, currentTransformationMatrix);
+            GraphicVisual visual = ParseSVG(defaultNamespace, root, currentTransformationMatrix, true);
             visual = OptimizeVisual.Optimize(visual);
 
             return visual;
@@ -83,12 +101,12 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
         /// <summary>
         /// Parse an SVG document fragment
         /// </summary>
-        private GraphicGroup ParseSVG(XNamespace ns, XElement element, Matrix matrix)
+        private GraphicGroup ParseSVG(XNamespace ns, XElement element, Matrix matrix, bool isTopLevelSvg)
         {
             cssStyleCascade.PushStyles(element);
 
-            var vbMatrix = GetViewBoxMatrix(element);
-            matrix = vbMatrix * matrix;
+            var (newViewBoxPushOnStack, viewBoxMatrix) = GetViewBoxMatrix(element, isTopLevelSvg);
+            matrix = viewBoxMatrix * matrix;
 
             var elementTransformationMatrix = cssStyleCascade.GetTransformMatrixFromTop();
             elementTransformationMatrix = elementTransformationMatrix * matrix;
@@ -97,6 +115,11 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
             group.Opacity = cssStyleCascade.GetNumberPercentFromTop("opacity", 1);
             Clipping.SetClipPath(group, elementTransformationMatrix, cssStyleCascade, globalDefinitions);
+
+            if (newViewBoxPushOnStack)
+            {
+                svgViewBoxStack.Pop();
+            }
 
             cssStyleCascade.Pop();
             return group;
@@ -142,7 +165,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
                     case "svg":
                     {
-                        var childGroup = ParseSVG(ns, element, matrix);
+                        var childGroup = ParseSVG(ns, element, matrix, false);
                         group.Childreen.Add(childGroup);
                         break;
                     }
@@ -173,19 +196,48 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
         /// <summary>
         /// Get the viewbox transformation matrix
         /// </summary>
-        private Matrix GetViewBoxMatrix(XElement element)
+        private (bool, Matrix) GetViewBoxMatrix(XElement element, bool isTopLevel)
         {
-            var viewPort2 = GetViewPort(element);
-            var viewBox2 = GetViewBox(element);
-            var (align, slice) = GetAlignSlice(element);
+            var viewPort = GetViewPort(element, isTopLevel);
+            var viewBox = GetViewBox(element);
 
-            if (!viewPort2.HasValue || !viewBox2.HasValue)
+            if (viewPort.IsEmpty && viewBox.IsEmpty)
             {
-                return Matrix.Identity;
+                return (false, Matrix.Identity);
             }
 
-            var viewPort = viewPort2.Value;
-            var viewBox = viewBox2.Value;
+            Matrix matrix;
+            bool newViewBoxPushOnStack = false;
+            string align;
+            string slice;
+
+            if (viewPort.IsEmpty)
+            {
+                var svgViewBox = svgViewBoxStack.Peek();
+                viewPort = new Rect(0, 0, svgViewBox.ViewBox.Width, svgViewBox.ViewBox.Height);
+            }
+
+            if (viewBox.IsEmpty)
+            {
+                var svgViewBox = svgViewBoxStack.Peek();
+                viewBox = svgViewBox.ViewBox;
+                align = svgViewBox.Align;
+                slice = svgViewBox.Slice;
+            }
+            else
+            {
+                (align, slice) = GetAlignSlice(element);
+
+                var svgViewBox = new SvgViewBox
+                {
+                    ViewBox = viewBox,
+                    Align = align,
+                    Slice = slice
+                };
+                svgViewBoxStack.Push(svgViewBox);
+
+                newViewBoxPushOnStack = true;
+            }
 
             var scaleX = viewPort.Width / viewBox.Width;
             var scaleY = viewPort.Height / viewBox.Height;
@@ -221,11 +273,10 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
                 }
             }
 
-            Matrix matrix = Matrix.Identity;
+            matrix = Matrix.Identity;
 
             if (align == "none")
             {
-                matrix = Matrix.Identity;
                 matrix.Translate(-viewBox.X, -viewBox.Y);
                 matrix.Scale(scaleX, scaleY);
                 matrix.Translate(viewPort.X, viewPort.Y);
@@ -271,38 +322,109 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
                 matrix.Translate(viewPort.X + viewPort.Width / 2, viewPort.Y + viewPort.Height / 2);
             }
 
-            return matrix;
+            return (newViewBoxPushOnStack, matrix);
         }
 
         /// <summary>
         /// Get the viewport definition
         /// </summary>
-        private Rect? GetViewPort(XElement element)
+        private Rect GetViewPort(XElement element, bool isTopLevel)
         {
-            var x = DoubleAttributeParser.GetLength(element, "x", 0.0);
-            var y = DoubleAttributeParser.GetLength(element, "y", 0.0);
+            bool isXPercent;
+            bool isYPercent;
+            double xLP;
+            double yLP;
 
-            var width = DoubleAttributeParser.GetLengthPercentAuto(element, "width");
-            var height = DoubleAttributeParser.GetLengthPercentAuto(element, "height");
-
-            if (width.IsAuto || height.IsAuto)
+            if (isTopLevel)
             {
-                return null;
+                isXPercent = false;
+                isYPercent = false;
+                xLP = 0.0;
+                yLP = 0.0;
+            }
+            else
+            {
+                (isXPercent, xLP) = DoubleAttributeParser.GetLengthPercent(element, "x", 0.0);
+                (isYPercent, yLP) = DoubleAttributeParser.GetLengthPercent(element, "y", 0.0);
             }
 
-            return new Rect(new Point(x, y), new Size(width.Value, height.Value));
+            var widthLPA = DoubleAttributeParser.GetLengthPercentAuto(element, "width");
+            var heightLPA = DoubleAttributeParser.GetLengthPercentAuto(element, "height");
+
+            if (DoubleUtilities.IsZero(xLP)
+                && DoubleUtilities.IsZero(yLP)
+                && widthLPA.IsAuto
+                && heightLPA.IsAuto)
+            {
+                return Rect.Empty;
+            }
+
+            double x;
+            double y;
+            double width;
+            double height;
+
+            var svgViewBox = svgViewBoxStack.Peek().ViewBox;
+
+            if (isXPercent)
+            {
+                x = svgViewBox.Width * xLP;
+            }
+            else
+            {
+                x = xLP;
+            }
+
+            if (isYPercent)
+            {
+                y = svgViewBox.Height * yLP;
+            }
+            else
+            {
+                y = yLP;
+            }
+
+            if (widthLPA.IsAuto)
+            {
+                width = svgViewBox.Width;
+            }
+            else
+            if (widthLPA.IsPercentage)
+            {
+                width = svgViewBox.Width * widthLPA.Value;
+            }
+            else
+            {
+                width = widthLPA.Value;
+            }
+
+            if (heightLPA.IsAuto)
+            {
+                height = svgViewBox.Height;
+            }
+            else
+            if (widthLPA.IsPercentage)
+            {
+                height = svgViewBox.Height * heightLPA.Value;
+            }
+            else
+            {
+                height = heightLPA.Value;
+            }
+
+            return new Rect(new Point(x, y), new Size(width, height));
         }
 
         /// <summary>
         /// Get the viewbox definition
         /// </summary>
-        private Rect? GetViewBox(XElement element)
+        private Rect GetViewBox(XElement element)
         {
             var viewBoxAttr = element.Attribute("viewBox");
 
             if (viewBoxAttr == null)
             {
-                return null;
+                return Rect.Empty;
             }
 
             var parser = new DoubleListParser();

@@ -38,8 +38,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
 
             if (xAttr != null)
             {
-                var dblStr = xAttr.Value;
-                retVal = DoubleParser.ParseLength(dblStr);
+                retVal = DoubleParser.ParseLength(xAttr.Value);
             }
 
             return retVal;
@@ -48,27 +47,43 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
         /// <summary>
         /// Converts the specified attribute to a double value
         /// </summary>
-        public static bool GetNumberPercent(XElement element, string name, double defaultValue, out double retVal)
+        public static (bool, double) GetNumberPercent(XElement element, string name, double defaultValue)
         {
             bool isPercentage = false;
-            retVal = defaultValue;
+            double retVal = defaultValue;
             XAttribute xAttr = element.Attribute(name);
 
             if (xAttr != null)
             {
-                var dblStr = xAttr.Value;
-                isPercentage = DoubleParser.ParseNumberPercent(dblStr, out retVal);
+                (isPercentage, retVal) = DoubleParser.ParseNumberPercent(xAttr.Value);
             }
 
-            return isPercentage;
+            return (isPercentage, retVal);
+        }
+
+        /// <summary>
+        /// Get a LengthPercent
+        /// </summary>
+        public static (bool, double) GetLengthPercent(XElement element, string attrName, double defaultValue)
+        {
+            bool isPercentage = false;
+            double retVal = defaultValue;
+            XAttribute xAttr = element.Attribute(attrName);
+
+            if (xAttr != null)
+            {
+                (isPercentage, retVal) = DoubleParser.ParseLengthPercent(xAttr.Value);
+            }
+
+            return (isPercentage, retVal);
         }
 
         /// <summary>
         /// Get a LengthPercentAuto attribute
         /// </summary>
-        public static DoubleLengthPercentAuto GetLengthPercentAuto(XElement path, string attrName)
+        public static DoubleLengthPercentAuto GetLengthPercentAuto(XElement element, string attrName)
         {
-            XAttribute xAttr = path.Attribute(attrName);
+            XAttribute xAttr = element.Attribute(attrName);
             return DoubleParser.GetLengthPercentAuto(xAttr?.Value);
         }
     }

@@ -473,10 +473,10 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
                 gradientBrush.GradientStops.Add(stop);
 
                 double retVal;
-                DoubleAttributeParser.GetNumberPercent(stopElem, "offset", 0, out retVal);
+                (_, retVal) = DoubleAttributeParser.GetNumberPercent(stopElem, "offset", 0);
                 stop.Position = retVal;
 
-                DoubleAttributeParser.GetNumberPercent(stopElem, "stop-opacity", 1, out retVal);
+                (_, retVal) = DoubleAttributeParser.GetNumberPercent(stopElem, "stop-opacity", 1);
                 var stopOpacity = retVal;
 
                 XAttribute colorAttr = stopElem.Attribute("stop-color");
