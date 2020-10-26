@@ -26,13 +26,22 @@ using System.Text.RegularExpressions;
 namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
 {
     /// <summary>
+    /// The percent base value selector
+    /// </summary>
+    internal enum PercentBaseSelector
+    {
+        ViewBoxWidth,
+        ViewBoxHeight,
+        ViewBoxDiagonal,
+        None
+    }
+
+    /// <summary>
     /// A DoubleLengthPercentAuto desciption
     /// </summary>
     public struct DoubleLengthPercentAuto
     {
         public bool IsAuto { get; set; }
-
-        public bool IsPercentage { get; set; }
 
         public double Value { get; set; }
     }
@@ -40,19 +49,123 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
     /// <summary>
     /// Parse a double value with units attached
     /// </summary>
-    internal static class DoubleParser
+    internal class DoubleParser
     {
-        private static Regex unitSplit = new Regex(@"^(?<value>[+-]?\d*\.?\d*)(?<unit>\S*)$");
+        private CssStyleCascade cssStyleCascade;
+        private static Regex doubleUnit = new Regex(@"^(?<value>(?:[+-]?(?:(?:\d*\.\d+)|(?:\d+\.?)))(?:[Ee][+-]?\d+)?)(?<unit>\S*)$");
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        public DoubleParser(CssStyleCascade cssStyleCascade)
+        {
+            this.cssStyleCascade = cssStyleCascade;
+        }
 
         /// <summary>
         /// Parse a value as length or percentage.
         /// </summary>
-        public static (bool, double) ParseLengthPercent(string strVal)
+        public double ParseLengthPercent(string strVal, PercentBaseSelector percentBaseSelector)
+        {
+            var (_, retVal) = ParseLengthPercentInternal(strVal, percentBaseSelector);
+
+            return retVal;
+        }
+
+        /// <summary>
+        /// Parse a value as length.
+        /// </summary>
+        public double ParseLength(string strVal)
+        {
+            var (percent, retVal) = ParseLengthPercentInternal(strVal, PercentBaseSelector.None);
+
+            if (percent)
+            {
+                throw new ArgumentException("unit not supported");
+            }
+
+            return retVal;
+        }
+
+        /// <summary>
+        /// Parse a value as number or percent.
+        /// </summary>
+        public static (bool, double) ParseNumberPercent(string strVal)
         {
             bool isPercentage = false;
             double retVal = 0;
 
-            var match = unitSplit.Match(strVal);
+            strVal = strVal.Trim();
+            var match = doubleUnit.Match(strVal);
+
+            if (match.Success)
+            {
+                var unit = match.Groups["unit"].Value;
+                strVal = match.Groups["value"].Value;
+                retVal = double.Parse(strVal, CultureInfo.InvariantCulture);
+
+                switch (unit)
+                {
+                    case "%":
+                        isPercentage = true;
+                        retVal /= 100.0;
+                        break;
+
+                    case "":
+                        break;
+
+                    default:
+                        throw new ArgumentException("unit not supported");
+                }
+            }
+
+            return (isPercentage, retVal);
+        }
+
+        /// <summary>
+        /// Parse a value as number.
+        /// </summary>
+        public static double ParseNumber(string strVal)
+        {
+            return double.Parse(strVal, CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Get a LengthPercentAuto attribute
+        /// </summary>
+        public DoubleLengthPercentAuto GetLengthPercentAuto(string strVal, PercentBaseSelector percentBaseSelector)
+        {
+            DoubleLengthPercentAuto retVal = new DoubleLengthPercentAuto();
+
+            if (strVal != null)
+            {
+                if (strVal == "auto")
+                {
+                    retVal.IsAuto = true;
+                }
+                else
+                {
+                    (_, retVal.Value) = ParseLengthPercentInternal(strVal, percentBaseSelector);
+                }
+            }
+            else
+            {
+                retVal.IsAuto = true;
+            }
+
+            return retVal;
+        }
+
+        /// <summary>
+        /// Parse a value as length or percentage.
+        /// </summary>
+        private (bool, double) ParseLengthPercentInternal(string strVal, PercentBaseSelector percentBaseSelector)
+        {
+            bool isPercentage = false;
+            double retVal = 0;
+
+            strVal = strVal.Trim();
+            var match = doubleUnit.Match(strVal);
 
             if (match.Success)
             {
@@ -90,10 +203,69 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
                     case "px":
                         break;
 
+                    case "vw":
+                        var width = cssStyleCascade.GetCurrentViewBox().ViewBox.Width;
+                        retVal = retVal / 100.0 * width;
+                        break;
+
+                    case "vh":
+                        var height = cssStyleCascade.GetCurrentViewBox().ViewBox.Height;
+                        retVal = retVal / 100.0 * height;
+                        break;
+
+                    case "vvmin":
+                    {
+                        var viewBox = cssStyleCascade.GetCurrentViewBox().ViewBox;
+
+                        if (viewBox.Width < viewBox.Height)
+                        {
+                            retVal = retVal / 100.0 * viewBox.Width;
+                        }
+                        else
+                        {
+                            retVal = retVal / 100.0 * viewBox.Height;
+                        }
+                        break;
+                    }
+
+                    case "vvmax":
+                    {
+                        var viewBox = cssStyleCascade.GetCurrentViewBox().ViewBox;
+
+                        if (viewBox.Width > viewBox.Height)
+                        {
+                            retVal = retVal / 100.0 * viewBox.Width;
+                        }
+                        else
+                        {
+                            retVal = retVal / 100.0 * viewBox.Height;
+                        }
+                        break;
+                    }
+
                     case "%":
+                    {
                         isPercentage = true;
                         retVal /= 100.0;
+
+                        var viewBox = cssStyleCascade.GetCurrentViewBox().ViewBox;
+
+                        switch (percentBaseSelector)
+                        {
+                            case PercentBaseSelector.ViewBoxWidth:
+                                retVal = viewBox.Width * retVal;
+                                break;
+
+                            case PercentBaseSelector.ViewBoxHeight:
+                                retVal = viewBox.Height * retVal;
+                                break;
+
+                            case PercentBaseSelector.ViewBoxDiagonal:
+                                retVal = Math.Sqrt(viewBox.Width * viewBox.Width + viewBox.Height * viewBox.Height) * retVal;
+                                break;
+                        }
                         break;
+                    }
 
                     default:
                         throw new ArgumentException("unit not supported");
@@ -101,89 +273,6 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
             }
 
             return (isPercentage, retVal);
-        }
-
-        /// <summary>
-        /// Parse a value as length.
-        /// </summary>
-        public static double ParseLength(string strVal)
-        {
-            var (percent, retVal) = ParseLengthPercent(strVal);
-
-            if (percent)
-            {
-                throw new ArgumentException("unit not supported");
-            }
-
-            return retVal;
-        }
-
-        /// <summary>
-        /// Parse a value as number or percent.
-        /// </summary>
-        public static (bool, double) ParseNumberPercent(string strVal)
-        {
-            bool isPercentage = false;
-            double retVal = 0;
-
-            var match = unitSplit.Match(strVal);
-
-            if (match.Success)
-            {
-                var unit = match.Groups["unit"].Value;
-                strVal = match.Groups["value"].Value;
-                retVal = double.Parse(strVal, CultureInfo.InvariantCulture);
-
-                switch (unit)
-                {
-                    case "%":
-                        isPercentage = true;
-                        retVal /= 100.0;
-                        break;
-
-                    case "":
-                        break;
-
-                    default:
-                        throw new ArgumentException("unit not supported");
-                }
-            }
-
-            return (isPercentage, retVal);
-        }
-
-        /// <summary>
-        /// Parse a value as number.
-        /// </summary>
-        public static double ParseNumber(string strVal)
-        {
-            return double.Parse(strVal, CultureInfo.InvariantCulture);
-        }
-
-        /// <summary>
-        /// Get a LengthPercentAuto attribute
-        /// </summary>
-        public static DoubleLengthPercentAuto GetLengthPercentAuto(string strVal)
-        {
-            DoubleLengthPercentAuto retVal = new DoubleLengthPercentAuto();
-
-            if (strVal != null)
-            {
-                if (strVal == "auto")
-                {
-                    retVal.IsAuto = true;
-                }
-                else
-                {
-                    (retVal.IsPercentage, retVal.Value) = ParseLengthPercent(strVal);
-                }
-            }
-            else
-            {
-                retVal.IsAuto = true;
-            }
-
-            return retVal;
         }
     }
 }

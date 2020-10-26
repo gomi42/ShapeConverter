@@ -25,11 +25,13 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Media;
 using System.Xml.Linq;
+using ShapeConverter.BusinessLogic.Parser.Svg.Helper;
 
 namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 {
     internal class Clipping
     {
+        private GeometryParser geometryParser;
         private CssStyleCascade cssStyleCascade;
         private Dictionary<string, XElement> globalDefinitions;
 
@@ -41,12 +43,14 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         {
             this.cssStyleCascade = cssStyleCascade;
             this.globalDefinitions = globalDefinitions;
+
+            geometryParser = new GeometryParser(cssStyleCascade);
         }
 
         /// <summary>
         /// Tests whether a clip path is set
         /// </summary>
-        public static bool IsClipPathSet(CssStyleCascade cssStyleCascade)
+        public bool IsClipPathSet()
         {
             var clipPath = cssStyleCascade.GetPropertyFromTop("clip-path");
 
@@ -57,8 +61,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         /// Set the clipping of the group
         /// </summary>
         public void SetClipPath(GraphicGroup group, 
-                                Matrix currentTransformationMatrix,
-                                ViewBoxSize viewBoxSize)
+                                Matrix currentTransformationMatrix)
         {
             var clipPath = cssStyleCascade.GetPropertyFromTop("clip-path");
 
@@ -84,7 +87,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
             var clipElem = globalDefinitions[id];
 
-            // richt now we support only a single path for the clip geometry
+            // right now we support only a single path for the clip geometry
             var shapeElement = clipElem.Elements().First();
 
             if (shapeElement == null)
@@ -92,7 +95,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                 return;
             }
 
-            var clipGeometry = GeometryParser.Parse(shapeElement, currentTransformationMatrix, viewBoxSize);
+            var clipGeometry = geometryParser.Parse(shapeElement, currentTransformationMatrix);
             clipGeometry.FillRule = GraphicFillRule.NoneZero;
 
             var clipRule = cssStyleCascade.GetProperty("clip-rule");

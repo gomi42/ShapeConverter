@@ -23,6 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Windows;
 using System.Windows.Media;
 using System.Xml.Linq;
 using ShapeConverter.BusinessLogic.Parser.Svg.CSS;
@@ -30,6 +31,19 @@ using ShapeConverter.BusinessLogic.Parser.Svg.Helper;
 
 namespace ShapeConverter.BusinessLogic.Parser.Svg
 {
+    /// <summary>
+    /// The svg view box definition
+    /// </summary>
+    internal struct SvgViewBox
+    {
+        public Rect ViewBox;
+        public string Align;
+        public string Slice;
+    }
+
+    /// <summary>
+    /// The Css style cascade
+    /// </summary>
     internal class CssStyleCascade
     {
         readonly string[] presentationAttributes = 
@@ -54,6 +68,8 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
         private List<CssStyleDeclaration> styleDeclarations = new List<CssStyleDeclaration>();
         private List<CssStyleSheet> cssStyleSheets;
+        private Stack<SvgViewBox> svgViewBoxStack;
+        private DoubleParser doubleParser;
 
         /// <summary>
         /// Constructor
@@ -61,6 +77,8 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
         public CssStyleCascade(XElement element)
         {
             cssStyleSheets = new List<CssStyleSheet>();
+            svgViewBoxStack = new Stack<SvgViewBox>();
+            doubleParser = new DoubleParser(this);
 
             ReadGlobalStyles(element);
         }
@@ -241,20 +259,27 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
         }
 
         /// <summary>
-        /// Get an attribute as double from the cascade
+        /// Push a new view box on the stack
         /// </summary>
-        public double GetLength(string name, double defaultValue)
+        public void PushViewBox(SvgViewBox svgViewBox)
         {
-            double retVal = defaultValue;
+            svgViewBoxStack.Push(svgViewBox);
+        }
 
-            var strVal = GetProperty(name);
+        /// <summary>
+        /// Pop view box from the stack
+        /// </summary>
+        public void PopViewBox()
+        {
+            svgViewBoxStack.Pop();
+        }
 
-            if (!string.IsNullOrEmpty(strVal))
-            {
-                retVal = DoubleParser.ParseLength(strVal);
-            }
-
-            return retVal;
+        /// <summary>
+        /// Get the current view box
+        /// </summary>
+        public SvgViewBox GetCurrentViewBox()
+        {
+            return svgViewBoxStack.Peek();
         }
 
         /// <summary>

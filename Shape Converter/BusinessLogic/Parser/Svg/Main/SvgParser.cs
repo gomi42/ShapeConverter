@@ -33,37 +33,16 @@ using ShapeConverter.Parser;
 
 namespace ShapeConverter.BusinessLogic.Parser.Svg
 {
-    internal class ViewBoxSize
-    {
-        public double Width { get; set; }
-        public double Height { get; set; }
-
-        public double Diagonal
-        {
-            get
-            {
-                return Math.Sqrt(Width * Width + Height * Height);
-            }
-        }
-    }
-
     /// <summary>
     /// The SVG parser
     /// </summary>
     internal class SvgParser : IFileParser
     {
-        private class SvgViewBox
-        {
-            public Rect ViewBox;
-            public string Align;
-            public string Slice;
-        }
-
         private ShapeParser shapeParser;
         private Clipping clipping;
-        private Stack<SvgViewBox> svgViewBoxStack;
         private CssStyleCascade cssStyleCascade;
         private Dictionary<string, XElement> globalDefinitions;
+        private DoubleParser doubleParser;
 
         /// <summary>
         /// Parse the given file
@@ -98,15 +77,15 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             Matrix currentTransformationMatrix = Matrix.Identity;
             cssStyleCascade = new CssStyleCascade(root);
 
-            svgViewBoxStack = new Stack<SvgViewBox>();
             var svgViewBox = new SvgViewBox
             {
                 ViewBox = new Rect(0, 0, 100, 100),
                 Align = "none",
                 Slice = "meet"
             };
-            svgViewBoxStack.Push(svgViewBox);
+            cssStyleCascade.PushViewBox(svgViewBox);
 
+            doubleParser = new DoubleParser(cssStyleCascade);
             ReadGlobalDefinitions(root);
             shapeParser = new ShapeParser(defaultNamespace, cssStyleCascade, globalDefinitions);
             clipping = new Clipping(cssStyleCascade, globalDefinitions);
@@ -133,11 +112,11 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             var group = ParseGroupChildren(element, elementTransformationMatrix);
 
             group.Opacity = cssStyleCascade.GetNumberPercentFromTop("opacity", 1);
-            clipping.SetClipPath(group, elementTransformationMatrix, GetCurrentViewBoxSize());
+            clipping.SetClipPath(group, elementTransformationMatrix);
 
             if (newViewBoxPushOnStack)
             {
-                svgViewBoxStack.Pop();
+                cssStyleCascade.PopViewBox();
             }
 
             cssStyleCascade.Pop();
@@ -157,7 +136,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             var group = ParseGroupChildren(element, elementTransformationMatrix);
 
             group.Opacity = cssStyleCascade.GetNumberPercentFromTop("opacity", 1);
-            clipping.SetClipPath(group, elementTransformationMatrix, GetCurrentViewBoxSize());
+            clipping.SetClipPath(group, elementTransformationMatrix);
 
             cssStyleCascade.Pop();
             return group;
@@ -197,7 +176,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
                     default:
                     {
-                        var shape = shapeParser.Parse(element, matrix, GetCurrentViewBoxSize());
+                        var shape = shapeParser.Parse(element, matrix);
 
                         if (shape != null)
                         {
@@ -209,19 +188,6 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             }
 
             return group;
-        }
-
-        /// <summary>
-        /// Return the current viewbox size
-        /// </summary>
-        private ViewBoxSize GetCurrentViewBoxSize()
-        {
-            var svgViewBox = svgViewBoxStack.Peek();
-            return new ViewBoxSize
-            {
-                Width = svgViewBox.ViewBox.Width,
-                Height = svgViewBox.ViewBox.Height
-            };
         }
 
         /// <summary>
@@ -244,13 +210,13 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
             if (viewPort.IsEmpty)
             {
-                var svgViewBox = svgViewBoxStack.Peek();
+                var svgViewBox = cssStyleCascade.GetCurrentViewBox();
                 viewPort = new Rect(0, 0, svgViewBox.ViewBox.Width, svgViewBox.ViewBox.Height);
             }
 
             if (viewBox.IsEmpty)
             {
-                var svgViewBox = svgViewBoxStack.Peek();
+                var svgViewBox = cssStyleCascade.GetCurrentViewBox();
                 viewBox = svgViewBox.ViewBox;
                 align = svgViewBox.Align;
                 slice = svgViewBox.Slice;
@@ -265,7 +231,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
                     Align = align,
                     Slice = slice
                 };
-                svgViewBoxStack.Push(svgViewBox);
+                cssStyleCascade.PushViewBox(svgViewBox);
 
                 newViewBoxPushOnStack = true;
             }
@@ -361,68 +327,39 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
         /// </summary>
         private Rect GetViewPort(XElement element, bool isTopLevel)
         {
-            bool isXPercent;
-            bool isYPercent;
-            double xLP;
-            double yLP;
+            double x;
+            double y;
 
             if (isTopLevel)
             {
-                isXPercent = false;
-                isYPercent = false;
-                xLP = 0.0;
-                yLP = 0.0;
+                x = 0.0;
+                y = 0.0;
             }
             else
             {
-                (isXPercent, xLP) = DoubleAttributeParser.GetLengthPercent(element, "x", 0.0);
-                (isYPercent, yLP) = DoubleAttributeParser.GetLengthPercent(element, "y", 0.0);
+                x = doubleParser.GetLengthPercent(element, "x", 0.0, PercentBaseSelector.ViewBoxWidth);
+                y = doubleParser.GetLengthPercent(element, "y", 0.0, PercentBaseSelector.ViewBoxHeight);
             }
 
-            var widthLPA = DoubleAttributeParser.GetLengthPercentAuto(element, "width");
-            var heightLPA = DoubleAttributeParser.GetLengthPercentAuto(element, "height");
+            var widthLPA = doubleParser.GetLengthPercentAuto(element, "width", PercentBaseSelector.ViewBoxWidth);
+            var heightLPA = doubleParser.GetLengthPercentAuto(element, "height", PercentBaseSelector.ViewBoxHeight);
 
-            if (DoubleUtilities.IsZero(xLP)
-                && DoubleUtilities.IsZero(yLP)
+            if (DoubleUtilities.IsZero(x)
+                && DoubleUtilities.IsZero(y)
                 && widthLPA.IsAuto
                 && heightLPA.IsAuto)
             {
                 return Rect.Empty;
             }
 
-            double x;
-            double y;
             double width;
             double height;
 
-            var svgViewBox = svgViewBoxStack.Peek().ViewBox;
-
-            if (isXPercent)
-            {
-                x = svgViewBox.Width * xLP;
-            }
-            else
-            {
-                x = xLP;
-            }
-
-            if (isYPercent)
-            {
-                y = svgViewBox.Height * yLP;
-            }
-            else
-            {
-                y = yLP;
-            }
+            var svgViewBox = cssStyleCascade.GetCurrentViewBox().ViewBox;
 
             if (widthLPA.IsAuto)
             {
                 width = svgViewBox.Width;
-            }
-            else
-            if (widthLPA.IsPercentage)
-            {
-                width = svgViewBox.Width * widthLPA.Value;
             }
             else
             {
@@ -432,11 +369,6 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             if (heightLPA.IsAuto)
             {
                 height = svgViewBox.Height;
-            }
-            else
-            if (widthLPA.IsPercentage)
-            {
-                height = svgViewBox.Height * heightLPA.Value;
             }
             else
             {

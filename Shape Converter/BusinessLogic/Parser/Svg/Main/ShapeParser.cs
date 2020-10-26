@@ -35,11 +35,13 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
     /// </summary>
     internal class ShapeParser
     {
+        private GeometryParser geometryParser;
         private Clipping clipping;
         private Matrix currentTransformationMatrix;
         private CssStyleCascade cssStyleCascade;
         private Dictionary<string, XElement> globalDefinitions;
         private XNamespace svgNamespace;
+        private DoubleParser doubleParser;
 
         /// <summary>
         /// Constructor
@@ -52,15 +54,16 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             this.cssStyleCascade = cssStyleCascade;
             this.globalDefinitions = globalDefinitions;
 
+            geometryParser = new GeometryParser(cssStyleCascade);
             clipping = new Clipping(cssStyleCascade, globalDefinitions);
+            doubleParser = new DoubleParser(cssStyleCascade);
         }
 
         /// <summary>
         /// Parse a single SVG shape
         /// </summary>
         public GraphicVisual Parse(XElement shape,
-                                   Matrix currentTransformationMatrix,
-                                   ViewBoxSize viewBoxSize)
+                                   Matrix currentTransformationMatrix)
         {
             GraphicVisual graphicVisual = null;
 
@@ -69,7 +72,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             var transformMatrix = cssStyleCascade.GetTransformMatrixFromTop();
             currentTransformationMatrix = transformMatrix * currentTransformationMatrix;
 
-            var geometry = GeometryParser.Parse(shape, currentTransformationMatrix, viewBoxSize);
+            var geometry = geometryParser.Parse(shape, currentTransformationMatrix);
 
             if (geometry != null)
             {
@@ -79,16 +82,16 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
                 this.currentTransformationMatrix = currentTransformationMatrix;
 
-                SetFillAndStroke(shape, graphicPath, viewBoxSize);
+                SetFillAndStroke(shape, graphicPath);
 
-                if (Clipping.IsClipPathSet(cssStyleCascade))
+                if (clipping.IsClipPathSet())
                 {
                     // shapes don't support clipping, create a group around it
                     var group = new GraphicGroup();
                     graphicVisual = group;
                     group.Childreen.Add(graphicPath);
 
-                    clipping.SetClipPath(group, currentTransformationMatrix, viewBoxSize);
+                    clipping.SetClipPath(group, currentTransformationMatrix);
                 }
             }
 
@@ -100,7 +103,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
         /// <summary>
         /// Set all colors of the graphic path
         /// </summary>
-        private void SetFillAndStroke(XElement path, GraphicPath graphicPath, ViewBoxSize viewBoxSize)
+        private void SetFillAndStroke(XElement path, GraphicPath graphicPath)
         {
             // fill
             graphicPath.FillBrush = CreateBrush(path, "fill", true, graphicPath);
@@ -110,11 +113,11 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
             if (graphicPath.StrokeBrush != null)
             {
-                graphicPath.StrokeThickness = MatrixUtilities.TransformScale(GetLengthPercentFromCascade("stroke-width", 1, viewBoxSize.Diagonal), currentTransformationMatrix);
+                graphicPath.StrokeThickness = MatrixUtilities.TransformScale(GetLengthPercentFromCascade("stroke-width", 1), currentTransformationMatrix);
                 graphicPath.StrokeMiterLimit = MatrixUtilities.TransformScale(cssStyleCascade.GetNumber("stroke-miterlimit", 4), currentTransformationMatrix);
                 graphicPath.StrokeLineCap = GetLineCap();
                 graphicPath.StrokeLineJoin = GetLineJoin();
-                graphicPath.StrokeDashOffset = MatrixUtilities.TransformScale(GetLengthPercentFromCascade("stroke-dashoffset", 0, viewBoxSize.Diagonal), currentTransformationMatrix) / graphicPath.StrokeThickness;
+                graphicPath.StrokeDashOffset = MatrixUtilities.TransformScale(GetLengthPercentFromCascade("stroke-dashoffset", 0), currentTransformationMatrix) / graphicPath.StrokeThickness;
                 graphicPath.StrokeDashes = GetDashes(graphicPath.StrokeThickness);
             }
         }
@@ -122,21 +125,15 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
         /// <summary>
         /// Get a double attribute from a length or percent from the cascade
         /// </summary>
-        private double GetLengthPercentFromCascade(string attrName, double defaultValue, double percentBaseValue)
+        private double GetLengthPercentFromCascade(string attrName, double defaultValue)
         {
             double retVal;
-            bool isPercent;
 
             var strVal = cssStyleCascade.GetProperty(attrName);
 
             if (!string.IsNullOrEmpty(strVal))
             {
-                (isPercent, retVal) = DoubleParser.ParseLengthPercent(strVal);
-
-                if (isPercent)
-                {
-                    retVal = percentBaseValue * retVal;
-                }
+                retVal = doubleParser.ParseLengthPercent(strVal, PercentBaseSelector.ViewBoxDiagonal);
             }
             else
             {
@@ -340,12 +337,12 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
                     Matrix matrix = GetGradientTransformMatrix(gradientElem);
 
-                    var x = DoubleAttributeParser.GetLength(gradientElem, "x1", 0);
-                    var y = DoubleAttributeParser.GetLength(gradientElem, "y1", 0);
+                    var x = doubleParser.GetLength(gradientElem, "x1", 0);
+                    var y = doubleParser.GetLength(gradientElem, "y1", 0);
                     gradient.StartPoint = new Point(x, y) * matrix;
 
-                    x = DoubleAttributeParser.GetLength(gradientElem, "x2", 1);
-                    y = DoubleAttributeParser.GetLength(gradientElem, "y2", 0);
+                    x = doubleParser.GetLength(gradientElem, "x2", 1);
+                    y = doubleParser.GetLength(gradientElem, "y2", 0);
                     gradient.EndPoint = new Point(x, y) * matrix;
 
                     // see comment in LinearGradientShading.cs of the pdf parser in GetBrush for more details
@@ -370,15 +367,15 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
                     Matrix matrix = GetGradientTransformMatrix(gradientElem);
 
-                    var x = DoubleAttributeParser.GetLength(gradientElem, "cx", 0.5);
-                    var y = DoubleAttributeParser.GetLength(gradientElem, "cy", 0.5);
+                    var x = doubleParser.GetLength(gradientElem, "cx", 0.5);
+                    var y = doubleParser.GetLength(gradientElem, "cy", 0.5);
                     gradient.EndPoint = new Point(x, y) * matrix;
 
-                    x = DoubleAttributeParser.GetLength(gradientElem, "fx", x);
-                    y = DoubleAttributeParser.GetLength(gradientElem, "fy", y);
+                    x = doubleParser.GetLength(gradientElem, "fx", x);
+                    y = doubleParser.GetLength(gradientElem, "fy", y);
                     gradient.StartPoint = new Point(x, y) * matrix;
 
-                    var r = DoubleAttributeParser.GetLength(gradientElem, "r", 0);
+                    var r = doubleParser.GetLength(gradientElem, "r", 0);
                     gradient.RadiusX = r;
                     gradient.RadiusY = r;
 
@@ -512,10 +509,10 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
                 gradientBrush.GradientStops.Add(stop);
 
                 double retVal;
-                (_, retVal) = DoubleAttributeParser.GetNumberPercent(stopElem, "offset", 0);
+                (_, retVal) = doubleParser.GetNumberPercent(stopElem, "offset", 0);
                 stop.Position = retVal;
 
-                (_, retVal) = DoubleAttributeParser.GetNumberPercent(stopElem, "stop-opacity", 1);
+                (_, retVal) = doubleParser.GetNumberPercent(stopElem, "stop-opacity", 1);
                 var stopOpacity = retVal;
 
                 XAttribute colorAttr = stopElem.Attribute("stop-color");
