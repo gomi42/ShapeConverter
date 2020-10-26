@@ -20,7 +20,6 @@
 // along with this program. If not, see<http://www.gnu.org/licenses/>.
 
 using System;
-using System.Globalization;
 using System.Windows;
 using System.Windows.Media;
 using System.Xml.Linq;
@@ -31,13 +30,17 @@ using ShapeConverter.Parser.StreamGeometry;
 
 namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 {
+    /// <summary>
+    /// The GeometryParser parses a single shape into a GraphicPathGeometry
+    /// </summary>
     internal static class GeometryParser
     {
         /// <summary>
         /// Parse an SVG shape and return a GraphicPathGeometry
         /// </summary>
         public static GraphicPathGeometry Parse(XElement shape,
-                                                Matrix currentTransformationMatrix)
+                                         Matrix currentTransformationMatrix,
+                                         ViewBoxSize viewBoxSize)
         {
             GraphicPathGeometry geometry = null;
 
@@ -52,19 +55,19 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                     break;
 
                 case "circle":
-                    geometry = ParseCircle(shape);
+                    geometry = ParseCircle(shape, viewBoxSize);
                     break;
 
                 case "ellipse":
-                    geometry = ParseEllipse(shape);
+                    geometry = ParseEllipse(shape, viewBoxSize);
                     break;
 
                 case "rect":
-                    geometry = ParseRect(shape);
+                    geometry = ParseRect(shape, viewBoxSize);
                     break;
 
                 case "line":
-                    geometry = ParseLine(shape);
+                    geometry = ParseLine(shape, viewBoxSize);
                     break;
 
                 case "polyline":
@@ -97,12 +100,12 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         /// <summary>
         /// Parse a line
         /// </summary>
-        private static GraphicPathGeometry ParseLine(XElement path)
+        private static GraphicPathGeometry ParseLine(XElement path, ViewBoxSize viewBoxSize)
         {
-            var x1 = GetDoubleAttr(path, "x1");
-            var y1 = GetDoubleAttr(path, "y1");
-            var x2 = GetDoubleAttr(path, "x2");
-            var y2 = GetDoubleAttr(path, "y2");
+            var x1 = GetLengthPercentAttr(path, "x1", viewBoxSize.Width);
+            var y1 = GetLengthPercentAttr(path, "y1", viewBoxSize.Height);
+            var x2 = GetLengthPercentAttr(path, "x2", viewBoxSize.Width);
+            var y2 = GetLengthPercentAttr(path, "y2", viewBoxSize.Height);
 
             GraphicPathGeometry geometry = new GraphicPathGeometry();
             var move = new GraphicMoveSegment { StartPoint = new Point(x1, y1) };
@@ -172,12 +175,12 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         /// <summary>
         /// Parse a rectangle
         /// </summary>
-        private static GraphicPathGeometry ParseRect(XElement path)
+        private static GraphicPathGeometry ParseRect(XElement path, ViewBoxSize viewBoxSize)
         {
-            var x = GetDoubleAttr(path, "x");
-            var y = GetDoubleAttr(path, "y");
-            var width = GetDoubleAttr(path, "width");
-            var height = GetDoubleAttr(path, "height");
+            var x = GetLengthPercentAttr(path, "x", viewBoxSize.Width);
+            var y = GetLengthPercentAttr(path, "y", viewBoxSize.Height);
+            var width = GetLengthPercentAttr(path, "width", viewBoxSize.Width);
+            var height = GetLengthPercentAttr(path, "height", viewBoxSize.Height);
             var rx = DoubleAttributeParser.GetLengthPercentAuto(path, "rx");
             var ry = DoubleAttributeParser.GetLengthPercentAuto(path, "ry");
 
@@ -195,7 +198,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                 {
                     if (rx.IsPercentage)
                     {
-                        rxVal = width * rx.Value;
+                        rxVal = viewBoxSize.Width * rx.Value;
                     }
                     else
                     {
@@ -207,7 +210,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                 {
                     if (ry.IsPercentage)
                     {
-                        ryVal = height * ry.Value;
+                        ryVal = viewBoxSize.Height * ry.Value;
                     }
                     else
                     {
@@ -243,11 +246,11 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         /// <summary>
         /// Parse a circle
         /// </summary>
-        private static GraphicPathGeometry ParseCircle(XElement path)
+        private static GraphicPathGeometry ParseCircle(XElement path, ViewBoxSize viewBoxSize)
         {
-            var cx = GetDoubleAttr(path, "cx");
-            var cy = GetDoubleAttr(path, "cy");
-            var radius = GetDoubleAttr(path, "r");
+            var cx = GetLengthPercentAttr(path, "cx", viewBoxSize.Width);
+            var cy = GetLengthPercentAttr(path, "cy", viewBoxSize.Height);
+            var radius = GetLengthPercentAttr(path, "r", viewBoxSize.Diagonal);
 
             var ellipse = EllipseToGeometryConverter.EllipseToGeometry(new Point(cx, cy), radius, radius);
 
@@ -257,32 +260,42 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         /// <summary>
         /// Parse an ellipse
         /// </summary>
-        private static GraphicPathGeometry ParseEllipse(XElement path)
+        private static GraphicPathGeometry ParseEllipse(XElement path, ViewBoxSize viewBoxSize)
         {
-            var cx = GetDoubleAttr(path, "cx");
-            var cy = GetDoubleAttr(path, "cy");
+            var cx = GetLengthPercentAttr(path, "cx", viewBoxSize.Width);
+            var cy = GetLengthPercentAttr(path, "cy", viewBoxSize.Height);
             var rx = DoubleAttributeParser.GetLengthPercentAuto(path, "rx");
             var ry = DoubleAttributeParser.GetLengthPercentAuto(path, "ry");
 
             double rxVal;
             double ryVal;
 
-            if (!rx.IsAuto)
+            if (rx.IsPercentage)
             {
-                rxVal = rx.Value;
+                rxVal = viewBoxSize.Width * rx.Value;
             }
             else
+            if (rx.IsAuto)
             {
                 rxVal = 0.0;
             }
-
-            if (!ry.IsAuto)
+            else
             {
-                ryVal = ry.Value;
+                rxVal = rx.Value;
+            }
+
+            if (ry.IsPercentage)
+            {
+                ryVal = viewBoxSize.Height * ry.Value;
+            }
+            else
+            if (ry.IsAuto)
+            {
+                ryVal = rxVal;
             }
             else
             {
-                ryVal = rxVal;
+                ryVal = ry.Value;
             }
 
             if (rx.IsAuto)
@@ -298,9 +311,19 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         /// <summary>
         /// Get a double attribute, if it doesn't exist it defaults to 0
         /// </summary>
-        private static double GetDoubleAttr(XElement path, string attrName)
+        private static double GetLengthPercentAttr(XElement path, string attrName, double percentBaseValue)
         {
-            return DoubleAttributeParser.GetLength(path, attrName, 0.0);
+            double retVal;
+            bool isPercent;
+
+            (isPercent, retVal) = DoubleAttributeParser.GetLengthPercent(path, attrName, 0.0);
+
+            if (isPercent)
+            {
+                retVal = percentBaseValue * retVal;
+            }
+
+            return retVal;
         }
     }
 }

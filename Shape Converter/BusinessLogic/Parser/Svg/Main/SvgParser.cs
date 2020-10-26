@@ -33,6 +33,20 @@ using ShapeConverter.Parser;
 
 namespace ShapeConverter.BusinessLogic.Parser.Svg
 {
+    internal class ViewBoxSize
+    {
+        public double Width { get; set; }
+        public double Height { get; set; }
+
+        public double Diagonal
+        {
+            get
+            {
+                return Math.Sqrt(Width * Width + Height * Height);
+            }
+        }
+    }
+
     /// <summary>
     /// The SVG parser
     /// </summary>
@@ -45,9 +59,11 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             public string Slice;
         }
 
+        private ShapeParser shapeParser;
+        private Clipping clipping;
         private Stack<SvgViewBox> svgViewBoxStack;
-        CssStyleCascade cssStyleCascade;
-        Dictionary<string, XElement> globalDefinitions;
+        private CssStyleCascade cssStyleCascade;
+        private Dictionary<string, XElement> globalDefinitions;
 
         /// <summary>
         /// Parse the given file
@@ -92,7 +108,10 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             svgViewBoxStack.Push(svgViewBox);
 
             ReadGlobalDefinitions(root);
-            GraphicVisual visual = ParseSVG(defaultNamespace, root, currentTransformationMatrix, true);
+            shapeParser = new ShapeParser(defaultNamespace, cssStyleCascade, globalDefinitions);
+            clipping = new Clipping(cssStyleCascade, globalDefinitions);
+
+            GraphicVisual visual = ParseSVG(root, currentTransformationMatrix, true);
             visual = OptimizeVisual.Optimize(visual);
 
             return visual;
@@ -101,7 +120,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
         /// <summary>
         /// Parse an SVG document fragment
         /// </summary>
-        private GraphicGroup ParseSVG(XNamespace ns, XElement element, Matrix matrix, bool isTopLevelSvg)
+        private GraphicGroup ParseSVG(XElement element, Matrix matrix, bool isTopLevelSvg)
         {
             cssStyleCascade.PushStyles(element);
 
@@ -111,10 +130,10 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             var elementTransformationMatrix = cssStyleCascade.GetTransformMatrixFromTop();
             elementTransformationMatrix = elementTransformationMatrix * matrix;
 
-            var group = ParseGroupChildren(ns, element, elementTransformationMatrix);
+            var group = ParseGroupChildren(element, elementTransformationMatrix);
 
             group.Opacity = cssStyleCascade.GetNumberPercentFromTop("opacity", 1);
-            Clipping.SetClipPath(group, elementTransformationMatrix, cssStyleCascade, globalDefinitions);
+            clipping.SetClipPath(group, elementTransformationMatrix, GetCurrentViewBoxSize());
 
             if (newViewBoxPushOnStack)
             {
@@ -128,17 +147,17 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
         /// <summary>
         /// Parse an g container
         /// </summary>
-        private GraphicGroup ParseGContainer(XNamespace ns, XElement element, Matrix matrix)
+        private GraphicGroup ParseGContainer(XElement element, Matrix matrix)
         {
             cssStyleCascade.PushStyles(element);
 
             var elementTransformationMatrix = cssStyleCascade.GetTransformMatrixFromTop();
             elementTransformationMatrix = elementTransformationMatrix * matrix;
 
-            var group = ParseGroupChildren(ns, element, elementTransformationMatrix);
+            var group = ParseGroupChildren(element, elementTransformationMatrix);
 
             group.Opacity = cssStyleCascade.GetNumberPercentFromTop("opacity", 1);
-            Clipping.SetClipPath(group, elementTransformationMatrix, cssStyleCascade, globalDefinitions);
+            clipping.SetClipPath(group, elementTransformationMatrix, GetCurrentViewBoxSize());
 
             cssStyleCascade.Pop();
             return group;
@@ -147,10 +166,9 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
         /// <summary>
         /// Parse all graphic elements
         /// </summary>
-        private GraphicGroup ParseGroupChildren(XNamespace ns, XElement groupElement, Matrix matrix)
+        private GraphicGroup ParseGroupChildren(XElement groupElement, Matrix matrix)
         {
             var group = new GraphicGroup();
-            var shapeParser = new ShapeParser();
 
             foreach (var element in groupElement.Elements())
             {
@@ -165,21 +183,21 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
                     case "svg":
                     {
-                        var childGroup = ParseSVG(ns, element, matrix, false);
+                        var childGroup = ParseSVG(element, matrix, false);
                         group.Childreen.Add(childGroup);
                         break;
                     }
 
                     case "g":
                     {
-                        var childGroup = ParseGContainer(ns, element, matrix);
+                        var childGroup = ParseGContainer(element, matrix);
                         group.Childreen.Add(childGroup);
                         break;
                     }
 
                     default:
                     {
-                        var shape = shapeParser.Parse(element, ns, matrix, cssStyleCascade, globalDefinitions);
+                        var shape = shapeParser.Parse(element, matrix, GetCurrentViewBoxSize());
 
                         if (shape != null)
                         {
@@ -191,6 +209,19 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             }
 
             return group;
+        }
+
+        /// <summary>
+        /// Return the current viewbox size
+        /// </summary>
+        private ViewBoxSize GetCurrentViewBoxSize()
+        {
+            var svgViewBox = svgViewBoxStack.Peek();
+            return new ViewBoxSize
+            {
+                Width = svgViewBox.ViewBox.Width,
+                Height = svgViewBox.ViewBox.Height
+            };
         }
 
         /// <summary>

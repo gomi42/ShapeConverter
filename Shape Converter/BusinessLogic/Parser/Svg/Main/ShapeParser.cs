@@ -21,7 +21,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Windows;
 using System.Windows.Media;
 using System.Xml.Linq;
@@ -31,21 +30,37 @@ using ShapeConverter.BusinessLogic.Parser.Svg.Main;
 
 namespace ShapeConverter.BusinessLogic.Parser.Svg
 {
+    /// <summary>
+    /// The ShapeParser parses a single shape into a GraphicVisual
+    /// </summary>
     internal class ShapeParser
     {
-        Matrix currentTransformationMatrix;
-        CssStyleCascade cssStyleCascade;
-        Dictionary<string, XElement> globalDefinitions;
-        XNamespace svgNamespace;
+        private Clipping clipping;
+        private Matrix currentTransformationMatrix;
+        private CssStyleCascade cssStyleCascade;
+        private Dictionary<string, XElement> globalDefinitions;
+        private XNamespace svgNamespace;
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        public ShapeParser(XNamespace svgNamespace,
+                           CssStyleCascade cssStyleCascade,
+                           Dictionary<string, XElement> globalDefinitions)
+        {
+            this.svgNamespace = svgNamespace;
+            this.cssStyleCascade = cssStyleCascade;
+            this.globalDefinitions = globalDefinitions;
+
+            clipping = new Clipping(cssStyleCascade, globalDefinitions);
+        }
 
         /// <summary>
         /// Parse a single SVG shape
         /// </summary>
         public GraphicVisual Parse(XElement shape,
-                                  XNamespace svgNamespace,
-                                  Matrix currentTransformationMatrix,
-                                  CssStyleCascade cssStyleCascade,
-                                  Dictionary<string, XElement> globalDefinitions)
+                                   Matrix currentTransformationMatrix,
+                                   ViewBoxSize viewBoxSize)
         {
             GraphicVisual graphicVisual = null;
 
@@ -54,7 +69,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             var transformMatrix = cssStyleCascade.GetTransformMatrixFromTop();
             currentTransformationMatrix = transformMatrix * currentTransformationMatrix;
 
-            var geometry = GeometryParser.Parse(shape, currentTransformationMatrix);
+            var geometry = GeometryParser.Parse(shape, currentTransformationMatrix, viewBoxSize);
 
             if (geometry != null)
             {
@@ -62,12 +77,9 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
                 graphicPath.Geometry = geometry;
                 graphicVisual = graphicPath;
 
-                this.svgNamespace = svgNamespace;
-                this.globalDefinitions = globalDefinitions;
                 this.currentTransformationMatrix = currentTransformationMatrix;
-                this.cssStyleCascade = cssStyleCascade;
 
-                SetFillAndStroke(shape, graphicPath);
+                SetFillAndStroke(shape, graphicPath, viewBoxSize);
 
                 if (Clipping.IsClipPathSet(cssStyleCascade))
                 {
@@ -76,7 +88,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
                     graphicVisual = group;
                     group.Childreen.Add(graphicPath);
 
-                    Clipping.SetClipPath(group, currentTransformationMatrix, cssStyleCascade, globalDefinitions);
+                    clipping.SetClipPath(group, currentTransformationMatrix, viewBoxSize);
                 }
             }
 
@@ -88,7 +100,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
         /// <summary>
         /// Set all colors of the graphic path
         /// </summary>
-        private void SetFillAndStroke(XElement path, GraphicPath graphicPath)
+        private void SetFillAndStroke(XElement path, GraphicPath graphicPath, ViewBoxSize viewBoxSize)
         {
             // fill
             graphicPath.FillBrush = CreateBrush(path, "fill", true, graphicPath);
@@ -98,13 +110,40 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
             if (graphicPath.StrokeBrush != null)
             {
-                graphicPath.StrokeThickness = MatrixUtilities.TransformScale(cssStyleCascade.GetLength("stroke-width", 1), currentTransformationMatrix);
+                graphicPath.StrokeThickness = MatrixUtilities.TransformScale(GetLengthPercentFromCascade("stroke-width", 1, viewBoxSize.Diagonal), currentTransformationMatrix);
                 graphicPath.StrokeMiterLimit = MatrixUtilities.TransformScale(cssStyleCascade.GetNumber("stroke-miterlimit", 4), currentTransformationMatrix);
                 graphicPath.StrokeLineCap = GetLineCap();
                 graphicPath.StrokeLineJoin = GetLineJoin();
-                graphicPath.StrokeDashOffset = MatrixUtilities.TransformScale(cssStyleCascade.GetNumber("stroke-dashoffset", 0), currentTransformationMatrix) / graphicPath.StrokeThickness;
+                graphicPath.StrokeDashOffset = MatrixUtilities.TransformScale(GetLengthPercentFromCascade("stroke-dashoffset", 0, viewBoxSize.Diagonal), currentTransformationMatrix) / graphicPath.StrokeThickness;
                 graphicPath.StrokeDashes = GetDashes(graphicPath.StrokeThickness);
             }
+        }
+
+        /// <summary>
+        /// Get a double attribute from a length or percent from the cascade
+        /// </summary>
+        private double GetLengthPercentFromCascade(string attrName, double defaultValue, double percentBaseValue)
+        {
+            double retVal;
+            bool isPercent;
+
+            var strVal = cssStyleCascade.GetProperty(attrName);
+
+            if (!string.IsNullOrEmpty(strVal))
+            {
+                (isPercent, retVal) = DoubleParser.ParseLengthPercent(strVal);
+
+                if (isPercent)
+                {
+                    retVal = percentBaseValue * retVal;
+                }
+            }
+            else
+            {
+                retVal = defaultValue;
+            }
+
+            return retVal;
         }
 
         /// <summary>
@@ -299,7 +338,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
                     ReadGradientProperties(gradientElem, opacity, gradient);
 
-                    Matrix matrix = GetTransformMatrix(gradientElem);
+                    Matrix matrix = GetGradientTransformMatrix(gradientElem);
 
                     var x = DoubleAttributeParser.GetLength(gradientElem, "x1", 0);
                     var y = DoubleAttributeParser.GetLength(gradientElem, "y1", 0);
@@ -329,7 +368,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
                     ReadGradientProperties(gradientElem, opacity, gradient);
 
-                    Matrix matrix = GetTransformMatrix(gradientElem);
+                    Matrix matrix = GetGradientTransformMatrix(gradientElem);
 
                     var x = DoubleAttributeParser.GetLength(gradientElem, "cx", 0.5);
                     var y = DoubleAttributeParser.GetLength(gradientElem, "cy", 0.5);
@@ -398,7 +437,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
         /// <summary>
         /// Get the transformation matrix of the element
         /// </summary>
-        private Matrix GetTransformMatrix(XElement gradientElem)
+        private Matrix GetGradientTransformMatrix(XElement gradientElem)
         {
             Matrix matrix = Matrix.Identity;
             var attrs = gradientElem.Attribute("gradientTransform");

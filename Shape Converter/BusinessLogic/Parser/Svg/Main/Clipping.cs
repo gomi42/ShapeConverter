@@ -22,13 +22,27 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 using System.Windows.Media;
 using System.Xml.Linq;
 
 namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 {
-    internal static class Clipping
+    internal class Clipping
     {
+        private CssStyleCascade cssStyleCascade;
+        private Dictionary<string, XElement> globalDefinitions;
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        public Clipping(CssStyleCascade cssStyleCascade,
+                        Dictionary<string, XElement> globalDefinitions)
+        {
+            this.cssStyleCascade = cssStyleCascade;
+            this.globalDefinitions = globalDefinitions;
+        }
+
         /// <summary>
         /// Tests whether a clip path is set
         /// </summary>
@@ -42,10 +56,9 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         /// <summary>
         /// Set the clipping of the group
         /// </summary>
-        public static void SetClipPath(GraphicGroup group, 
-                                       Matrix currentTransformationMatrix, 
-                                       CssStyleCascade cssStyleCascade,
-                                       Dictionary<string, XElement> globalDefinitions)
+        public void SetClipPath(GraphicGroup group, 
+                                Matrix currentTransformationMatrix,
+                                ViewBoxSize viewBoxSize)
         {
             var clipPath = cssStyleCascade.GetPropertyFromTop("clip-path");
 
@@ -79,7 +92,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                 return;
             }
 
-            var clipGeometry = GeometryParser.Parse(shapeElement, currentTransformationMatrix);
+            var clipGeometry = GeometryParser.Parse(shapeElement, currentTransformationMatrix, viewBoxSize);
             clipGeometry.FillRule = GraphicFillRule.NoneZero;
 
             var clipRule = cssStyleCascade.GetProperty("clip-rule");
