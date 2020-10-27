@@ -254,7 +254,15 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             var scaleX = viewPort.Width / viewBox.Width;
             var scaleY = viewPort.Height / viewBox.Height;
 
-            if (align != "none")
+            matrix = Matrix.Identity;
+
+            if (align == "none")
+            {
+                matrix.Translate(-viewBox.X, -viewBox.Y);
+                matrix.Scale(scaleX, scaleY);
+                matrix.Translate(viewPort.X, viewPort.Y);
+            }
+            else
             {
                 switch (slice)
                 {
@@ -283,18 +291,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
                     default:
                         throw new ArgumentException("invalid argument");
                 }
-            }
-
-            matrix = Matrix.Identity;
-
-            if (align == "none")
-            {
-                matrix.Translate(-viewBox.X, -viewBox.Y);
-                matrix.Scale(scaleX, scaleY);
-                matrix.Translate(viewPort.X, viewPort.Y);
-            }
-            else
-            {
+                
                 var xOperation = align.Substring(0, 4);
                 var yOperation = align.Substring(4, 4);
 
