@@ -20,130 +20,326 @@
 // along with this program. If not, see<http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using System.Windows;
 
 namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
 {
     /// <summary>
-    /// Parse a double value with units attached
+    /// The percent base value selector
     /// </summary>
-    internal static class DoubleParser
+    internal enum PercentBaseSelector
     {
-        private static Regex unitSplit = new Regex(@"^(?<value>[+-]?\d*\.?\d*)(?<unit>\S*)$");
+        ViewBoxWidth,
+        ViewBoxHeight,
+        ViewBoxDiagonal,
+        None
+    }
+
+    /// <summary>
+    /// A DoubleLengthPercentAuto desciption
+    /// </summary>
+    public struct DoubleLengthPercentAuto
+    {
+        public bool IsAuto { get; set; }
+
+        public double Value { get; set; }
+    }
+
+    /// <summary>
+    /// Parse a double value with units attached.
+    /// All methods throw an exception in case of a syntax error which is the intended behavior
+    /// </summary>
+    internal class DoubleParser
+    {
+        private CssStyleCascade cssStyleCascade;
+        private static Regex doubleUnit = new Regex(@"^(?<value>\S+?)(?<unit>[%a-z]*)$", RegexOptions.Compiled);
+        private static Regex listDelimiter = new Regex(@"([ ]+,?[ ]*)|(,[ ]*)", RegexOptions.Compiled);
 
         /// <summary>
-        /// Parse a value as length or percentage.
+        /// Constructor
         /// </summary>
-        public static bool ParseLengthPercent(string strVal, out double retVal)
+        public DoubleParser(CssStyleCascade cssStyleCascade)
         {
-            bool isPercentage = false;
-            retVal = 0;
+            this.cssStyleCascade = cssStyleCascade;
+        }
 
-            var match = unitSplit.Match(strVal);
+        public double GetLengthPercent(string strVal, PercentBaseSelector percentBaseSelector)
+        {
+            var (dblVal, unit) = SplitNumberUnit(strVal);
 
-            if (match.Success)
+            if (ApplyLength(ref dblVal, unit))
             {
-                var unit = match.Groups["unit"].Value;
-                strVal = match.Groups["value"].Value;
-                retVal = double.Parse(strVal, CultureInfo.InvariantCulture);
-
-                switch (unit)
-                {
-                    case "cm":
-                        retVal *= 96.0 / 2.54;
-                        break;
-
-                    case "mm":
-                        retVal *= 96.0 / 2.54 / 10.0;
-                        break;
-
-                    case "Q":
-                        retVal *= 96.0 / 2.54 / 40.0;
-                        break;
-
-                    case "in":
-                        retVal *= 96.0;
-                        break;
-
-                    case "pc":
-                        retVal *= 96.0 / 6.0;
-                        break;
-
-                    case "pt":
-                        retVal *= 96.0 / 72.0;
-                        break;
-
-                    case "":
-                    case "px":
-                        break;
-
-                    case "%":
-                        isPercentage = true;
-                        retVal /= 100.0;
-                        break;
-
-                    default:
-                        throw new ArgumentException("unit not supported");
-                }
+                return dblVal;
             }
 
-            return isPercentage;
+            if (ApplyPercent(ref dblVal, unit, percentBaseSelector))
+            {
+                return dblVal;
+            }
+
+            throw new ArgumentException("unknown unit");
         }
 
         /// <summary>
         /// Parse a value as length.
         /// </summary>
-        public static double ParseLength(string strVal)
+        public double GetLength(string strVal)
         {
-            if (ParseLengthPercent(strVal, out double retVal))
+            var (dblVal, unit) = SplitNumberUnit(strVal);
+
+            if (ApplyLength(ref dblVal, unit))
             {
-                throw new ArgumentException("unit not supported");
+                return dblVal;
+            }
+
+            throw new ArgumentException("unknown unit");
+        }
+
+        /// <summary>
+        /// Parse a value as number or percent.
+        /// </summary>
+        public static (bool, double) GetNumberPercent(string strVal)
+        {
+            bool isPercentage = false;
+
+            var (retVal, unit) = SplitNumberUnit(strVal);
+
+            switch (unit)
+            {
+                case "%":
+                    isPercentage = true;
+                    retVal /= 100.0;
+                    break;
+
+                case "":
+                    break;
+
+                default:
+                    throw new ArgumentException("unit not supported");
+            }
+
+            return (isPercentage, retVal);
+        }
+
+        /// <summary>
+        /// Parse a value as number.
+        /// </summary>
+        public static double GetNumber(string strVal)
+        {
+            return double.Parse(strVal, CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Get a LengthPercentAuto
+        /// </summary>
+        public DoubleLengthPercentAuto GetLengthPercentAuto(string strVal, PercentBaseSelector percentBaseSelector)
+        {
+            DoubleLengthPercentAuto retVal = new DoubleLengthPercentAuto();
+
+            if (strVal == null || strVal == "auto")
+            {
+                retVal.IsAuto = true;
+            }
+            else
+            {
+                retVal.Value = GetLengthPercent(strVal, percentBaseSelector);
             }
 
             return retVal;
         }
 
         /// <summary>
-        /// Parse a value as number or percent.
+        /// Get a list of numbers
         /// </summary>
-        public static bool ParseNumberPercent(string strVal, out double retVal)
+        public List<double> GetNumberList(string strVal)
         {
-            bool isPercentage = false;
-            retVal = 0;
+            strVal = strVal.Trim();
+            var splits = listDelimiter.Split(strVal);
+            var dbls = new List<double>();
 
-            var match = unitSplit.Match(strVal);
-
-            if (match.Success)
+            for (int i = 0; i < splits.Length; i += 2)
             {
-                var unit = match.Groups["unit"].Value;
-                strVal = match.Groups["value"].Value;
-                retVal = double.Parse(strVal, CultureInfo.InvariantCulture);
-
-                switch (unit)
-                {
-                    case "%":
-                        isPercentage = true;
-                        retVal /= 100.0;
-                        break;
-
-                    case "":
-                        break;
-
-                    default:
-                        throw new ArgumentException("unit not supported");
-                }
+                var dbl = GetNumber(splits[i]);
+                dbls.Add(dbl);
             }
 
-            return isPercentage;
+            return dbls;
         }
 
         /// <summary>
-        /// Parse a value as number.
+        /// Get a list of points
         /// </summary>
-        public static double ParseNumber(string strVal)
+        public List<Point> GetPointList(string strVal)
         {
-            return double.Parse(strVal, CultureInfo.InvariantCulture);
+            strVal = strVal.Trim();
+            var splits = listDelimiter.Split(strVal);
+            var points = new List<Point>();
+
+            for (int i = 0; i < splits.Length; i += 4)
+            {
+                var x = GetNumber(splits[i]);
+                var y = GetNumber(splits[i + 2]);
+                points.Add(new Point(x, y));
+            }
+
+            return points;
+        }
+
+        /// <summary>
+        /// Get a list of length or percent
+        /// </summary>
+        public List<double> GetLengthPercentList(string strVal)
+        {
+            strVal = strVal.Trim();
+            var splits = listDelimiter.Split(strVal);
+            var dbls = new List<double>();
+
+            for (int i = 0; i < splits.Length; i += 2)
+            {
+                var dbl = GetLengthPercent(splits[i], PercentBaseSelector.None);
+                dbls.Add(dbl);
+            }
+
+            return dbls;
+        }
+
+        /// <summary>
+        /// Split the given string into a double and a unit
+        /// </summary>
+        private static (double, string) SplitNumberUnit(string strVal)
+        {
+            strVal = strVal.Trim();
+            var match = doubleUnit.Match(strVal);
+
+            if (!match.Success)
+            {
+                throw new ArgumentException("syntax error");
+            }
+
+            var unit = match.Groups["unit"].Value;
+            strVal = match.Groups["value"].Value;
+            var retVal = double.Parse(strVal, CultureInfo.InvariantCulture);
+
+            return (retVal, unit);
+        }
+
+        /// <summary>
+        /// Apply percent unit conversion to the given value
+        /// </summary>
+        private bool ApplyPercent(ref double dblVal, string unit, PercentBaseSelector percentBaseSelector)
+        {
+            if (unit != "%")
+            {
+                return false;
+            }
+
+            dblVal /= 100.0;
+            var viewBox = cssStyleCascade.GetCurrentViewBox().ViewBox;
+
+            switch (percentBaseSelector)
+            {
+                case PercentBaseSelector.ViewBoxWidth:
+                    dblVal = viewBox.Width * dblVal;
+                    break;
+
+                case PercentBaseSelector.ViewBoxHeight:
+                    dblVal = viewBox.Height * dblVal;
+                    break;
+
+                case PercentBaseSelector.ViewBoxDiagonal:
+                    dblVal = Math.Sqrt(viewBox.Width * viewBox.Width + viewBox.Height * viewBox.Height) * dblVal;
+                    break;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Apply length unit conversion to the given value
+        /// </summary>
+        private bool ApplyLength(ref double dlbVal, string unit)
+        {
+            bool unitProcessed = true;
+
+            switch (unit)
+            {
+                case "cm":
+                    dlbVal *= 96.0 / 2.54;
+                    break;
+
+                case "mm":
+                    dlbVal *= 96.0 / 2.54 / 10.0;
+                    break;
+
+                case "Q":
+                    dlbVal *= 96.0 / 2.54 / 40.0;
+                    break;
+
+                case "in":
+                    dlbVal *= 96.0;
+                    break;
+
+                case "pc":
+                    dlbVal *= 96.0 / 6.0;
+                    break;
+
+                case "pt":
+                    dlbVal *= 96.0 / 72.0;
+                    break;
+
+                case "":
+                case "px":
+                    break;
+
+                case "vw":
+                    var width = cssStyleCascade.GetCurrentViewBox().ViewBox.Width;
+                    dlbVal = dlbVal / 100.0 * width;
+                    break;
+
+                case "vh":
+                    var height = cssStyleCascade.GetCurrentViewBox().ViewBox.Height;
+                    dlbVal = dlbVal / 100.0 * height;
+                    break;
+
+                case "vvmin":
+                {
+                    var viewBox = cssStyleCascade.GetCurrentViewBox().ViewBox;
+
+                    if (viewBox.Width < viewBox.Height)
+                    {
+                        dlbVal = dlbVal / 100.0 * viewBox.Width;
+                    }
+                    else
+                    {
+                        dlbVal = dlbVal / 100.0 * viewBox.Height;
+                    }
+                    break;
+                }
+
+                case "vvmax":
+                {
+                    var viewBox = cssStyleCascade.GetCurrentViewBox().ViewBox;
+
+                    if (viewBox.Width > viewBox.Height)
+                    {
+                        dlbVal = dlbVal / 100.0 * viewBox.Width;
+                    }
+                    else
+                    {
+                        dlbVal = dlbVal / 100.0 * viewBox.Height;
+                    }
+                    break;
+                }
+
+                default:
+                    unitProcessed = false;
+                    break;
+            }
+
+            return unitProcessed;
         }
     }
 }

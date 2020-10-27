@@ -22,17 +22,35 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 using System.Windows.Media;
 using System.Xml.Linq;
+using ShapeConverter.BusinessLogic.Parser.Svg.Helper;
 
 namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 {
-    internal static class Clipping
+    internal class Clipping
     {
+        private GeometryParser geometryParser;
+        private CssStyleCascade cssStyleCascade;
+        private Dictionary<string, XElement> globalDefinitions;
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        public Clipping(CssStyleCascade cssStyleCascade,
+                        Dictionary<string, XElement> globalDefinitions)
+        {
+            this.cssStyleCascade = cssStyleCascade;
+            this.globalDefinitions = globalDefinitions;
+
+            geometryParser = new GeometryParser(cssStyleCascade);
+        }
+
         /// <summary>
         /// Tests whether a clip path is set
         /// </summary>
-        public static bool IsClipPathSet(CssStyleCascade cssStyleCascade)
+        public bool IsClipPathSet()
         {
             var clipPath = cssStyleCascade.GetPropertyFromTop("clip-path");
 
@@ -42,10 +60,8 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         /// <summary>
         /// Set the clipping of the group
         /// </summary>
-        public static void SetClipPath(GraphicGroup group, 
-                                       Matrix currentTransformationMatrix, 
-                                       CssStyleCascade cssStyleCascade,
-                                       Dictionary<string, XElement> globalDefinitions)
+        public void SetClipPath(GraphicGroup group, 
+                                Matrix currentTransformationMatrix)
         {
             var clipPath = cssStyleCascade.GetPropertyFromTop("clip-path");
 
@@ -71,7 +87,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
             var clipElem = globalDefinitions[id];
 
-            // richt now we support only a single path for the clip geometry
+            // right now we support only a single path for the clip geometry
             var shapeElement = clipElem.Elements().First();
 
             if (shapeElement == null)
@@ -79,7 +95,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                 return;
             }
 
-            var clipGeometry = GeometryParser.Parse(shapeElement, currentTransformationMatrix);
+            var clipGeometry = geometryParser.Parse(shapeElement, currentTransformationMatrix);
             clipGeometry.FillRule = GraphicFillRule.NoneZero;
 
             var clipRule = cssStyleCascade.GetProperty("clip-rule");
