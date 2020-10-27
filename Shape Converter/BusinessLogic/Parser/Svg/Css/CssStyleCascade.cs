@@ -64,12 +64,12 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             "stroke-linejoin",
             "stroke-dasharray",
             "stroke-dashoffset",
+            "display",
         };
 
         private List<CssStyleDeclaration> styleDeclarations = new List<CssStyleDeclaration>();
         private List<CssStyleSheet> cssStyleSheets;
         private Stack<SvgViewBox> svgViewBoxStack;
-        private DoubleParser doubleParser;
 
         /// <summary>
         /// Constructor
@@ -78,7 +78,6 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
         {
             cssStyleSheets = new List<CssStyleSheet>();
             svgViewBoxStack = new Stack<SvgViewBox>();
-            doubleParser = new DoubleParser(this);
 
             ReadGlobalStyles(element);
         }

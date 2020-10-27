@@ -151,6 +151,13 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
             foreach (var element in groupElement.Elements())
             {
+                if (!IsElementVisible(element))
+                {
+                    continue;
+                }
+
+                GraphicVisual graphicVisual = null;
+
                 switch (element.Name.LocalName)
                 {
                     case "defs":
@@ -162,32 +169,40 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
                     case "svg":
                     {
-                        var childGroup = ParseSVG(element, matrix, false);
-                        group.Childreen.Add(childGroup);
+                        graphicVisual = ParseSVG(element, matrix, false);
                         break;
                     }
 
                     case "g":
                     {
-                        var childGroup = ParseGContainer(element, matrix);
-                        group.Childreen.Add(childGroup);
+                        graphicVisual = ParseGContainer(element, matrix);
                         break;
                     }
 
                     default:
                     {
-                        var shape = shapeParser.Parse(element, matrix);
-
-                        if (shape != null)
-                        {
-                            group.Childreen.Add(shape);
-                        }
+                        graphicVisual = shapeParser.Parse(element, matrix);
                         break;
                     }
+                }
+
+                if (graphicVisual != null)
+                {
+                    group.Childreen.Add(graphicVisual);
                 }
             }
 
             return group;
+        }
+
+        /// <summary>
+        /// Check if the given element is visible
+        /// </summary>
+        private bool IsElementVisible(XElement element)
+        {
+            var displayAttr = element.Attribute("display");
+
+            return displayAttr == null || displayAttr.Value != "none";
         }
 
         /// <summary>
