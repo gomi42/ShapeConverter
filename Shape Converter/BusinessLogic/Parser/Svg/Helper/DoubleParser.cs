@@ -55,9 +55,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
     internal class DoubleParser
     {
         private CssStyleCascade cssStyleCascade;
-        private const string doubleRegEx = @"(?:[+-]?(?:(?:\d*\.\d+)|(?:\d+\.?)))(?:[Ee][+-]?\d+)?";
-        private const string unitRegEx = @"(?:%|\w+)?";
-        private static Regex doubleUnit = new Regex("^(?<value>" + doubleRegEx + ")(?<unit>" + unitRegEx + ")$", RegexOptions.Compiled);
+        private static Regex doubleUnit = new Regex(@"^(?<value>\S+?)(?<unit>[%a-z]*)$", RegexOptions.Compiled);
         private static Regex listDelimiter = new Regex(@"([ ]+,?[ ]*)|(,[ ]*)", RegexOptions.Compiled);
 
         /// <summary>
@@ -68,34 +66,21 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
             this.cssStyleCascade = cssStyleCascade;
         }
 
-        /// <summary>
-        /// Parse a value as length or percentage.
-        /// </summary>
         public double GetLengthPercent(string strVal, PercentBaseSelector percentBaseSelector)
         {
-            var (percent, retVal) = GetLengthPercentInternal(strVal);
+            var (dblVal, unit) = SplitNumberUnit(strVal);
 
-            if (percent)
+            if (ApplyLength(ref dblVal, unit))
             {
-                var viewBox = cssStyleCascade.GetCurrentViewBox().ViewBox;
-
-                switch (percentBaseSelector)
-                {
-                    case PercentBaseSelector.ViewBoxWidth:
-                        retVal = viewBox.Width * retVal;
-                        break;
-
-                    case PercentBaseSelector.ViewBoxHeight:
-                        retVal = viewBox.Height * retVal;
-                        break;
-
-                    case PercentBaseSelector.ViewBoxDiagonal:
-                        retVal = Math.Sqrt(viewBox.Width * viewBox.Width + viewBox.Height * viewBox.Height) * retVal;
-                        break;
-                }
+                return dblVal;
             }
 
-            return retVal;
+            if (ApplyPercent(ref dblVal, unit, percentBaseSelector))
+            {
+                return dblVal;
+            }
+
+            throw new ArgumentException("unknown unit");
         }
 
         /// <summary>
@@ -103,14 +88,14 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
         /// </summary>
         public double GetLength(string strVal)
         {
-            var (percent, retVal) = GetLengthPercentInternal(strVal);
+            var (dblVal, unit) = SplitNumberUnit(strVal);
 
-            if (percent)
+            if (ApplyLength(ref dblVal, unit))
             {
-                throw new ArgumentException("unit not supported");
+                return dblVal;
             }
 
-            return retVal;
+            throw new ArgumentException("unknown unit");
         }
 
         /// <summary>
@@ -119,30 +104,21 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
         public static (bool, double) GetNumberPercent(string strVal)
         {
             bool isPercentage = false;
-            double retVal = 0;
 
-            strVal = strVal.Trim();
-            var match = doubleUnit.Match(strVal);
+            var (retVal, unit) = SplitNumberUnit(strVal);
 
-            if (match.Success)
+            switch (unit)
             {
-                var unit = match.Groups["unit"].Value;
-                strVal = match.Groups["value"].Value;
-                retVal = double.Parse(strVal, CultureInfo.InvariantCulture);
+                case "%":
+                    isPercentage = true;
+                    retVal /= 100.0;
+                    break;
 
-                switch (unit)
-                {
-                    case "%":
-                        isPercentage = true;
-                        retVal /= 100.0;
-                        break;
+                case "":
+                    break;
 
-                    case "":
-                        break;
-
-                    default:
-                        throw new ArgumentException("unit not supported");
-                }
+                default:
+                    throw new ArgumentException("unit not supported");
             }
 
             return (isPercentage, retVal);
@@ -238,103 +214,139 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
         }
 
         /// <summary>
-        /// Parse a value as length or percentage.
+        /// Split the given string into a double and a unit
         /// </summary>
-        private (bool, double) GetLengthPercentInternal(string strVal)
+        private static (double, string) SplitNumberUnit(string strVal)
         {
-            bool isPercentage = false;
-            double retVal = 0;
-
             strVal = strVal.Trim();
             var match = doubleUnit.Match(strVal);
 
-            if (match.Success)
+            if (!match.Success)
             {
-                var unit = match.Groups["unit"].Value;
-                strVal = match.Groups["value"].Value;
-                retVal = double.Parse(strVal, CultureInfo.InvariantCulture);
-
-                switch (unit)
-                {
-                    case "cm":
-                        retVal *= 96.0 / 2.54;
-                        break;
-
-                    case "mm":
-                        retVal *= 96.0 / 2.54 / 10.0;
-                        break;
-
-                    case "Q":
-                        retVal *= 96.0 / 2.54 / 40.0;
-                        break;
-
-                    case "in":
-                        retVal *= 96.0;
-                        break;
-
-                    case "pc":
-                        retVal *= 96.0 / 6.0;
-                        break;
-
-                    case "pt":
-                        retVal *= 96.0 / 72.0;
-                        break;
-
-                    case "":
-                    case "px":
-                        break;
-
-                    case "vw":
-                        var width = cssStyleCascade.GetCurrentViewBox().ViewBox.Width;
-                        retVal = retVal / 100.0 * width;
-                        break;
-
-                    case "vh":
-                        var height = cssStyleCascade.GetCurrentViewBox().ViewBox.Height;
-                        retVal = retVal / 100.0 * height;
-                        break;
-
-                    case "vvmin":
-                    {
-                        var viewBox = cssStyleCascade.GetCurrentViewBox().ViewBox;
-
-                        if (viewBox.Width < viewBox.Height)
-                        {
-                            retVal = retVal / 100.0 * viewBox.Width;
-                        }
-                        else
-                        {
-                            retVal = retVal / 100.0 * viewBox.Height;
-                        }
-                        break;
-                    }
-
-                    case "vvmax":
-                    {
-                        var viewBox = cssStyleCascade.GetCurrentViewBox().ViewBox;
-
-                        if (viewBox.Width > viewBox.Height)
-                        {
-                            retVal = retVal / 100.0 * viewBox.Width;
-                        }
-                        else
-                        {
-                            retVal = retVal / 100.0 * viewBox.Height;
-                        }
-                        break;
-                    }
-
-                    case "%":
-                        isPercentage = true;
-                        retVal /= 100.0;
-                        break;
-
-                    default:
-                        throw new ArgumentException("unit not supported");
-                }
+                throw new ArgumentException("syntax error");
             }
 
-            return (isPercentage, retVal);
+            var unit = match.Groups["unit"].Value;
+            strVal = match.Groups["value"].Value;
+            var retVal = double.Parse(strVal, CultureInfo.InvariantCulture);
+
+            return (retVal, unit);
+        }
+
+        /// <summary>
+        /// Apply percent unit conversion to the given value
+        /// </summary>
+        private bool ApplyPercent(ref double dblVal, string unit, PercentBaseSelector percentBaseSelector)
+        {
+            if (unit != "%")
+            {
+                return false;
+            }
+
+            dblVal /= 100.0;
+            var viewBox = cssStyleCascade.GetCurrentViewBox().ViewBox;
+
+            switch (percentBaseSelector)
+            {
+                case PercentBaseSelector.ViewBoxWidth:
+                    dblVal = viewBox.Width * dblVal;
+                    break;
+
+                case PercentBaseSelector.ViewBoxHeight:
+                    dblVal = viewBox.Height * dblVal;
+                    break;
+
+                case PercentBaseSelector.ViewBoxDiagonal:
+                    dblVal = Math.Sqrt(viewBox.Width * viewBox.Width + viewBox.Height * viewBox.Height) * dblVal;
+                    break;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Apply length unit conversion to the given value
+        /// </summary>
+        private bool ApplyLength(ref double dlbVal, string unit)
+        {
+            bool unitProcessed = true;
+
+            switch (unit)
+            {
+                case "cm":
+                    dlbVal *= 96.0 / 2.54;
+                    break;
+
+                case "mm":
+                    dlbVal *= 96.0 / 2.54 / 10.0;
+                    break;
+
+                case "Q":
+                    dlbVal *= 96.0 / 2.54 / 40.0;
+                    break;
+
+                case "in":
+                    dlbVal *= 96.0;
+                    break;
+
+                case "pc":
+                    dlbVal *= 96.0 / 6.0;
+                    break;
+
+                case "pt":
+                    dlbVal *= 96.0 / 72.0;
+                    break;
+
+                case "":
+                case "px":
+                    break;
+
+                case "vw":
+                    var width = cssStyleCascade.GetCurrentViewBox().ViewBox.Width;
+                    dlbVal = dlbVal / 100.0 * width;
+                    break;
+
+                case "vh":
+                    var height = cssStyleCascade.GetCurrentViewBox().ViewBox.Height;
+                    dlbVal = dlbVal / 100.0 * height;
+                    break;
+
+                case "vvmin":
+                {
+                    var viewBox = cssStyleCascade.GetCurrentViewBox().ViewBox;
+
+                    if (viewBox.Width < viewBox.Height)
+                    {
+                        dlbVal = dlbVal / 100.0 * viewBox.Width;
+                    }
+                    else
+                    {
+                        dlbVal = dlbVal / 100.0 * viewBox.Height;
+                    }
+                    break;
+                }
+
+                case "vvmax":
+                {
+                    var viewBox = cssStyleCascade.GetCurrentViewBox().ViewBox;
+
+                    if (viewBox.Width > viewBox.Height)
+                    {
+                        dlbVal = dlbVal / 100.0 * viewBox.Width;
+                    }
+                    else
+                    {
+                        dlbVal = dlbVal / 100.0 * viewBox.Height;
+                    }
+                    break;
+                }
+
+                default:
+                    unitProcessed = false;
+                    break;
+            }
+
+            return unitProcessed;
         }
     }
 }
