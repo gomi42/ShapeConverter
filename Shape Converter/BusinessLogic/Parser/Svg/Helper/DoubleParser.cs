@@ -139,20 +139,13 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
         {
             DoubleLengthPercentAuto retVal = new DoubleLengthPercentAuto();
 
-            if (strVal != null)
+            if (strVal == null || strVal == "auto")
             {
-                if (strVal == "auto")
-                {
-                    retVal.IsAuto = true;
-                }
-                else
-                {
-                    retVal.Value = GetLengthPercent(strVal, percentBaseSelector);
-                }
+                retVal.IsAuto = true;
             }
             else
             {
-                retVal.IsAuto = true;
+                retVal.Value = GetLengthPercent(strVal, percentBaseSelector);
             }
 
             return retVal;
