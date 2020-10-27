@@ -133,7 +133,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
             if (!string.IsNullOrEmpty(strVal))
             {
-                retVal = doubleParser.ParseLengthPercent(strVal, PercentBaseSelector.ViewBoxDiagonal);
+                retVal = doubleParser.GetLengthPercent(strVal, PercentBaseSelector.ViewBoxDiagonal);
             }
             else
             {
@@ -226,8 +226,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
                 return dashes;
             }
 
-            var parser = new DoubleListParser();
-            var dbls = parser.ParseDoubleList(strVal);
+            var dbls = doubleParser.GetLengthPercentList(strVal);
 
             dashes = new List<double>();
 

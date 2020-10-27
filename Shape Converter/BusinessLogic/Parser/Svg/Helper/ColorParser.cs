@@ -118,7 +118,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
                         red = (byte)ParseColorValue(redStr);
                         green = (byte)ParseColorValue(greenStr);
                         blue = (byte)ParseColorValue(blueStr);
-                        (_, alphaD) = DoubleParser.ParseNumberPercent(alphaStr);
+                        (_, alphaD) = DoubleParser.GetNumberPercent(alphaStr);
                     }
 
                     color = Color.FromArgb((byte)(alpha * alphaD * 255), red, green, blue);
@@ -158,9 +158,9 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
                     }
                     else
                     {
-                        var hue = DoubleParser.ParseNumber(hueStr);
-                        var (_, saturation) = DoubleParser.ParseNumberPercent(saturationStr);
-                        var (_, luminosity) = DoubleParser.ParseNumberPercent(luminosityStr);
+                        var hue = DoubleParser.GetNumber(hueStr);
+                        var (_, saturation) = DoubleParser.GetNumberPercent(saturationStr);
+                        var (_, luminosity) = DoubleParser.GetNumberPercent(luminosityStr);
 
                         color = ColorSpaceConverter.ConvertHlsToRgb(alpha, hue, saturation, luminosity);
                         return true;
@@ -194,7 +194,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
         /// </summary>
         private static int ParseColorValue(string colorValue)
         {
-            var (percent, retVal) = DoubleParser.ParseNumberPercent(colorValue);
+            var (percent, retVal) = DoubleParser.GetNumberPercent(colorValue);
 
             if (percent)
             {

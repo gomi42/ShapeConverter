@@ -496,7 +496,6 @@
     <Compile Include="BusinessLogic\Parser\StreamGeometry\IStreamCodeGenerator.cs" />
     <Compile Include="BusinessLogic\Parser\StreamGeometry\StreamGeometryParser.cs" />
     <Compile Include="BusinessLogic\Graphic\GraphicVisual.cs" />
-    <Compile Include="BusinessLogic\Parser\Svg\Helper\DoubleListParser.cs" />
     <Compile Include="BusinessLogic\Parser\Svg\Main\SvgParser.cs" />
     <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\AdditionalLayerInformation.cs" />
     <Compile Include="BusinessLogic\Parser\Photoshop\psd-parser\BlendMode.cs" />

@@ -390,8 +390,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
                 return Rect.Empty;
             }
 
-            var parser = new DoubleListParser();
-            var viewBox = parser.ParseDoubleList(viewBoxAttr.Value);
+            var viewBox = doubleParser.GetNumberList(viewBoxAttr.Value);
 
             return new Rect(new Point(viewBox[0], viewBox[1]), new Size(viewBox[2], viewBox[3]));
         }

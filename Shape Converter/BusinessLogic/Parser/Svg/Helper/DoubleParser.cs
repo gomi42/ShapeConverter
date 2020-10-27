@@ -20,8 +20,10 @@
 // along with this program. If not, see<http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using System.Windows;
 
 namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
 {
@@ -47,12 +49,16 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
     }
 
     /// <summary>
-    /// Parse a double value with units attached
+    /// Parse a double value with units attached.
+    /// All methods throw an exception in case of a syntax error which is the intended behavior
     /// </summary>
     internal class DoubleParser
     {
         private CssStyleCascade cssStyleCascade;
-        private static Regex doubleUnit = new Regex(@"^(?<value>(?:[+-]?(?:(?:\d*\.\d+)|(?:\d+\.?)))(?:[Ee][+-]?\d+)?)(?<unit>\S*)$");
+        private const string doubleRegEx = @"(?:[+-]?(?:(?:\d*\.\d+)|(?:\d+\.?)))(?:[Ee][+-]?\d+)?";
+        private const string unitRegEx = @"(?:%|\w+)?";
+        private static Regex doubleUnit = new Regex("^(?<value>" + doubleRegEx + ")(?<unit>" + unitRegEx + ")$", RegexOptions.Compiled);
+        private static Regex listDelimiter = new Regex(@"([ ]+,?[ ]*)|(,[ ]*)", RegexOptions.Compiled);
 
         /// <summary>
         /// Constructor
@@ -65,9 +71,29 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
         /// <summary>
         /// Parse a value as length or percentage.
         /// </summary>
-        public double ParseLengthPercent(string strVal, PercentBaseSelector percentBaseSelector)
+        public double GetLengthPercent(string strVal, PercentBaseSelector percentBaseSelector)
         {
-            var (_, retVal) = ParseLengthPercentInternal(strVal, percentBaseSelector);
+            var (percent, retVal) = GetLengthPercentInternal(strVal);
+
+            if (percent)
+            {
+                var viewBox = cssStyleCascade.GetCurrentViewBox().ViewBox;
+
+                switch (percentBaseSelector)
+                {
+                    case PercentBaseSelector.ViewBoxWidth:
+                        retVal = viewBox.Width * retVal;
+                        break;
+
+                    case PercentBaseSelector.ViewBoxHeight:
+                        retVal = viewBox.Height * retVal;
+                        break;
+
+                    case PercentBaseSelector.ViewBoxDiagonal:
+                        retVal = Math.Sqrt(viewBox.Width * viewBox.Width + viewBox.Height * viewBox.Height) * retVal;
+                        break;
+                }
+            }
 
             return retVal;
         }
@@ -75,9 +101,9 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
         /// <summary>
         /// Parse a value as length.
         /// </summary>
-        public double ParseLength(string strVal)
+        public double GetLength(string strVal)
         {
-            var (percent, retVal) = ParseLengthPercentInternal(strVal, PercentBaseSelector.None);
+            var (percent, retVal) = GetLengthPercentInternal(strVal);
 
             if (percent)
             {
@@ -90,7 +116,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
         /// <summary>
         /// Parse a value as number or percent.
         /// </summary>
-        public static (bool, double) ParseNumberPercent(string strVal)
+        public static (bool, double) GetNumberPercent(string strVal)
         {
             bool isPercentage = false;
             double retVal = 0;
@@ -125,13 +151,13 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
         /// <summary>
         /// Parse a value as number.
         /// </summary>
-        public static double ParseNumber(string strVal)
+        public static double GetNumber(string strVal)
         {
             return double.Parse(strVal, CultureInfo.InvariantCulture);
         }
 
         /// <summary>
-        /// Get a LengthPercentAuto attribute
+        /// Get a LengthPercentAuto
         /// </summary>
         public DoubleLengthPercentAuto GetLengthPercentAuto(string strVal, PercentBaseSelector percentBaseSelector)
         {
@@ -145,7 +171,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
                 }
                 else
                 {
-                    (_, retVal.Value) = ParseLengthPercentInternal(strVal, percentBaseSelector);
+                    retVal.Value = GetLengthPercent(strVal, percentBaseSelector);
                 }
             }
             else
@@ -157,9 +183,64 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
         }
 
         /// <summary>
+        /// Get a list of numbers
+        /// </summary>
+        public List<double> GetNumberList(string strVal)
+        {
+            strVal = strVal.Trim();
+            var splits = listDelimiter.Split(strVal);
+            var dbls = new List<double>();
+
+            for (int i = 0; i < splits.Length; i += 2)
+            {
+                var dbl = GetNumber(splits[i]);
+                dbls.Add(dbl);
+            }
+
+            return dbls;
+        }
+
+        /// <summary>
+        /// Get a list of points
+        /// </summary>
+        public List<Point> GetPointList(string strVal)
+        {
+            strVal = strVal.Trim();
+            var splits = listDelimiter.Split(strVal);
+            var points = new List<Point>();
+
+            for (int i = 0; i < splits.Length; i += 4)
+            {
+                var x = GetNumber(splits[i]);
+                var y = GetNumber(splits[i + 2]);
+                points.Add(new Point(x, y));
+            }
+
+            return points;
+        }
+
+        /// <summary>
+        /// Get a list of length or percent
+        /// </summary>
+        public List<double> GetLengthPercentList(string strVal)
+        {
+            strVal = strVal.Trim();
+            var splits = listDelimiter.Split(strVal);
+            var dbls = new List<double>();
+
+            for (int i = 0; i < splits.Length; i += 2)
+            {
+                var dbl = GetLengthPercent(splits[i], PercentBaseSelector.None);
+                dbls.Add(dbl);
+            }
+
+            return dbls;
+        }
+
+        /// <summary>
         /// Parse a value as length or percentage.
         /// </summary>
-        private (bool, double) ParseLengthPercentInternal(string strVal, PercentBaseSelector percentBaseSelector)
+        private (bool, double) GetLengthPercentInternal(string strVal)
         {
             bool isPercentage = false;
             double retVal = 0;
@@ -244,28 +325,9 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
                     }
 
                     case "%":
-                    {
                         isPercentage = true;
                         retVal /= 100.0;
-
-                        var viewBox = cssStyleCascade.GetCurrentViewBox().ViewBox;
-
-                        switch (percentBaseSelector)
-                        {
-                            case PercentBaseSelector.ViewBoxWidth:
-                                retVal = viewBox.Width * retVal;
-                                break;
-
-                            case PercentBaseSelector.ViewBoxHeight:
-                                retVal = viewBox.Height * retVal;
-                                break;
-
-                            case PercentBaseSelector.ViewBoxDiagonal:
-                                retVal = Math.Sqrt(viewBox.Width * viewBox.Width + viewBox.Height * viewBox.Height) * retVal;
-                                break;
-                        }
                         break;
-                    }
 
                     default:
                         throw new ArgumentException("unit not supported");

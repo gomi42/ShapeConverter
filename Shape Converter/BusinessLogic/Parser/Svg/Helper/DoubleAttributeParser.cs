@@ -38,7 +38,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
 
             if (xAttr != null)
             {
-                retVal = doubleParser.ParseLength(xAttr.Value);
+                retVal = doubleParser.GetLength(xAttr.Value);
             }
 
             return retVal;
@@ -55,7 +55,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
 
             if (xAttr != null)
             {
-                (isPercentage, retVal) = DoubleParser.ParseNumberPercent(xAttr.Value);
+                (isPercentage, retVal) = DoubleParser.GetNumberPercent(xAttr.Value);
             }
 
             return (isPercentage, retVal);
@@ -71,7 +71,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
 
             if (xAttr != null)
             {
-                retVal = doubleParser.ParseLengthPercent(xAttr.Value, percentBaseSelector);
+                retVal = doubleParser.GetLengthPercent(xAttr.Value, percentBaseSelector);
             }
 
             return retVal;

@@ -137,8 +137,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             XAttribute dAttr = path.Attribute("points");
             GraphicPathGeometry geometry = new GraphicPathGeometry();
 
-            var pointParser = new DoubleListParser();
-            var points = pointParser.ParsePointList(dAttr.Value);
+            var points = doubleParser.GetPointList(dAttr.Value);
 
             if (points.Count > 1)
             {
@@ -164,8 +163,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             XAttribute dAttr = path.Attribute("points");
             GraphicPathGeometry geometry = new GraphicPathGeometry();
 
-            var pointParser = new DoubleListParser();
-            var points = pointParser.ParsePointList(dAttr.Value);
+            var points = doubleParser.GetPointList(dAttr.Value);
 
             if (points.Count > 1)
             {
