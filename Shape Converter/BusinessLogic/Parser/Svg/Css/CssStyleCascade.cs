@@ -19,15 +19,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see<http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
 using System.Xml.Linq;
 using ShapeConverter.BusinessLogic.Parser.Svg.CSS;
-using ShapeConverter.BusinessLogic.Parser.Svg.Helper;
 
 namespace ShapeConverter.BusinessLogic.Parser.Svg
 {
@@ -46,7 +43,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
     /// </summary>
     internal class CssStyleCascade
     {
-        readonly string[] presentationAttributes = 
+        readonly string[] presentationAttributes =
         {
             "clip-path",
             "clip-rule",
@@ -65,6 +62,11 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             "stroke-dasharray",
             "stroke-dashoffset",
             "display",
+            "font-family",
+            "font-size",
+            "font-style",
+            "font-weight",
+            "font-stretch",
         };
 
         private List<CssStyleDeclaration> styleDeclarations = new List<CssStyleDeclaration>();
@@ -279,73 +281,6 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
         public SvgViewBox GetCurrentViewBox()
         {
             return svgViewBoxStack.Peek();
-        }
-
-        /// <summary>
-        /// Get an attribute as double from the cascade
-        /// </summary>
-        public double GetNumber(string name, double defaultValue)
-        {
-            double retVal = defaultValue;
-
-            var strVal = GetProperty(name);
-
-            if (!string.IsNullOrEmpty(strVal))
-            {
-                retVal = DoubleParser.GetNumber(strVal);
-            }
-
-            return retVal;
-        }
-
-        /// <summary>
-        /// Get an attribute as double from the top of cascade only
-        /// </summary>
-        public double GetNumberPercentFromTop(string name, double defaultValue)
-        {
-            double retVal = defaultValue;
-
-            var strVal = GetPropertyFromTop(name);
-
-            if (!string.IsNullOrEmpty(strVal))
-            {
-                (_, retVal) = DoubleParser.GetNumberPercent(strVal);
-            }
-
-            return retVal;
-        }
-
-        /// <summary>
-        /// Get the transformation matrix from top of the cascade
-        /// </summary>
-        /// <returns></returns>
-        public Matrix GetTransformMatrixFromTop()
-        {
-            var transform = GetPropertyFromTop("transform");
-
-            if (!string.IsNullOrEmpty(transform))
-            {
-                return TransformMatrixParser.GetTransformMatrix(transform);
-            }
-
-            return Matrix.Identity;
-        }
-
-        /// <summary>
-        /// Get an attribute as string from the cascade
-        /// </summary>
-        private string GetStringAttribute(XElement element, string name, string defaultValue)
-        {
-            string retVal = defaultValue;
-
-            var strVal = GetProperty(name);
-
-            if (!string.IsNullOrEmpty(retVal))
-            {
-                retVal = strVal;
-            }
-
-            return retVal;
         }
     }
 }

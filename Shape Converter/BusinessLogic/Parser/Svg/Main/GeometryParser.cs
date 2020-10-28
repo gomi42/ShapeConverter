@@ -84,6 +84,10 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                 case "polyline":
                     geometry = ParsePolyline(shape);
                     break;
+
+                case "text":
+                    geometry = ParseText(shape);
+                    break;
             }
 
             if (geometry != null)
@@ -291,6 +295,193 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             var ellipse = EllipseToGeometryConverter.EllipseToGeometry(new Point(cx, cy), rxVal, ryVal);
 
             return ellipse;
+        }
+
+        /// <summary>
+        /// Parse a path
+        /// </summary>
+        private GraphicPathGeometry ParseText(XElement path)
+        {
+            var strVal = path.Value.Replace("\n", string.Empty);
+
+            var x = GetLengthPercentAttr(path, "x", PercentBaseSelector.ViewBoxWidth);
+            var y = GetLengthPercentAttr(path, "y", PercentBaseSelector.ViewBoxHeight);
+
+            var fontFamily = GetFontFamily();
+            var fontSize = GetFontSize();
+            var fontStyle = GetFontStyle();
+            var fontWeight = GetFontWeight();
+            var fontStretch = GetFontStretch();
+
+            var typeFace = new Typeface(fontFamily, fontStyle, fontWeight, fontStretch);
+            var tv = new TextVectorizer();
+            var textGeometry = tv.Vectorize(strVal, x, y, typeFace, fontSize);
+
+            return textGeometry;
+        }
+                                                                        
+        /// <summary>
+        /// Get the font family
+        /// </summary>
+        /// <returns></returns>
+        private FontFamily GetFontFamily()
+        {
+            var fontFamily = cssStyleCascade.GetProperty("font-family");
+
+            if (string.IsNullOrEmpty(fontFamily))
+            {
+                fontFamily = "Segoe UI";
+            }
+
+            return new FontFamily(fontFamily);
+        }
+
+        /// <summary>
+        /// Get the font size
+        /// </summary>
+        /// <returns></returns>
+        private double GetFontSize()
+        {
+            var fontSizeStr = cssStyleCascade.GetProperty("font-size");
+            double fontSize = 16.0;
+
+            if (!string.IsNullOrEmpty(fontSizeStr))
+            {
+                fontSize = doubleParser.GetLengthPercent(fontSizeStr, PercentBaseSelector.ViewBoxDiagonal);
+            }
+
+            return fontSize;
+        }
+
+        /// <summary>
+        /// Get the font style
+        /// </summary>
+        /// <returns></returns>
+        private FontStyle GetFontStyle()
+        {
+            FontStyle fontStyle = FontStyles.Normal;
+
+            var strVal = cssStyleCascade.GetProperty("font-style");
+
+            if (string.IsNullOrEmpty(strVal))
+            {
+                return fontStyle;
+            }
+
+            switch (strVal)
+            {
+                case "normal":
+                    fontStyle = FontStyles.Normal;
+                    break;
+
+                case "italic":
+                    fontStyle = FontStyles.Italic;
+                    break;
+
+                case "oblige":
+                    fontStyle = FontStyles.Oblique;
+                    break;
+            }
+
+            return fontStyle;
+        }
+
+        /// <summary>
+        /// Get the font weight
+        /// </summary>
+        /// <returns></returns>
+        private FontWeight GetFontWeight()
+        {
+            var fontWeight = FontWeights.Normal;
+
+            var strVal = cssStyleCascade.GetProperty("font-weight");
+
+            if (string.IsNullOrEmpty(strVal))
+            {
+                return fontWeight;
+            }
+
+            switch (strVal)
+            {
+                case "normal":
+                    fontWeight = FontWeights.Normal;
+                    break;
+
+                case "bold":
+                    fontWeight = FontWeights.Bold;
+                    break;
+
+                case "bolder":
+                    fontWeight = FontWeights.ExtraBold;
+                    break;
+
+                case "lighter":
+                    fontWeight = FontWeights.Light;
+                    break;
+            }
+
+            return fontWeight;
+        }
+
+        /// <summary>
+        /// Get the font stretch
+        /// </summary>
+        /// <returns></returns>
+        private FontStretch GetFontStretch()
+        {
+            var fontStretch = FontStretches.Normal;
+
+            var strVal = cssStyleCascade.GetProperty("font-stretch");
+
+            if (string.IsNullOrEmpty(strVal))
+            {
+                return fontStretch;
+            }
+
+            switch (strVal)
+            {
+                case "normal":
+                    fontStretch = FontStretches.Normal;
+                    break;
+
+                case "ultra-condensed":
+                    fontStretch = FontStretches.UltraCondensed;
+                    break;
+
+                case "extra-condensed":
+                    fontStretch = FontStretches.ExtraCondensed;
+                    break;
+
+                case "condensed":
+                    fontStretch = FontStretches.Condensed;
+                    break;
+
+                case "semi-condensed":
+                    fontStretch = FontStretches.SemiCondensed;
+                    break;
+
+                case "semi-expanded":
+                    fontStretch = FontStretches.SemiExpanded;
+                    break;
+
+                case "expanded":
+                    fontStretch = FontStretches.Expanded;
+                    break;
+
+                case "extra-expanded":
+                    fontStretch = FontStretches.ExtraExpanded;
+                    break;
+
+                case "ultra-expanded":
+                    fontStretch = FontStretches.UltraExpanded;
+                    break;
+
+                default:
+                    fontStretch = FontStretches.Normal;
+                    break;
+            }
+
+            return fontStretch;
         }
 
         /// <summary>
