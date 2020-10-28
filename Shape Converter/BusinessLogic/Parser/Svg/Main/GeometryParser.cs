@@ -303,6 +303,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         private GraphicPathGeometry ParseText(XElement path)
         {
             var strVal = path.Value.Replace("\n", string.Empty);
+            strVal = strVal.Trim();
 
             var x = GetLengthPercentAttr(path, "x", PercentBaseSelector.ViewBoxWidth);
             var y = GetLengthPercentAttr(path, "y", PercentBaseSelector.ViewBoxHeight);
@@ -322,7 +323,6 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         /// <summary>
         /// Get the font family
         /// </summary>
-        /// <returns></returns>
         private FontFamily GetFontFamily()
         {
             var fontFamily = cssStyleCascade.GetProperty("font-family");
@@ -338,7 +338,6 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         /// <summary>
         /// Get the font size
         /// </summary>
-        /// <returns></returns>
         private double GetFontSize()
         {
             var fontSizeStr = cssStyleCascade.GetProperty("font-size");
@@ -355,7 +354,6 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         /// <summary>
         /// Get the font style
         /// </summary>
-        /// <returns></returns>
         private FontStyle GetFontStyle()
         {
             FontStyle fontStyle = FontStyles.Normal;
@@ -388,7 +386,6 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         /// <summary>
         /// Get the font weight
         /// </summary>
-        /// <returns></returns>
         private FontWeight GetFontWeight()
         {
             var fontWeight = FontWeights.Normal;
@@ -425,7 +422,6 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         /// <summary>
         /// Get the font stretch
         /// </summary>
-        /// <returns></returns>
         private FontStretch GetFontStretch()
         {
             var fontStretch = FontStretches.Normal;

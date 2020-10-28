@@ -27,7 +27,7 @@ using System.Windows.Media;
 namespace ShapeConverter.BusinessLogic.Parser.Svg
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// TextVectorizer
     /// </summary>
     internal static class TextVectorizer
     {
