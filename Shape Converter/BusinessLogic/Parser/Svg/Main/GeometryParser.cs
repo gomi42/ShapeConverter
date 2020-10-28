@@ -314,8 +314,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             var fontStretch = GetFontStretch();
 
             var typeFace = new Typeface(fontFamily, fontStyle, fontWeight, fontStretch);
-            var tv = new TextVectorizer();
-            var textGeometry = tv.Vectorize(strVal, x, y, typeFace, fontSize);
+            var textGeometry = TextVectorizer.Vectorize(strVal, x, y, typeFace, fontSize);
 
             return textGeometry;
         }

@@ -29,12 +29,12 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    internal class TextVectorizer
+    internal static class TextVectorizer
     {
         /// <summary>
         /// Convert a given text to graphic paths
         /// </summary>
-        public GraphicPathGeometry Vectorize(string text, double x, double y, Typeface typeface, double fontSize)
+        public static GraphicPathGeometry Vectorize(string text, double x, double y, Typeface typeface, double fontSize)
         {
             var graphicPathGeometry = new GraphicPathGeometry();
 
@@ -47,23 +47,16 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
               Brushes.Black,
               96);
 
-            var myPathGeometry = formattedText.BuildGeometry(new Point(x, y - formattedText.Baseline));
-            ConvertToGraphicGeometry(graphicPathGeometry, myPathGeometry);
-
-            //var m = new Matrix(fontState.TextMatrix.M11, fontState.TextMatrix.M12, fontState.TextMatrix.M21, fontState.TextMatrix.M22, 0, 0);
-            //var p2 = new Point(formattedText.WidthIncludingTrailingWhitespace, 0) * m;
-
-            //var fsm = fontState.TextMatrix;
-            //fsm.Translate(p2.X, 0);
-            //fontState.TextMatrix = fsm;
+            var pathGeometry = formattedText.BuildGeometry(new Point(x, y - formattedText.Baseline));
+            ConvertToGraphicGeometry(graphicPathGeometry, pathGeometry);
 
             return graphicPathGeometry;
         }
 
         /// <summary>
-        /// Convert a geometry to graphic paths
+        /// Convert a geometry to graphic geometry
         /// </summary>
-        void ConvertToGraphicGeometry(GraphicPathGeometry graphicPathGeometry, Geometry geometry)
+        private static void ConvertToGraphicGeometry(GraphicPathGeometry graphicPathGeometry, Geometry geometry)
         {
             switch (geometry)
             {
