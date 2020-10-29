@@ -27,7 +27,7 @@ using System.Windows.Media;
 namespace ShapeConverter.Parser.Pdf
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// TextVectorizer
     /// </summary>
     internal class TextVectorizer
     {
