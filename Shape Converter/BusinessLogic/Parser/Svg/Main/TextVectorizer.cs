@@ -34,10 +34,8 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
         /// <summary>
         /// Convert a given text to graphic paths
         /// </summary>
-        public static GraphicPathGeometry Vectorize(string text, double x, double y, Typeface typeface, double fontSize)
+        public static double Vectorize(GraphicPathGeometry graphicPathGeometry, string text, double x, double y, Typeface typeface, double fontSize, double rotate)
         {
-            var graphicPathGeometry = new GraphicPathGeometry();
-
             FormattedText formattedText = new FormattedText(
               text,
               CultureInfo.InvariantCulture,
@@ -47,16 +45,21 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
               Brushes.Black,
               96);
 
-            var pathGeometry = formattedText.BuildGeometry(new Point(x, y - formattedText.Baseline));
-            ConvertToGraphicGeometry(graphicPathGeometry, pathGeometry);
+            Matrix fontTransformation = Matrix.Identity;
+            fontTransformation.RotateAt(rotate, 0, formattedText.Baseline);
+            fontTransformation.Translate(x, y - formattedText.Baseline);
 
-            return graphicPathGeometry;
+            var pathGeometry = formattedText.BuildGeometry(new Point(0, 0));
+            ConvertToGraphicGeometry(graphicPathGeometry, pathGeometry, fontTransformation);
+            var newX = formattedText.WidthIncludingTrailingWhitespace;
+
+            return x + newX;
         }
 
         /// <summary>
         /// Convert a geometry to graphic geometry
         /// </summary>
-        private static void ConvertToGraphicGeometry(GraphicPathGeometry graphicPathGeometry, Geometry geometry)
+        private static void ConvertToGraphicGeometry(GraphicPathGeometry graphicPathGeometry, Geometry geometry, Matrix fontTransformation)
         {
             switch (geometry)
             {
@@ -64,7 +67,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
                 {
                     foreach (var child in group.Children)
                     {
-                        ConvertToGraphicGeometry(graphicPathGeometry, child);
+                        ConvertToGraphicGeometry(graphicPathGeometry, child, fontTransformation);
                     }
 
                     break;
@@ -74,7 +77,9 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
                 {
                     foreach (var figure in path.Figures)
                     {
-                        var move = new GraphicMoveSegment { StartPoint = figure.StartPoint };
+                        var points = TransformPoint(figure.StartPoint, fontTransformation);
+
+                        var move = new GraphicMoveSegment { StartPoint = points };
                         move.IsClosed = figure.IsClosed;
                         graphicPathGeometry.Segments.Add(move);
 
@@ -84,7 +89,9 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
                             {
                                 case LineSegment line:
                                 {
-                                    var lineTo = new GraphicLineSegment { To = line.Point };
+                                    var point = TransformPoint(line.Point, fontTransformation);
+
+                                    var lineTo = new GraphicLineSegment { To = point };
                                     graphicPathGeometry.Segments.Add(lineTo);
                                     break;
                                 }
@@ -94,20 +101,19 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
                                     var gbezier = new GraphicCubicBezierSegment();
                                     graphicPathGeometry.Segments.Add(gbezier);
 
-                                    gbezier.ControlPoint1 = bezier.Point1;
-                                    gbezier.ControlPoint2 = bezier.Point2;
-                                    gbezier.EndPoint = bezier.Point3;
+                                    gbezier.ControlPoint1 = TransformPoint(bezier.Point1, fontTransformation);
+                                    gbezier.ControlPoint2 = TransformPoint(bezier.Point2, fontTransformation);
+                                    gbezier.EndPoint = TransformPoint(bezier.Point3, fontTransformation);
                                     break;
                                 }
-
-                                case ArcSegment arc:
-                                    break;
 
                                 case PolyLineSegment polyLine:
                                 {
                                     foreach (var point in polyLine.Points)
                                     {
-                                        var lineTo = new GraphicLineSegment { To = point };
+                                        var gpoint = TransformPoint(point, fontTransformation);
+
+                                        var lineTo = new GraphicLineSegment { To = gpoint };
                                         graphicPathGeometry.Segments.Add(lineTo);
                                     }
                                     break;
@@ -120,9 +126,9 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
                                         var gbezier = new GraphicCubicBezierSegment();
                                         graphicPathGeometry.Segments.Add(gbezier);
 
-                                        gbezier.ControlPoint1 = polyBezier.Points[i];
-                                        gbezier.ControlPoint2 = polyBezier.Points[i + 1];
-                                        gbezier.EndPoint = polyBezier.Points[i + 2];
+                                        gbezier.ControlPoint1 = TransformPoint(polyBezier.Points[i], fontTransformation);
+                                        gbezier.ControlPoint2 = TransformPoint(polyBezier.Points[i + 1], fontTransformation);
+                                        gbezier.EndPoint = TransformPoint(polyBezier.Points[i + 2], fontTransformation);
                                     }
                                     break;
                                 }
@@ -133,6 +139,14 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
                     break;
                 }
             }
+        }
+
+        /// <summary>
+        /// Transform a point to the user space
+        /// </summary>
+        private static Point TransformPoint(Point point, Matrix fontTransformation)
+        {
+            return point * fontTransformation;
         }
     }
 }

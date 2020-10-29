@@ -20,7 +20,9 @@
 // along with this program. If not, see<http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Documents;
 using System.Windows.Media;
 using System.Xml.Linq;
 using ShapeConverter.BusinessLogic.Generators;
@@ -300,26 +302,163 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         /// <summary>
         /// Parse a path
         /// </summary>
-        private GraphicPathGeometry ParseText(XElement path)
+        private GraphicPathGeometry ParseText(XElement element)
         {
-            var strVal = path.Value.Replace("\n", string.Empty);
-            strVal = strVal.Trim();
+            var x = GetLengthPercentAttr(element, "x", PercentBaseSelector.ViewBoxWidth);
+            var y = GetLengthPercentAttr(element, "y", PercentBaseSelector.ViewBoxHeight);
 
-            var x = GetLengthPercentAttr(path, "x", PercentBaseSelector.ViewBoxWidth);
-            var y = GetLengthPercentAttr(path, "y", PercentBaseSelector.ViewBoxHeight);
-
-            var fontFamily = GetFontFamily();
             var fontSize = GetFontSize();
+            var typeface = GetTypeface();
+            var (_, rotation) = GetRotate(element);
+            int rotationIndex = 0;
+
+            GraphicPathGeometry textGeometry = new GraphicPathGeometry();
+            textGeometry.FillRule = GraphicFillRule.NoneZero;
+
+            XNode node = element.FirstNode;
+            bool prefixBlank = false;
+
+            while (node != null)
+            {
+                switch (node)
+                {
+                    case XElement xElement:
+                    {
+                        if (xElement.Name.LocalName == "tspan")
+                        {
+                            cssStyleCascade.PushStyles(xElement);
+
+                            var tspanFontSize = GetFontSize();
+                            var tspanTypeface = GetTypeface();
+                            bool hasRotation;
+                            List<double> tspanRotation;
+
+                            (hasRotation, tspanRotation) = GetRotate(xElement);
+
+                            if (!hasRotation)
+                            {
+                                Vectorize(textGeometry, xElement.Value, ref x, y, prefixBlank, tspanTypeface, tspanFontSize, rotation, ref rotationIndex);
+                            }
+                            else
+                            {
+                                int rotationIndex2 = 0;
+                                rotationIndex += Vectorize(textGeometry, xElement.Value, ref x, y, prefixBlank, tspanTypeface, tspanFontSize, tspanRotation, ref rotationIndex2);
+
+                                if (rotationIndex >= rotation.Count)
+                                {
+                                    rotationIndex = rotation.Count - 1;
+                                }
+                            }
+
+                            cssStyleCascade.Pop();
+                        }
+                        break;
+                    }
+
+                    case XText xText:
+                    {
+                        Vectorize(textGeometry, xText.Value, ref x, y, prefixBlank, typeface, fontSize, rotation, ref rotationIndex);
+                        break;
+                    }
+                }
+
+                prefixBlank = true;
+                node = node.NextNode;
+            }
+
+            return textGeometry;
+        }
+
+        /// <summary>
+        /// Vectorize a partial string
+        /// remove all leading and trailing blanks
+        /// shrink multiple blanks in a row to one blank
+        private int Vectorize(GraphicPathGeometry textGeometry, 
+                              string strVal, 
+                              ref double x, 
+                              double y, 
+                              bool prefixBlank, 
+                              Typeface typeface, 
+                              double fontSize, 
+                              List<double> rotation, 
+                              ref int rotationIndex)
+        {
+            int numberChars = 0;
+            bool evalPrefixBlank = true;
+            bool blankFound = false;
+
+            foreach (var ch in strVal)
+            {
+                if (!char.IsControl(ch))
+                {
+                    if (char.IsWhiteSpace(ch))
+                    {
+                        blankFound = true;
+                    }
+                    else
+                    {
+                        string str;
+
+                        if (evalPrefixBlank && prefixBlank || !evalPrefixBlank && blankFound)
+                        {
+                            numberChars++;
+                            x = TextVectorizer.Vectorize(textGeometry, " ", x, y, typeface, fontSize, rotation[rotationIndex]);
+
+                            rotationIndex++;
+
+                            if (rotationIndex >= rotation.Count)
+                            {
+                                rotationIndex = rotation.Count - 1;
+                            }
+                        }
+
+                        numberChars++;
+                        str = ch.ToString();
+                        x = TextVectorizer.Vectorize(textGeometry, ch.ToString(), x, y, typeface, fontSize, rotation[rotationIndex]);
+
+                        blankFound = false;
+                        evalPrefixBlank = false;
+                        rotationIndex++;
+
+                        if (rotationIndex >= rotation.Count)
+                        {
+                            rotationIndex = rotation.Count - 1;
+                        }
+                    }
+                }
+            }
+
+            return numberChars;
+        }
+
+        /// <summary>
+        /// Get the rotation list
+        /// </summary>
+        private (bool, List<double>) GetRotate(XElement element)
+        {
+            XAttribute xAttr = element.Attribute("rotate");
+
+            if (xAttr == null)
+            {
+                return (false, new List<double>() { 0.0 });
+            }
+
+            return (true, doubleParser.GetNumberList(xAttr.Value));
+        }
+
+        /// <summary>
+        /// Get the type face
+        /// </summary>
+        private Typeface GetTypeface()
+        {
+            var fontFamily = GetFontFamily();
             var fontStyle = GetFontStyle();
             var fontWeight = GetFontWeight();
             var fontStretch = GetFontStretch();
 
-            var typeFace = new Typeface(fontFamily, fontStyle, fontWeight, fontStretch);
-            var textGeometry = TextVectorizer.Vectorize(strVal, x, y, typeFace, fontSize);
-
-            return textGeometry;
+            return new Typeface(fontFamily, fontStyle, fontWeight, fontStretch);
         }
-                                                                        
+
         /// <summary>
         /// Get the font family
         /// </summary>
