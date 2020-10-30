@@ -34,7 +34,14 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
         /// <summary>
         /// Convert a given text to graphic paths
         /// </summary>
-        public static double Vectorize(GraphicPathGeometry graphicPathGeometry, string text, double x, double y, Typeface typeface, double fontSize, double rotate)
+        public static double Vectorize(GraphicPathGeometry graphicPathGeometry,
+                                       string text, 
+                                       double x, 
+                                       double y, 
+                                       Typeface typeface, 
+                                       double fontSize, 
+                                       double rotate,
+                                       Matrix currentTransformationMatrix)
         {
             FormattedText formattedText = new FormattedText(
               text,
@@ -48,6 +55,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             Matrix fontTransformation = Matrix.Identity;
             fontTransformation.RotateAt(rotate, 0, formattedText.Baseline);
             fontTransformation.Translate(x, y - formattedText.Baseline);
+            fontTransformation = fontTransformation * currentTransformationMatrix;
 
             var pathGeometry = formattedText.BuildGeometry(new Point(0, 0));
             ConvertToGraphicGeometry(graphicPathGeometry, pathGeometry, fontTransformation);

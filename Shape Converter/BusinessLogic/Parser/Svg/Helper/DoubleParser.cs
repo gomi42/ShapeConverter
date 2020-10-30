@@ -260,34 +260,38 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
         /// <summary>
         /// Apply length unit conversion to the given value
         /// </summary>
-        private bool ApplyLength(ref double dlbVal, string unit)
+        private bool ApplyLength(ref double dblVal, string unit)
         {
             bool unitProcessed = true;
 
             switch (unit)
             {
+                case "em":
+                    dblVal *= GetFontSize();
+                    break;
+
                 case "cm":
-                    dlbVal *= 96.0 / 2.54;
+                    dblVal *= 96.0 / 2.54;
                     break;
 
                 case "mm":
-                    dlbVal *= 96.0 / 2.54 / 10.0;
+                    dblVal *= 96.0 / 2.54 / 10.0;
                     break;
 
                 case "Q":
-                    dlbVal *= 96.0 / 2.54 / 40.0;
+                    dblVal *= 96.0 / 2.54 / 40.0;
                     break;
 
                 case "in":
-                    dlbVal *= 96.0;
+                    dblVal *= 96.0;
                     break;
 
                 case "pc":
-                    dlbVal *= 96.0 / 6.0;
+                    dblVal *= 96.0 / 6.0;
                     break;
 
                 case "pt":
-                    dlbVal *= 96.0 / 72.0;
+                    dblVal *= 96.0 / 72.0;
                     break;
 
                 case "":
@@ -296,12 +300,12 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
 
                 case "vw":
                     var width = cssStyleCascade.GetCurrentViewBox().ViewBox.Width;
-                    dlbVal = dlbVal / 100.0 * width;
+                    dblVal = dblVal / 100.0 * width;
                     break;
 
                 case "vh":
                     var height = cssStyleCascade.GetCurrentViewBox().ViewBox.Height;
-                    dlbVal = dlbVal / 100.0 * height;
+                    dblVal = dblVal / 100.0 * height;
                     break;
 
                 case "vvmin":
@@ -310,11 +314,11 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
 
                     if (viewBox.Width < viewBox.Height)
                     {
-                        dlbVal = dlbVal / 100.0 * viewBox.Width;
+                        dblVal = dblVal / 100.0 * viewBox.Width;
                     }
                     else
                     {
-                        dlbVal = dlbVal / 100.0 * viewBox.Height;
+                        dblVal = dblVal / 100.0 * viewBox.Height;
                     }
                     break;
                 }
@@ -325,11 +329,11 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
 
                     if (viewBox.Width > viewBox.Height)
                     {
-                        dlbVal = dlbVal / 100.0 * viewBox.Width;
+                        dblVal = dblVal / 100.0 * viewBox.Width;
                     }
                     else
                     {
-                        dlbVal = dlbVal / 100.0 * viewBox.Height;
+                        dblVal = dblVal / 100.0 * viewBox.Height;
                     }
                     break;
                 }
@@ -340,6 +344,22 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
             }
 
             return unitProcessed;
+        }
+
+        /// <summary>
+        /// Get the font size
+        /// </summary>
+        private double GetFontSize()
+        {
+            var fontSizeStr = cssStyleCascade.GetProperty("font-size");
+            double fontSize = 16.0;
+
+            if (!string.IsNullOrEmpty(fontSizeStr))
+            {
+                fontSize = GetLengthPercent(fontSizeStr, PercentBaseSelector.ViewBoxDiagonal);
+            }
+
+            return fontSize;
         }
     }
 }

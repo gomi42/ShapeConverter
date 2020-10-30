@@ -47,7 +47,7 @@ namespace ShapeConverter.Parser.Pdf
             {
                 var page = inputDocument.Pages[i];
                 var geometry = Parse(page);
-                group.Childreen.Add(geometry);
+                group.Children.Add(geometry);
             }
 
             var visual = OptimizeVisual.Optimize(group);

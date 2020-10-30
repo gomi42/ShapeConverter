@@ -237,7 +237,7 @@ namespace ShapeConverter.Shell.FileConverter
             {
                 case GraphicGroup group:
                 {
-                    foreach (var childVisual in group.Childreen)
+                    foreach (var childVisual in group.Children)
                     {
                         CreateShapeSelectionList(childVisual, shapeVms, ref index);
                     }
@@ -330,13 +330,13 @@ namespace ShapeConverter.Shell.FileConverter
                     graphicGroup.Opacity = group.Opacity;
                     graphicGroup.Clip = group.Clip;
 
-                    foreach (var childVisual in group.Childreen)
+                    foreach (var childVisual in group.Children)
                     {
                         var selectedGeometry = BuildSelectedGeometry(childVisual, selectedPaths);
 
                         if (selectedGeometry != null)
                         {
-                            graphicGroup.Childreen.Add(selectedGeometry);
+                            graphicGroup.Children.Add(selectedGeometry);
                         }
                     }
 
@@ -370,7 +370,7 @@ namespace ShapeConverter.Shell.FileConverter
                 {
                     case GraphicGroup group:
                     {
-                        foreach (var graphicPath in group.Childreen)
+                        foreach (var graphicPath in group.Children)
                         {
                             result = GetColorPrecision(graphicPath, precision);
                         }

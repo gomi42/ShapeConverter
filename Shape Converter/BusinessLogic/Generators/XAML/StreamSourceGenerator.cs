@@ -50,7 +50,7 @@ namespace ShapeConverter.BusinessLogic.Generators
             {
                 case GraphicGroup group:
                 {
-                    foreach (var childVisual in group.Childreen)
+                    foreach (var childVisual in group.Children)
                     {
                         GenerateStreamGeometries(childVisual, list);
                     }

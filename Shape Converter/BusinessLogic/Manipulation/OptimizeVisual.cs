@@ -58,19 +58,19 @@ namespace ShapeConverter.BusinessLogic.Generators
             {
                 case GraphicGroup group:
                 {
-                    var childreenGeometry = new PathGeometry();
-                    geometry = childreenGeometry;
+                    var childrenGeometry = new PathGeometry();
+                    geometry = childrenGeometry;
 
-                    foreach (var childVisual in group.Childreen)
+                    foreach (var childVisual in group.Children)
                     {
                         var childgeometry = RemoveClipping(childVisual);
-                        childreenGeometry.AddGeometry(childgeometry);
+                        childrenGeometry.AddGeometry(childgeometry);
                     }
 
                     if (group.Clip != null)
                     {
                         var groupClipGeometry = GeometryBinaryGenerator.GenerateGeometry(group.Clip);
-                        var intersection = groupClipGeometry.FillContainsWithDetail(childreenGeometry, 0.0001, ToleranceType.Absolute);
+                        var intersection = groupClipGeometry.FillContainsWithDetail(childrenGeometry, 0.0001, ToleranceType.Absolute);
 
                         if (intersection == IntersectionDetail.FullyContains)
                         {
@@ -84,10 +84,10 @@ namespace ShapeConverter.BusinessLogic.Generators
                             groupClipGeometry = groupClipGeometry.GetOutlinedPathGeometry();
 
                             var pen2 = new Pen(Brushes.Black, 1);
-                            childreenGeometry = childreenGeometry.GetWidenedPathGeometry(pen2);
-                            childreenGeometry = childreenGeometry.GetOutlinedPathGeometry();
+                            childrenGeometry = childrenGeometry.GetWidenedPathGeometry(pen2);
+                            childrenGeometry = childrenGeometry.GetOutlinedPathGeometry();
 
-                            intersection = groupClipGeometry.FillContainsWithDetail(childreenGeometry, 0.0001, ToleranceType.Absolute);
+                            intersection = groupClipGeometry.FillContainsWithDetail(childrenGeometry, 0.0001, ToleranceType.Absolute);
 
                             if (intersection == IntersectionDetail.FullyContains)
                             {
@@ -120,43 +120,43 @@ namespace ShapeConverter.BusinessLogic.Generators
             {
                 int i = 0;
 
-                while (i < group.Childreen.Count)
+                while (i < group.Children.Count)
                 {
-                    var childVisual = group.Childreen[i];
+                    var childVisual = group.Children[i];
                     var newVisual = Optimize(childVisual, level + 1);
 
                     if (newVisual != null)
                     {
                         if (newVisual is GraphicGroup newGroup && newGroup.Clip == null && DoubleUtilities.IsEqual(newGroup.Opacity, 1.0))
                         {
-                            foreach (var child in newGroup.Childreen)
+                            foreach (var child in newGroup.Children)
                             {
-                                group.Childreen.Insert(i, child);
+                                group.Children.Insert(i, child);
                                 i++;
                             }
 
-                            group.Childreen.RemoveAt(i);
+                            group.Children.RemoveAt(i);
                         }
                         else
                         {
-                            group.Childreen[i] = newVisual;
+                            group.Children[i] = newVisual;
                             i++;
                         }
                     }
                     else
                     {
-                        group.Childreen.RemoveAt(i);
+                        group.Children.RemoveAt(i);
                     }
                 }
 
-                if (group.Childreen.Count == 0)
+                if (group.Children.Count == 0)
                 {
                     result = null;
                 }
                 else
-                if (group.Childreen.Count == 1 && group.Clip == null && DoubleUtilities.IsEqual(group.Opacity, 1.0))
+                if (group.Children.Count == 1 && group.Clip == null && DoubleUtilities.IsEqual(group.Opacity, 1.0))
                 {
-                    result = group.Childreen[0];
+                    result = group.Children[0];
                 }
             }
 

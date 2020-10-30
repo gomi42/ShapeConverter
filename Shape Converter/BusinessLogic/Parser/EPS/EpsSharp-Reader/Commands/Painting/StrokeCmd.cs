@@ -46,7 +46,7 @@ namespace EpsSharp.Eps.Commands.Painting
 
             path.ColorPrecision = graphicState.FillBrush.ColorPrecision;
 
-            interpreter.GraphicGroup.Childreen.Add(path);
+            interpreter.GraphicGroup.Children.Add(path);
             interpreter.ResetCurrentGeometry();
         }
     }

@@ -80,10 +80,10 @@ namespace ShapeConverter.BusinessLogic.Generators
                         graphicGroup.Clip = TransformGeometry(group.Clip);
                     }
 
-                    foreach (var childVisual in group.Childreen)
+                    foreach (var childVisual in group.Children)
                     {
                         var normalizedVisual = Transform(childVisual);
-                        graphicGroup.Childreen.Add(normalizedVisual);
+                        graphicGroup.Children.Add(normalizedVisual);
                     }
 
                     break;

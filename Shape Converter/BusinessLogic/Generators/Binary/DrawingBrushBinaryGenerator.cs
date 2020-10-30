@@ -61,7 +61,7 @@ namespace ShapeConverter.BusinessLogic.Generators
                         drawingGroup.ClipGeometry = GeometryBinaryGenerator.GenerateGeometry(group.Clip);
                     }
 
-                    foreach (var childVisual in group.Childreen)
+                    foreach (var childVisual in group.Children)
                     {
                         var childDrawing = GenerateDrawing(childVisual);
                         drawingGroup.Children.Add(childDrawing);

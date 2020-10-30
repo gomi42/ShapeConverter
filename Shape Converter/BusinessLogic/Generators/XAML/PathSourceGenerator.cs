@@ -92,7 +92,7 @@ namespace ShapeConverter.BusinessLogic.Generators
 
                     result.AppendLine(">");
 
-                    foreach (var childVisual in group.Childreen)
+                    foreach (var childVisual in group.Children)
                     {
                         GeneratePathGroup(childVisual, result, level + 1, geometryGeneratorType);
                     }
