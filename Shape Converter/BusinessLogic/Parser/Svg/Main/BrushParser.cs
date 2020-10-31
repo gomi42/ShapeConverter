@@ -341,7 +341,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                     y = doubleParser.GetLength(gradientElem, "fy", y);
                     gradient.StartPoint = new Point(x, y) * matrix;
 
-                    var r = doubleParser.GetLength(gradientElem, "r", 0);
+                    var r = doubleParser.GetLength(gradientElem, "r", 0.5);
                     gradient.RadiusX = r;
                     gradient.RadiusY = r;
 
