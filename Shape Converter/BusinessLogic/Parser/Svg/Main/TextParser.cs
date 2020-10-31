@@ -21,6 +21,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Windows;
 using System.Windows.Media;
 using System.Xml.Linq;
 using ShapeConverter.BusinessLogic.Parser.Svg.Helper;
@@ -34,6 +35,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
     {
         private Clipping clipping;
         private BrushParser brushParser;
+        private Point currentPosition;
 
         public TextParser(CssStyleCascade cssStyleCascade,
                           DoubleParser doubleParser,
@@ -45,6 +47,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             this.doubleParser = doubleParser;
             this.brushParser = brushParser;
             this.clipping = clipping;
+            currentPosition = new Point(0, 0);
         }
 
         /// <summary>
@@ -63,6 +66,18 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             cssStyleCascade.Pop();
 
             return graphicVisual;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private class GradientTSpanAdjustment
+        {
+            public bool AdjustFill;
+            public bool AdjustStroke;
+            public double StartX;
+            public double EndX;
+            public GraphicPath Path;
         }
 
         /// <summary>
@@ -88,17 +103,8 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             textGraphicPath.Geometry = textGeometry;
             graphicVisual = textGraphicPath;
 
-            //var geo = ParseTextGeometry(element, currentTransformationMatrix);
-
-            //var bgGraphicPath = new GraphicPath();
-            //bgGraphicPath.Geometry = geo;
-
-            //graphicGroup = new GraphicGroup();
-            //graphicGroup.Children.Add(bgGraphicPath);
-            //graphicGroup.Children.Add(textGraphicPath);
-            //graphicVisual = graphicGroup;
-
-            //brushParser.SetFill(element, bgGraphicPath, currentTransformationMatrix);
+            var textStartX = x;
+            var adjustments = new List<GradientTSpanAdjustment>();
 
             XNode node = element.FirstNode;
             bool prefixBlank = false;
@@ -113,13 +119,17 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                         {
                             cssStyleCascade.PushStyles(xElement);
 
-                            var addNewGeometry = AttributeExistsOnTop("fill") || AttributeExistsOnTop("stroke");
+                            var hasOwnFill = ExistsAttributeOnTop("fill");
+                            var hasOwnStroke = ExistsAttributeOnTop("stroke");
+                            var addNewGeometry = hasOwnFill || hasOwnStroke;
                             GraphicPathGeometry tspanGeometry;
+                            double startX = x;
 
                             if (addNewGeometry)
                             {
                                 tspanGeometry = new GraphicPathGeometry();
                                 textGeometry.FillRule = GraphicFillRule.NoneZero;
+
                             }
                             else
                             {
@@ -163,6 +173,16 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                                 graphicGroup.Children.Add(tspanGraphicPath);
 
                                 brushParser.SetFillAndStroke(xElement, tspanGraphicPath, currentTransformationMatrix);
+
+                                var gc = new GradientTSpanAdjustment
+                                {
+                                    AdjustFill = !hasOwnFill,
+                                    AdjustStroke = !hasOwnStroke,
+                                    StartX = startX,
+                                    EndX = x,
+                                    Path = tspanGraphicPath
+                                };
+                                adjustments.Add(gc);
                             }
 
                             cssStyleCascade.Pop();
@@ -181,7 +201,9 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                 node = node.NextNode;
             }
 
+            currentPosition = new Point(x, y);
             brushParser.SetFillAndStroke(element, textGraphicPath, currentTransformationMatrix);
+            AdjustTSpanGradients(adjustments, textStartX, x);
 
             if (clipping.IsClipPathSet())
             {
@@ -201,13 +223,88 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         }
 
         /// <summary>
+        /// Adjust the tspan gradients so that they lie as best on top of the base text gradient
+        /// </summary>
+        private void AdjustTSpanGradients(List<GradientTSpanAdjustment> adjustments, double globalStartX, double globalEndX)
+        {
+            void Adjust(GraphicBrush graphicBrush, double startX, double endX)
+            {
+                double Interpolate(double x)
+                {
+                    var t = x * (globalEndX - globalStartX) + globalStartX;
+                    var y = (t - startX) / (endX - startX);
+                    return y;
+                }
+
+                if (graphicBrush == null)
+                {
+                    return;
+                }
+
+                switch (graphicBrush)
+                {
+                    case GraphicLinearGradientBrush linearGradientBrush:
+                    {
+                        if (linearGradientBrush.MappingMode == GraphicBrushMappingMode.RelativeToBoundingBox)
+                        {
+                            var newStartX = Interpolate(linearGradientBrush.StartPoint.X);
+                            var newEndX = Interpolate(linearGradientBrush.EndPoint.X);
+
+                            linearGradientBrush.StartPoint = new Point(newStartX, linearGradientBrush.StartPoint.Y);
+                            linearGradientBrush.EndPoint = new Point(newEndX, linearGradientBrush.EndPoint.Y);
+                        }
+                        break;
+                    }
+
+                    case GraphicRadialGradientBrush radialGradientBrush:
+                    {
+                        if (radialGradientBrush.MappingMode == GraphicBrushMappingMode.RelativeToBoundingBox)
+                        {
+                            var newStartX = Interpolate(radialGradientBrush.StartPoint.X);
+                            var newEndX = Interpolate(radialGradientBrush.EndPoint.X);
+
+                            radialGradientBrush.StartPoint = new Point(newStartX, radialGradientBrush.StartPoint.Y);
+                            radialGradientBrush.EndPoint = new Point(newEndX, radialGradientBrush.EndPoint.Y);
+
+                            radialGradientBrush.RadiusX = radialGradientBrush.RadiusX * (globalEndX - globalStartX) / (endX - startX);
+                        }
+                        break;
+                    }
+                }
+            }
+
+            foreach (var adjustment in adjustments)
+            {
+                if (adjustment.AdjustFill)
+                {
+                    Adjust(adjustment.Path.FillBrush, adjustment.StartX, adjustment.EndX);
+                }
+
+                if (adjustment.AdjustStroke)
+                {
+                    Adjust(adjustment.Path.StrokeBrush, adjustment.StartX, adjustment.EndX);
+                }
+            }
+        }
+
+        /// <summary>
         /// Test if a given attribute exists on top of the cascade
         /// </summary>
-        private bool AttributeExistsOnTop(string attrName)
+        private bool ExistsAttributeOnTop(string attrName)
         {
             var attr = cssStyleCascade.GetPropertyFromTop(attrName);
 
             return !string.IsNullOrEmpty(attr);
+        }
+
+        /// <summary>
+        /// Test if a given attribute is set at the given element
+        /// </summary>
+        private bool ExistsAttributeOnElement(XElement element, string attrName)
+        {
+            XAttribute xAttr = element.Attribute(attrName);
+
+            return xAttr != null;
         }
     }
 }
