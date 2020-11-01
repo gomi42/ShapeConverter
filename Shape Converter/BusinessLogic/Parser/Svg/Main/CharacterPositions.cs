@@ -231,7 +231,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         public void Next()
         {
             X.Next();
-            X.Next();
+            Y.Next();
         }
     }
 }

@@ -87,7 +87,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             GraphicVisual graphicVisual;
             GraphicGroup graphicGroup = null;
 
-            var position = new  CharacterPositions();
+            var position = new CharacterPositions();
 
             var xList = GetLengthPercentList(element, "x", PercentBaseSelector.ViewBoxWidth);
             var dxList = GetLengthPercentList(element, "dx", PercentBaseSelector.ViewBoxWidth);
@@ -132,7 +132,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                             var yChildList = GetLengthPercentList(xElement, "y", PercentBaseSelector.ViewBoxHeight);
                             var dyChildList = GetLengthPercentList(xElement, "dy", PercentBaseSelector.ViewBoxHeight);
                             position.Y.SetChildValues(yChildList, dyChildList);
-                            
+
                             var hasOwnFill = ExistsAttributeOnTop("fill");
                             var hasOwnStroke = ExistsAttributeOnTop("stroke");
                             var addNewGeometry = hasOwnFill || hasOwnStroke;
@@ -204,7 +204,19 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             }
 
             brushParser.SetFillAndStroke(element, textGraphicPath, currentTransformationMatrix);
-            AdjustTSpanGradients(adjustments, textStartX, position.X.Current);
+
+            if (adjustments.Count > 0)
+            {
+                var gc2 = new GradientTSpanAdjustment
+                {
+                    AdjustFill = true,
+                    AdjustStroke = true,
+                    Path = textGraphicPath
+                };
+                adjustments.Add(gc2);
+
+                AdjustGradients(adjustments);
+            }
 
             if (clipping.IsClipPathSet())
             {
@@ -224,17 +236,23 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         }
 
         /// <summary>
-        /// Adjust the tspan gradients so that they lie as best on top of the base text gradient
+        /// Adjust the gradients so that all touch the bounds of the overall text
         /// </summary>
-        private void AdjustTSpanGradients(List<GradientTSpanAdjustment> adjustments, double globalStartX, double globalEndX)
+        private void AdjustGradients(List<GradientTSpanAdjustment> adjustments)
         {
-            void Adjust(GraphicBrush graphicBrush, double startX, double endX)
+            Rect textBounds = Rect.Empty;
+
+            void Adjust(GraphicBrush graphicBrush, Rect bounds)
             {
-                double Interpolate(double x)
+                Point Interpolate(Point pointIn)
                 {
-                    var t = x * (globalEndX - globalStartX) + globalStartX;
-                    var y = (t - startX) / (endX - startX);
-                    return y;
+                    var xh = pointIn.X * (textBounds.Right - textBounds.Left) + textBounds.Left;
+                    var x2 = (xh - bounds.Left) / (bounds.Right - bounds.Left);
+
+                    var yh = pointIn.Y * (textBounds.Bottom- textBounds.Top) + textBounds.Top;
+                    var y2 = (yh - bounds.Top) / (bounds.Bottom - bounds.Top);
+
+                    return new Point(x2, y2);
                 }
 
                 if (graphicBrush == null)
@@ -248,11 +266,8 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                     {
                         if (linearGradientBrush.MappingMode == GraphicBrushMappingMode.RelativeToBoundingBox)
                         {
-                            var newStartX = Interpolate(linearGradientBrush.StartPoint.X);
-                            var newEndX = Interpolate(linearGradientBrush.EndPoint.X);
-
-                            linearGradientBrush.StartPoint = new Point(newStartX, linearGradientBrush.StartPoint.Y);
-                            linearGradientBrush.EndPoint = new Point(newEndX, linearGradientBrush.EndPoint.Y);
+                            linearGradientBrush.StartPoint = Interpolate(linearGradientBrush.StartPoint);
+                            linearGradientBrush.EndPoint = Interpolate(linearGradientBrush.EndPoint);
                         }
                         break;
                     }
@@ -261,13 +276,10 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                     {
                         if (radialGradientBrush.MappingMode == GraphicBrushMappingMode.RelativeToBoundingBox)
                         {
-                            var newStartX = Interpolate(radialGradientBrush.StartPoint.X);
-                            var newEndX = Interpolate(radialGradientBrush.EndPoint.X);
+                            radialGradientBrush.StartPoint = Interpolate(radialGradientBrush.StartPoint);
+                            radialGradientBrush.EndPoint = Interpolate(radialGradientBrush.EndPoint);
 
-                            radialGradientBrush.StartPoint = new Point(newStartX, radialGradientBrush.StartPoint.Y);
-                            radialGradientBrush.EndPoint = new Point(newEndX, radialGradientBrush.EndPoint.Y);
-
-                            radialGradientBrush.RadiusX = radialGradientBrush.RadiusX * (globalEndX - globalStartX) / (endX - startX);
+                            radialGradientBrush.RadiusX = radialGradientBrush.RadiusX * (textBounds.Right - textBounds.Left) / (bounds.Right - bounds.Left);
                         }
                         break;
                     }
@@ -276,14 +288,22 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
             foreach (var adjustment in adjustments)
             {
+                var bounds = adjustment.Path.Geometry.Bounds;
+                textBounds = Rect.Union(textBounds, bounds);
+            }
+
+            foreach (var adjustment in adjustments)
+            {
+                var path = adjustment.Path;
+
                 if (adjustment.AdjustFill)
                 {
-                    Adjust(adjustment.Path.FillBrush, adjustment.StartX, adjustment.EndX);
+                    Adjust(path.FillBrush, path.Geometry.Bounds);
                 }
 
                 if (adjustment.AdjustStroke)
                 {
-                    Adjust(adjustment.Path.StrokeBrush, adjustment.StartX, adjustment.EndX);
+                    Adjust(path.StrokeBrush, path.Geometry.Bounds);
                 }
             }
         }
