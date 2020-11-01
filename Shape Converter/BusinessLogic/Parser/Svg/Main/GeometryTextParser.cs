@@ -66,10 +66,13 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             textGeometry.FillRule = GraphicFillRule.NoneZero;
 
             XNode node = element.FirstNode;
-            bool prefixBlank = false;
+            bool beginOfLine = true;
 
             while (node != null)
             {
+                var nextNode = node.NextNode;
+                var hasSuccessor = nextNode != null;
+
                 switch (node)
                 {
                     case XElement xElement:
@@ -82,7 +85,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                             var tspanTypeface = GetTypeface();
                             rotation.ChildValues = GetRotate(xElement);
 
-                            Vectorize(textGeometry, xElement.Value, position, prefixBlank, tspanTypeface, tspanFontSize, rotation, currentTransformationMatrix);
+                            Vectorize(textGeometry, xElement.Value, position, beginOfLine, hasSuccessor, tspanTypeface, tspanFontSize, rotation, currentTransformationMatrix);
 
                             rotation.ChildValues = null;
                             cssStyleCascade.Pop();
@@ -92,13 +95,13 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
                     case XText xText:
                     {
-                        Vectorize(textGeometry, xText.Value, position, prefixBlank, typeface, fontSize, rotation, currentTransformationMatrix);
+                        Vectorize(textGeometry, xText.Value, position, beginOfLine, hasSuccessor, typeface, fontSize, rotation, currentTransformationMatrix);
                         break;
                     }
                 }
 
-                prefixBlank = true;
-                node = node.NextNode;
+                beginOfLine = false;
+                node = nextNode;
             }
 
             return textGeometry;
@@ -111,17 +114,38 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         protected void Vectorize(GraphicPathGeometry textGeometry,
                               string strVal,
                               CharacterPositions position,
-                              bool prefixBlank,
+                              bool beginOfLine,
+                              bool hasSuccessor,
                               Typeface typeface,
                               double fontSize,
                               ParentChildPriorityList rotation,
                               Matrix currentTransformationMatrix)
         {
-            bool evalPrefixBlank = true;
             bool blankFound = false;
 
             foreach (var ch in strVal)
             {
+                if (beginOfLine)
+                {
+                    if (char.IsWhiteSpace(ch) || char.IsControl(ch))
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        beginOfLine = false;
+                        var str = ch.ToString();
+                        (position.X.Current, position.Y.Current) = TextVectorizer.Vectorize(textGeometry, ch.ToString(), position.X.Current, position.Y.Current, typeface, fontSize, rotation.GetCurrentOrLast(), currentTransformationMatrix);
+                        position.Next();
+                        rotation.Next();
+                    }
+                }
+                else
+                if (ch == '\n')
+                {
+                    blankFound = true;
+                }
+                else
                 if (!char.IsControl(ch))
                 {
                     if (char.IsWhiteSpace(ch))
@@ -132,22 +156,27 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                     {
                         string str;
 
-                        if (evalPrefixBlank && prefixBlank || !evalPrefixBlank && blankFound)
+                        if (blankFound)
                         {
                             (position.X.Current, position.Y.Current) = TextVectorizer.Vectorize(textGeometry, " ", position.X.Current, position.Y.Current, typeface, fontSize, rotation.GetCurrentOrLast(), currentTransformationMatrix);
                             position.Next();
                             rotation.Next();
+                            blankFound = false;
                         }
 
                         str = ch.ToString();
                         (position.X.Current, position.Y.Current) = TextVectorizer.Vectorize(textGeometry, ch.ToString(), position.X.Current, position.Y.Current, typeface, fontSize, rotation.GetCurrentOrLast(), currentTransformationMatrix);
                         position.Next();
                         rotation.Next();
-
-                        blankFound = false;
-                        evalPrefixBlank = false;
                     }
                 }
+            }
+
+            if (hasSuccessor && blankFound)
+            {
+                (position.X.Current, position.Y.Current) = TextVectorizer.Vectorize(textGeometry, " ", position.X.Current, position.Y.Current, typeface, fontSize, rotation.GetCurrentOrLast(), currentTransformationMatrix);
+                position.Next();
+                rotation.Next();
             }
         }
 

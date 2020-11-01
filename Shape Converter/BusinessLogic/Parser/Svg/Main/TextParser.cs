@@ -109,14 +109,16 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             textGraphicPath.Geometry = textGeometry;
             graphicVisual = textGraphicPath;
 
-            var textStartX = position.X.Current;
             var adjustments = new List<GradientTSpanAdjustment>();
 
             XNode node = element.FirstNode;
-            bool prefixBlank = false;
+            bool beginOfLine = true;
 
             while (node != null)
             {
+                var nextNode = node.NextNode;
+                var hasSuccessor = nextNode != null;
+
                 switch (node)
                 {
                     case XElement xElement:
@@ -154,7 +156,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                             var tspanTypeface = GetTypeface();
                             rotation.ChildValues = GetRotate(xElement);
 
-                            Vectorize(tspanGeometry, xElement.Value, position, prefixBlank, tspanTypeface, tspanFontSize, rotation, currentTransformationMatrix);
+                            Vectorize(tspanGeometry, xElement.Value, position, beginOfLine, hasSuccessor, tspanTypeface, tspanFontSize, rotation, currentTransformationMatrix);
 
                             rotation.ChildValues = null;
                             position.X.SetChildValues(null, null);
@@ -194,13 +196,13 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
                     case XText xText:
                     {
-                        Vectorize(textGeometry, xText.Value, position, prefixBlank, typeface, fontSize, rotation, currentTransformationMatrix);
+                        Vectorize(textGeometry, xText.Value, position, beginOfLine, hasSuccessor, typeface, fontSize, rotation, currentTransformationMatrix);
                         break;
                     }
                 }
 
-                prefixBlank = true;
-                node = node.NextNode;
+                beginOfLine = false;
+                node = nextNode;
             }
 
             brushParser.SetFillAndStroke(element, textGraphicPath, currentTransformationMatrix);
