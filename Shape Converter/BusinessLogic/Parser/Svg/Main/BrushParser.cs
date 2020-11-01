@@ -193,7 +193,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                 return dashes;
             }
 
-            var dbls = doubleParser.GetLengthPercentList(strVal);
+            var dbls = doubleParser.GetLengthPercentList(strVal, PercentBaseSelector.None);
 
             dashes = new List<double>();
 

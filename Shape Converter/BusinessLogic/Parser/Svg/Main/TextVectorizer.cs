@@ -19,7 +19,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see<http://www.gnu.org/licenses/>.
 
-using System.Collections.Generic;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Media;
@@ -34,7 +33,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
         /// <summary>
         /// Convert a given text to graphic paths
         /// </summary>
-        public static double Vectorize(GraphicPathGeometry graphicPathGeometry,
+        public static (double, double) Vectorize(GraphicPathGeometry graphicPathGeometry,
                                        string text, 
                                        double x, 
                                        double y, 
@@ -61,7 +60,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             ConvertToGraphicGeometry(graphicPathGeometry, pathGeometry, fontTransformation);
             var newX = formattedText.WidthIncludingTrailingWhitespace;
 
-            return x + newX;
+            return (x + newX, y);
         }
 
         /// <summary>

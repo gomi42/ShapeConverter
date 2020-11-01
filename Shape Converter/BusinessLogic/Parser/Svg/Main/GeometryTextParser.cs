@@ -46,15 +46,21 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         /// Parse a text into a single geometry
         /// </summary>
         public GraphicPathGeometry ParseTextGeometry(XElement element,
-                                                      Matrix currentTransformationMatrix)
+                                                     Matrix currentTransformationMatrix)
         {
-            var x = doubleParser.GetLengthPercent(element, "x", 0.0, PercentBaseSelector.ViewBoxWidth);
-            var y = doubleParser.GetLengthPercent(element, "y", 0.0, PercentBaseSelector.ViewBoxHeight);
+            var position = new CharacterPositions();
+            var xList = GetLengthPercentList(element, "x", PercentBaseSelector.ViewBoxWidth);
+            var dxList = GetLengthPercentList(element, "dx", PercentBaseSelector.ViewBoxWidth);
+            position.X.SetParentValues(xList, dxList);
+
+            var yList = GetLengthPercentList(element, "y", PercentBaseSelector.ViewBoxHeight);
+            var dyList = GetLengthPercentList(element, "dy", PercentBaseSelector.ViewBoxHeight);
+            position.Y.SetParentValues(yList, dyList);
 
             var fontSize = GetFontSize();
             var typeface = GetTypeface();
-            var (_, rotation) = GetRotate(element);
-            int rotationIndex = 0;
+            var rotation = new ParentChildPriorityList();
+            rotation.ParentValues = GetRotate(element);
 
             GraphicPathGeometry textGeometry = new GraphicPathGeometry();
             textGeometry.FillRule = GraphicFillRule.NoneZero;
@@ -74,26 +80,11 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
                             var tspanFontSize = GetFontSize();
                             var tspanTypeface = GetTypeface();
-                            bool hasRotation;
-                            List<double> tspanRotation;
+                            rotation.ChildValues = GetRotate(xElement);
 
-                            (hasRotation, tspanRotation) = GetRotate(xElement);
+                            Vectorize(textGeometry, xElement.Value, position, prefixBlank, tspanTypeface, tspanFontSize, rotation, currentTransformationMatrix);
 
-                            if (!hasRotation)
-                            {
-                                Vectorize(textGeometry, xElement.Value, ref x, y, prefixBlank, tspanTypeface, tspanFontSize, rotation, ref rotationIndex, currentTransformationMatrix);
-                            }
-                            else
-                            {
-                                int rotationIndex2 = 0;
-                                rotationIndex += Vectorize(textGeometry, xElement.Value, ref x, y, prefixBlank, tspanTypeface, tspanFontSize, tspanRotation, ref rotationIndex2, currentTransformationMatrix);
-
-                                if (rotationIndex >= rotation.Count)
-                                {
-                                    rotationIndex = rotation.Count - 1;
-                                }
-                            }
-
+                            rotation.ChildValues = null;
                             cssStyleCascade.Pop();
                         }
                         break;
@@ -101,7 +92,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
                     case XText xText:
                     {
-                        Vectorize(textGeometry, xText.Value, ref x, y, prefixBlank, typeface, fontSize, rotation, ref rotationIndex, currentTransformationMatrix);
+                        Vectorize(textGeometry, xText.Value, position, prefixBlank, typeface, fontSize, rotation, currentTransformationMatrix);
                         break;
                     }
                 }
@@ -117,18 +108,15 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         /// Vectorize a partial string
         /// remove all leading and trailing blanks
         /// shrink multiple blanks in a row to one blank
-        protected int Vectorize(GraphicPathGeometry textGeometry,
+        protected void Vectorize(GraphicPathGeometry textGeometry,
                               string strVal,
-                              ref double x,
-                              double y,
+                              CharacterPositions position,
                               bool prefixBlank,
                               Typeface typeface,
                               double fontSize,
-                              List<double> rotation,
-                              ref int rotationIndex,
+                              ParentChildPriorityList rotation,
                               Matrix currentTransformationMatrix)
         {
-            int numberChars = 0;
             bool evalPrefixBlank = true;
             bool blankFound = false;
 
@@ -146,49 +134,51 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
                         if (evalPrefixBlank && prefixBlank || !evalPrefixBlank && blankFound)
                         {
-                            numberChars++;
-                            x = TextVectorizer.Vectorize(textGeometry, " ", x, y, typeface, fontSize, rotation[rotationIndex], currentTransformationMatrix);
-
-                            rotationIndex++;
-
-                            if (rotationIndex >= rotation.Count)
-                            {
-                                rotationIndex = rotation.Count - 1;
-                            }
+                            (position.X.Current, position.Y.Current) = TextVectorizer.Vectorize(textGeometry, " ", position.X.Current, position.Y.Current, typeface, fontSize, rotation.GetCurrentOrLast(), currentTransformationMatrix);
+                            position.Next();
+                            rotation.Next();
                         }
 
-                        numberChars++;
                         str = ch.ToString();
-                        x = TextVectorizer.Vectorize(textGeometry, ch.ToString(), x, y, typeface, fontSize, rotation[rotationIndex], currentTransformationMatrix);
+                        (position.X.Current, position.Y.Current) = TextVectorizer.Vectorize(textGeometry, ch.ToString(), position.X.Current, position.Y.Current, typeface, fontSize, rotation.GetCurrentOrLast(), currentTransformationMatrix);
+                        position.Next();
+                        rotation.Next();
 
                         blankFound = false;
                         evalPrefixBlank = false;
-                        rotationIndex++;
-
-                        if (rotationIndex >= rotation.Count)
-                        {
-                            rotationIndex = rotation.Count - 1;
-                        }
                     }
                 }
             }
+        }
 
-            return numberChars;
+        /// <summary>
+        /// Return a length/percent list or null if the attribute is not set
+        /// </summary>
+        protected List<double> GetLengthPercentList(XElement element, string attrName, PercentBaseSelector percentBaseSelector)
+        {
+            XAttribute attr = element.Attribute(attrName);
+
+            if (attr == null)
+            {
+                return null;
+            }
+
+            return doubleParser.GetLengthPercentList(attr.Value, percentBaseSelector);
         }
 
         /// <summary>
         /// Get the rotation list
         /// </summary>
-        protected (bool, List<double>) GetRotate(XElement element)
+        protected List<double> GetRotate(XElement element)
         {
             XAttribute xAttr = element.Attribute("rotate");
 
             if (xAttr == null)
             {
-                return (false, new List<double>() { 0.0 });
+                return null;
             }
 
-            return (true, doubleParser.GetNumberList(xAttr.Value));
+            return doubleParser.GetNumberList(xAttr.Value);
         }
 
         /// <summary>

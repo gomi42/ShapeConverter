@@ -191,7 +191,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
         /// <summary>
         /// Get a list of length or percent
         /// </summary>
-        public List<double> GetLengthPercentList(string strVal)
+        public List<double> GetLengthPercentList(string strVal, PercentBaseSelector percentBaseSelector)
         {
             strVal = strVal.Trim();
             var splits = listDelimiter.Split(strVal);
@@ -199,7 +199,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
 
             for (int i = 0; i < splits.Length; i += 2)
             {
-                var dbl = GetLengthPercent(splits[i], PercentBaseSelector.None);
+                var dbl = GetLengthPercent(splits[i], percentBaseSelector);
                 dbls.Add(dbl);
             }
 

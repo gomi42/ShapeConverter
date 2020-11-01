@@ -87,13 +87,21 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             GraphicVisual graphicVisual;
             GraphicGroup graphicGroup = null;
 
-            var x = doubleParser.GetLengthPercent(element, "x", 0.0, PercentBaseSelector.ViewBoxWidth);
-            var y = doubleParser.GetLengthPercent(element, "y", 0.0, PercentBaseSelector.ViewBoxHeight);
+            var position = new  CharacterPositions();
+
+            var xList = GetLengthPercentList(element, "x", PercentBaseSelector.ViewBoxWidth);
+            var dxList = GetLengthPercentList(element, "dx", PercentBaseSelector.ViewBoxWidth);
+            position.X.SetParentValues(xList, dxList);
+
+            var yList = GetLengthPercentList(element, "y", PercentBaseSelector.ViewBoxHeight);
+            var dyList = GetLengthPercentList(element, "dy", PercentBaseSelector.ViewBoxHeight);
+            position.Y.SetParentValues(yList, dyList);
 
             var fontSize = GetFontSize();
             var typeface = GetTypeface();
-            var (_, rotation) = GetRotate(element);
-            int rotationIndex = 0;
+
+            var rotation = new ParentChildPriorityList();
+            rotation.ParentValues = GetRotate(element);
 
             var textGeometry = new GraphicPathGeometry();
             textGeometry.FillRule = GraphicFillRule.NoneZero;
@@ -101,7 +109,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             textGraphicPath.Geometry = textGeometry;
             graphicVisual = textGraphicPath;
 
-            var textStartX = x;
+            var textStartX = position.X.Current;
             var adjustments = new List<GradientTSpanAdjustment>();
 
             XNode node = element.FirstNode;
@@ -117,11 +125,19 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                         {
                             cssStyleCascade.PushStyles(xElement);
 
+                            var xChildList = GetLengthPercentList(xElement, "x", PercentBaseSelector.ViewBoxWidth);
+                            var dxChildList = GetLengthPercentList(xElement, "dx", PercentBaseSelector.ViewBoxWidth);
+                            position.X.SetChildValues(xChildList, dxChildList);
+
+                            var yChildList = GetLengthPercentList(xElement, "y", PercentBaseSelector.ViewBoxHeight);
+                            var dyChildList = GetLengthPercentList(xElement, "dy", PercentBaseSelector.ViewBoxHeight);
+                            position.Y.SetChildValues(yChildList, dyChildList);
+                            
                             var hasOwnFill = ExistsAttributeOnTop("fill");
                             var hasOwnStroke = ExistsAttributeOnTop("stroke");
                             var addNewGeometry = hasOwnFill || hasOwnStroke;
                             GraphicPathGeometry tspanGeometry;
-                            double startX = x;
+                            double startX = position.X.Current;
 
                             if (addNewGeometry)
                             {
@@ -136,25 +152,13 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
                             var tspanFontSize = GetFontSize();
                             var tspanTypeface = GetTypeface();
-                            bool hasRotation;
-                            List<double> tspanRotation;
+                            rotation.ChildValues = GetRotate(xElement);
 
-                            (hasRotation, tspanRotation) = GetRotate(xElement);
+                            Vectorize(tspanGeometry, xElement.Value, position, prefixBlank, tspanTypeface, tspanFontSize, rotation, currentTransformationMatrix);
 
-                            if (!hasRotation)
-                            {
-                                Vectorize(tspanGeometry, xElement.Value, ref x, y, prefixBlank, tspanTypeface, tspanFontSize, rotation, ref rotationIndex, currentTransformationMatrix);
-                            }
-                            else
-                            {
-                                int rotationIndex2 = 0;
-                                rotationIndex += Vectorize(tspanGeometry, xElement.Value, ref x, y, prefixBlank, tspanTypeface, tspanFontSize, tspanRotation, ref rotationIndex2, currentTransformationMatrix);
-
-                                if (rotationIndex >= rotation.Count)
-                                {
-                                    rotationIndex = rotation.Count - 1;
-                                }
-                            }
+                            rotation.ChildValues = null;
+                            position.X.SetChildValues(null, null);
+                            position.Y.SetChildValues(null, null);
 
                             if (addNewGeometry)
                             {
@@ -177,7 +181,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                                     AdjustFill = !hasOwnFill,
                                     AdjustStroke = !hasOwnStroke,
                                     StartX = startX,
-                                    EndX = x,
+                                    EndX = position.X.Current,
                                     Path = tspanGraphicPath
                                 };
                                 adjustments.Add(gc);
@@ -190,7 +194,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
                     case XText xText:
                     {
-                        Vectorize(textGeometry, xText.Value, ref x, y, prefixBlank, typeface, fontSize, rotation, ref rotationIndex, currentTransformationMatrix);
+                        Vectorize(textGeometry, xText.Value, position, prefixBlank, typeface, fontSize, rotation, currentTransformationMatrix);
                         break;
                     }
                 }
@@ -200,7 +204,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             }
 
             brushParser.SetFillAndStroke(element, textGraphicPath, currentTransformationMatrix);
-            AdjustTSpanGradients(adjustments, textStartX, x);
+            AdjustTSpanGradients(adjustments, textStartX, position.X.Current);
 
             if (clipping.IsClipPathSet())
             {
