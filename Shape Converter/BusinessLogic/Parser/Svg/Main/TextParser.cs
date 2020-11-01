@@ -35,7 +35,6 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
     {
         private Clipping clipping;
         private BrushParser brushParser;
-        private Point currentPosition;
 
         public TextParser(CssStyleCascade cssStyleCascade,
                           DoubleParser doubleParser,
@@ -47,7 +46,6 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             this.doubleParser = doubleParser;
             this.brushParser = brushParser;
             this.clipping = clipping;
-            currentPosition = new Point(0, 0);
         }
 
         /// <summary>
@@ -201,7 +199,6 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                 node = node.NextNode;
             }
 
-            currentPosition = new Point(x, y);
             brushParser.SetFillAndStroke(element, textGraphicPath, currentTransformationMatrix);
             AdjustTSpanGradients(adjustments, textStartX, x);
 
