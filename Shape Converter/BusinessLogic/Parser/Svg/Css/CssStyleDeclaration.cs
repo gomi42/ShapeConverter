@@ -110,7 +110,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.CSS
         /// <summary>
         /// Get a property value
         /// </summary>
-        public string GetPropertyValue(string propertyName)
+        public string GetProperty(string propertyName)
         {
             if (!styles.ContainsKey(propertyName))
             {

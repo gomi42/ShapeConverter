@@ -21,6 +21,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Media;
 using System.Xml.Linq;
@@ -73,15 +74,13 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         {
             public bool AdjustFill;
             public bool AdjustStroke;
-            public double StartX;
-            public double EndX;
             public GraphicPath Path;
         }
 
         /// <summary>
         /// Parse a text
         /// </summary>
-        private GraphicVisual ParseText(XElement element,
+        private GraphicVisual ParseText(XElement textElement,
                               Matrix currentTransformationMatrix)
         {
             GraphicVisual graphicVisual;
@@ -89,19 +88,19 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
             var position = new CharacterPositions();
 
-            var xList = GetLengthPercentList(element, "x", PercentBaseSelector.ViewBoxWidth);
-            var dxList = GetLengthPercentList(element, "dx", PercentBaseSelector.ViewBoxWidth);
+            var xList = GetLengthPercentList(textElement, "x", PercentBaseSelector.ViewBoxWidth);
+            var dxList = GetLengthPercentList(textElement, "dx", PercentBaseSelector.ViewBoxWidth);
             position.X.SetParentValues(xList, dxList);
 
-            var yList = GetLengthPercentList(element, "y", PercentBaseSelector.ViewBoxHeight);
-            var dyList = GetLengthPercentList(element, "dy", PercentBaseSelector.ViewBoxHeight);
+            var yList = GetLengthPercentList(textElement, "y", PercentBaseSelector.ViewBoxHeight);
+            var dyList = GetLengthPercentList(textElement, "dy", PercentBaseSelector.ViewBoxHeight);
             position.Y.SetParentValues(yList, dyList);
 
             var fontSize = GetFontSize();
             var typeface = GetTypeface();
 
             var rotation = new ParentChildPriorityList();
-            rotation.ParentValues = GetRotate(element);
+            rotation.ParentValues = GetRotate(textElement);
 
             var textGeometry = new GraphicPathGeometry();
             textGeometry.FillRule = GraphicFillRule.NoneZero;
@@ -111,7 +110,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
             var adjustments = new List<GradientTSpanAdjustment>();
 
-            XNode node = element.FirstNode;
+            XNode node = textElement.FirstNode;
             bool beginOfLine = true;
 
             while (node != null)
@@ -121,31 +120,30 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
                 switch (node)
                 {
-                    case XElement xElement:
+                    case XElement tspanElement:
                     {
-                        if (xElement.Name.LocalName == "tspan")
+                        if (tspanElement.Name.LocalName == "tspan" && PresentationAttribute.IsElementVisible(tspanElement))
                         {
-                            cssStyleCascade.PushStyles(xElement);
+                            cssStyleCascade.PushStyles(tspanElement);
+                            SetInheritedOpacityInCascade();
 
-                            var xChildList = GetLengthPercentList(xElement, "x", PercentBaseSelector.ViewBoxWidth);
-                            var dxChildList = GetLengthPercentList(xElement, "dx", PercentBaseSelector.ViewBoxWidth);
+                            var xChildList = GetLengthPercentList(tspanElement, "x", PercentBaseSelector.ViewBoxWidth);
+                            var dxChildList = GetLengthPercentList(tspanElement, "dx", PercentBaseSelector.ViewBoxWidth);
                             position.X.SetChildValues(xChildList, dxChildList);
 
-                            var yChildList = GetLengthPercentList(xElement, "y", PercentBaseSelector.ViewBoxHeight);
-                            var dyChildList = GetLengthPercentList(xElement, "dy", PercentBaseSelector.ViewBoxHeight);
+                            var yChildList = GetLengthPercentList(tspanElement, "y", PercentBaseSelector.ViewBoxHeight);
+                            var dyChildList = GetLengthPercentList(tspanElement, "dy", PercentBaseSelector.ViewBoxHeight);
                             position.Y.SetChildValues(yChildList, dyChildList);
 
                             var hasOwnFill = ExistsAttributeOnTop("fill");
                             var hasOwnStroke = ExistsAttributeOnTop("stroke");
                             var addNewGeometry = hasOwnFill || hasOwnStroke;
                             GraphicPathGeometry tspanGeometry;
-                            double startX = position.X.Current;
 
                             if (addNewGeometry)
                             {
                                 tspanGeometry = new GraphicPathGeometry();
                                 textGeometry.FillRule = GraphicFillRule.NoneZero;
-
                             }
                             else
                             {
@@ -154,9 +152,9 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
                             var tspanFontSize = GetFontSize();
                             var tspanTypeface = GetTypeface();
-                            rotation.ChildValues = GetRotate(xElement);
+                            rotation.ChildValues = GetRotate(tspanElement);
 
-                            Vectorize(tspanGeometry, xElement.Value, position, beginOfLine, hasSuccessor, tspanTypeface, tspanFontSize, rotation, currentTransformationMatrix);
+                            Vectorize(tspanGeometry, tspanElement.Value, position, beginOfLine, hasSuccessor, tspanTypeface, tspanFontSize, rotation, currentTransformationMatrix);
 
                             rotation.ChildValues = null;
                             position.X.SetChildValues(null, null);
@@ -176,14 +174,12 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
                                 graphicGroup.Children.Add(tspanGraphicPath);
 
-                                brushParser.SetFillAndStroke(xElement, tspanGraphicPath, currentTransformationMatrix);
+                                brushParser.SetFillAndStroke(tspanElement, tspanGraphicPath, currentTransformationMatrix);
 
                                 var gc = new GradientTSpanAdjustment
                                 {
                                     AdjustFill = !hasOwnFill,
                                     AdjustStroke = !hasOwnStroke,
-                                    StartX = startX,
-                                    EndX = position.X.Current,
                                     Path = tspanGraphicPath
                                 };
                                 adjustments.Add(gc);
@@ -194,9 +190,9 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                         break;
                     }
 
-                    case XText xText:
+                    case XText textContentElement:
                     {
-                        Vectorize(textGeometry, xText.Value, position, beginOfLine, hasSuccessor, typeface, fontSize, rotation, currentTransformationMatrix);
+                        Vectorize(textGeometry, textContentElement.Value, position, beginOfLine, hasSuccessor, typeface, fontSize, rotation, currentTransformationMatrix);
                         break;
                     }
                 }
@@ -205,7 +201,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                 node = nextNode;
             }
 
-            brushParser.SetFillAndStroke(element, textGraphicPath, currentTransformationMatrix);
+            brushParser.SetFillAndStroke(textElement, textGraphicPath, currentTransformationMatrix);
 
             if (adjustments.Count > 0)
             {
@@ -235,6 +231,27 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             }
 
             return graphicVisual;
+        }
+
+        /// <summary>
+        /// Opacity handling in the ShapeConverter is a bit special. It is the overall goal to produce
+        /// the smallest code possible. That means opacity is incorporated into each color value
+        /// instead of creating a group and set its opacity value.
+        /// Because a tspan inherits the opacity from its text parent and the text parent is not a group
+        /// we need to calculate the final opacity for the tspan. Opacity is only looked at the top levels of
+        /// the cascade. That's why we take the opacity from the text parent (which we know is at level 1)
+        /// calculate the final opacity and set that value on top of the cascade.
+        /// </summary>
+        private void SetInheritedOpacityInCascade()
+        {
+            string[] attributes = { "opacity", "fill-opacity", "stroke-opacity"};
+            
+            foreach (var attr in attributes)
+            {
+                var valParent = cssStyleCascade.GetNumberPercentFromLevel(attr, 1, 1);
+                var valAct = cssStyleCascade.GetNumberPercentFromTop(attr, 1);
+                cssStyleCascade.SetPropertyOnTop(attr, (valParent * valAct).ToString(CultureInfo.InvariantCulture));
+            }
         }
 
         /// <summary>
@@ -318,16 +335,6 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             var attr = cssStyleCascade.GetPropertyFromTop(attrName);
 
             return !string.IsNullOrEmpty(attr);
-        }
-
-        /// <summary>
-        /// Test if a given attribute is set at the given element
-        /// </summary>
-        private bool ExistsAttributeOnElement(XElement element, string attrName)
-        {
-            XAttribute xAttr = element.Attribute(attrName);
-
-            return xAttr != null;
         }
     }
 }

@@ -158,7 +158,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
             foreach (var element in groupElement.Elements())
             {
-                if (!IsElementVisible(element))
+                if (!PresentationAttribute.IsElementVisible(element))
                 {
                     continue;
                 }
@@ -206,16 +206,6 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             }
 
             return group;
-        }
-
-        /// <summary>
-        /// Check if the given element is visible
-        /// </summary>
-        private bool IsElementVisible(XElement element)
-        {
-            var displayAttr = element.Attribute("display");
-
-            return displayAttr == null || displayAttr.Value != "none";
         }
 
         /// <summary>

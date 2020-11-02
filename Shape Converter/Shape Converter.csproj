@@ -426,6 +426,7 @@
     <Compile Include="BusinessLogic\Parser\Svg\Helper\ColorParser.cs" />
     <Compile Include="BusinessLogic\Parser\Svg\Helper\DoubleAttributeParser.cs" />
     <Compile Include="BusinessLogic\Parser\Svg\Helper\DoubleParser.cs" />
+    <Compile Include="BusinessLogic\Parser\Svg\Helper\PresentationAttribute.cs" />
     <Compile Include="BusinessLogic\Parser\Svg\Main\BrushParser.cs" />
     <Compile Include="BusinessLogic\Parser\Svg\Main\CharacterPositions.cs" />
     <Compile Include="BusinessLogic\Parser\Svg\Main\Clipping.cs" />

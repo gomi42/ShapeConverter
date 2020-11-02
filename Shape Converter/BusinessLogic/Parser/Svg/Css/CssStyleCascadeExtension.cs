@@ -52,9 +52,17 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
         /// </summary>
         public static double GetNumberPercentFromTop(this CssStyleCascade cssStyleCascade, string name, double defaultValue)
         {
+            return cssStyleCascade.GetNumberPercentFromLevel(name, 0, defaultValue);
+        }
+
+        /// <summary>
+        /// Get an attribute as double from the level (0 = top)
+        /// </summary>
+        public static double GetNumberPercentFromLevel(this CssStyleCascade cssStyleCascade, string name, int level, double defaultValue)
+        {
             double retVal = defaultValue;
 
-            var strVal = cssStyleCascade.GetPropertyFromTop(name);
+            var strVal = cssStyleCascade.GetPropertyFromLevel(name, level);
 
             if (!string.IsNullOrEmpty(strVal))
             {
