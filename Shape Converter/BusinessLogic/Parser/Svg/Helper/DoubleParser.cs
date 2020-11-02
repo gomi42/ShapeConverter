@@ -270,6 +270,10 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
                     dblVal *= GetFontSize();
                     break;
 
+                case "ex":
+                    dblVal *= GetFontSize() / 2.0;
+                    break;
+
                 case "cm":
                     dblVal *= 96.0 / 2.54;
                     break;
