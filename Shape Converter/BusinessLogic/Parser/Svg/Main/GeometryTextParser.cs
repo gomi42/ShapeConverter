@@ -331,6 +331,51 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                 return fontWeight;
             }
 
+            if (DoubleParser.TryGetNumber(strVal, out double number))
+            {
+                if (number <= 100)
+                {
+                    return FontWeights.Thin;
+                }
+
+                if (number <= 300)
+                {
+                    return FontWeights.ExtraLight;
+                }
+
+                if (number <= 400)
+                {
+                    return FontWeights.Normal;
+                }
+
+                if (number <= 500)
+                {
+                    return FontWeights.Medium;
+                }
+
+                if (number <= 600)
+                {
+                    return FontWeights.SemiBold;
+                }
+
+                if (number <= 700)
+                {
+                    return FontWeights.Bold;
+                }
+
+                if (number <= 800)
+                {
+                    return FontWeights.ExtraBold;
+                }
+
+                if (number <= 900)
+                {
+                    return FontWeights.Black;
+                }
+
+                return FontWeights.UltraBlack;
+            }
+
             switch (strVal)
             {
                 case "normal":

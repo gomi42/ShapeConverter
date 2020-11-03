@@ -133,6 +133,14 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
         }
 
         /// <summary>
+        /// Parse a value as number.
+        /// </summary>
+        public static bool TryGetNumber(string strVal, out double number)
+        {
+            return double.TryParse(strVal, NumberStyles.Float, CultureInfo.InvariantCulture, out number);
+        }
+
+        /// <summary>
         /// Get a LengthPercentAuto
         /// </summary>
         public DoubleLengthPercentAuto GetLengthPercentAuto(string strVal, PercentBaseSelector percentBaseSelector)
