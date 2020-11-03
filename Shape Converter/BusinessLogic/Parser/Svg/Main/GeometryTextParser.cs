@@ -238,7 +238,6 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
             string[] fontNames = fontFamily.Split(new char[] { ',' });
             FontFamily family;
-            family = new FontFamily();
 
             foreach (string rawFontname in fontNames)
             {
