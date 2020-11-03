@@ -257,9 +257,9 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
                     default:
                         family = new FontFamily(fontName);
-                        var fn = family.FamilyNames.Values;
+                        var familyNames = family.FamilyNames.Values;
 
-                        if (fn.Contains(fontName))
+                        if (familyNames.Contains(fontName))
                         {
                             return family;
                         }
