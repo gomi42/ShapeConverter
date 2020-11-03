@@ -59,24 +59,38 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         /// </summary>
         public void SetFillAndStroke(XElement path, GraphicPath graphicPath, Matrix currentTransformationMatrix)
         {
-            SetFill(path, graphicPath, currentTransformationMatrix);
-            SetStroke(path, graphicPath, currentTransformationMatrix);
+            SetFill(path, graphicPath, 1);
+            SetStroke(path, graphicPath, currentTransformationMatrix, 1);
         }
 
         /// <summary>
         /// Set all colors of the graphic path
         /// </summary>
-        public void SetFill(XElement path, GraphicPath graphicPath, Matrix currentTransformationMatrix)
+        public void SetFillAndStroke(XElement path, 
+                                     GraphicPath graphicPath, 
+                                     Matrix currentTransformationMatrix,
+                                     double parentOpacity,
+                                     double parentFillOpacity,
+                                     double parentStrokeOpacity)
         {
-            graphicPath.FillBrush = CreateBrush(path, "fill", true, graphicPath);
+            SetFill(path, graphicPath, parentOpacity * parentFillOpacity);
+            SetStroke(path, graphicPath, currentTransformationMatrix, parentOpacity * parentStrokeOpacity);
         }
 
         /// <summary>
         /// Set all colors of the graphic path
         /// </summary>
-        public void SetStroke(XElement path, GraphicPath graphicPath, Matrix currentTransformationMatrix)
+        private void SetFill(XElement path, GraphicPath graphicPath, double parentOpacity)
         {
-            graphicPath.StrokeBrush = CreateBrush(path, "stroke", false, graphicPath);
+            graphicPath.FillBrush = CreateBrush(path, "fill", true, graphicPath, parentOpacity);
+        }
+
+        /// <summary>
+        /// Set all colors of the graphic path
+        /// </summary>
+        private void SetStroke(XElement path, GraphicPath graphicPath, Matrix currentTransformationMatrix, double parentOpacity)
+        {
+            graphicPath.StrokeBrush = CreateBrush(path, "stroke", false, graphicPath, parentOpacity);
 
             if (graphicPath.StrokeBrush != null)
             {
@@ -209,7 +223,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         /// <summary>
         /// Create the brush for the given attribute name
         /// </summary>
-        private GraphicBrush CreateBrush(XElement element, string name, bool setDefault, GraphicPath graphicPath)
+        private GraphicBrush CreateBrush(XElement element, string name, bool setDefault, GraphicPath graphicPath, double parentOpacity)
         {
             var strVal = cssStyleCascade.GetProperty(name);
 
@@ -218,7 +232,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             {
                 if (setDefault)
                 {
-                    var alphad = GetAlpha(name);
+                    var alphad = GetAlpha(name, parentOpacity);
 
                     return new GraphicSolidColorBrush { Color = Color.FromArgb((byte)(alphad * 255), 0x00, 0x00, 0x00) };
                 }
@@ -234,7 +248,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                 return null;
             }
 
-            var alpha = GetAlpha(name);
+            var alpha = GetAlpha(name, parentOpacity);
 
             // 3: an url is specified
             if (strVal.StartsWith("url(", StringComparison.OrdinalIgnoreCase))
@@ -252,7 +266,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             // 4: use the current color
             if (strVal == "currentColor")
             {
-                return CreateBrush(element, "color", setDefault, graphicPath);
+                return CreateBrush(element, "color", setDefault, graphicPath, parentOpacity);
             }
 
             // 5: try color formats of different flavours (hex, rgb, name)
@@ -269,11 +283,11 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         /// <summary>
         /// Get the opacity value for the specified property
         /// </summary>
-        private double GetAlpha(string name)
+        private double GetAlpha(string name, double parentOpacity)
         {
             var alpha1 = cssStyleCascade.GetNumberPercentFromTop($"{name}-opacity", 1);
             double alpha2 = cssStyleCascade.GetNumberPercentFromTop("opacity", 1);
-            var alpha = alpha1 * alpha2;
+            var alpha = alpha1 * alpha2 * parentOpacity;
 
             return alpha;
         }

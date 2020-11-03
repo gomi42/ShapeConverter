@@ -110,6 +110,11 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
             var adjustments = new List<GradientTSpanAdjustment>();
 
+            var textOpacity = cssStyleCascade.GetNumberPercentFromTop("opacity", 1);
+            var textFillOpacity = cssStyleCascade.GetNumberPercentFromTop("fill-opacity", 1);
+            var textStrokeOpacity = cssStyleCascade.GetNumberPercentFromTop("stroke-opacity", 1);
+
+
             XNode node = textElement.FirstNode;
             bool beginOfLine = true;
 
@@ -127,7 +132,6 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                             var isTspanDisplayed = PresentationAttribute.IsElementDisplayed(tspanElement);
 
                             cssStyleCascade.PushStyles(tspanElement);
-                            SetInheritedOpacityInCascade();
 
                             var xChildList = GetLengthPercentList(tspanElement, "x", PercentBaseSelector.ViewBoxWidth);
                             var dxChildList = GetLengthPercentList(tspanElement, "dx", PercentBaseSelector.ViewBoxWidth);
@@ -176,7 +180,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
                                 graphicGroup.Children.Add(tspanGraphicPath);
 
-                                brushParser.SetFillAndStroke(tspanElement, tspanGraphicPath, currentTransformationMatrix);
+                                brushParser.SetFillAndStroke(tspanElement, tspanGraphicPath, currentTransformationMatrix, textOpacity, textFillOpacity, textStrokeOpacity);
 
                                 var gc = new GradientTSpanAdjustment
                                 {
@@ -233,27 +237,6 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             }
 
             return graphicVisual;
-        }
-
-        /// <summary>
-        /// Opacity handling in the ShapeConverter is a bit special. It is the overall goal to produce
-        /// the smallest code possible. That means opacity is incorporated into each color value
-        /// instead of creating a group and set its opacity value.
-        /// Because a tspan inherits the opacity from its text parent and the text parent is not a group
-        /// we need to calculate the final opacity for the tspan. Opacity is only looked at the top levels of
-        /// the cascade. That's why we take the opacity from the text parent (which we know is at level 1)
-        /// calculate the final opacity and set that value on top of the cascade.
-        /// </summary>
-        private void SetInheritedOpacityInCascade()
-        {
-            string[] attributes = { "opacity", "fill-opacity", "stroke-opacity"};
-            
-            foreach (var attr in attributes)
-            {
-                var valParent = cssStyleCascade.GetNumberPercentFromLevel(attr, 1, 1);
-                var valAct = cssStyleCascade.GetNumberPercentFromTop(attr, 1);
-                cssStyleCascade.SetPropertyOnTop(attr, (valParent * valAct).ToString(CultureInfo.InvariantCulture));
-            }
         }
 
         /// <summary>
