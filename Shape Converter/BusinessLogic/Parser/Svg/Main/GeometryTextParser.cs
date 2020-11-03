@@ -19,6 +19,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see<http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Media;
@@ -232,10 +233,41 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
             if (string.IsNullOrEmpty(fontFamily))
             {
-                fontFamily = "Segoe UI";
+                return new FontFamily("Global User Interface");
             }
 
-            return new FontFamily(fontFamily);
+            string[] fontNames = fontFamily.Split(new char[] { ',' });
+            FontFamily family;
+            family = new FontFamily();
+
+            foreach (string rawFontname in fontNames)
+            {
+                string fontName = rawFontname.Trim(new char[] { ' ', '\'', '"' });
+
+                switch (fontName)
+                {
+                    case "serif":
+                        return new FontFamily("Global Serif");
+
+                    case "sans-serif":
+                        return new FontFamily("Global Sans Serif");
+
+                    case "monospace":
+                        return new FontFamily("Global Monospace");
+
+                    default:
+                        family = new FontFamily(fontName);
+                        var fn = family.FamilyNames.Values;
+
+                        if (fn.Contains(fontName))
+                        {
+                            return family;
+                        }
+                        break;
+                }
+            }
+
+            return new FontFamily("Global User Interface");
         }
 
         /// <summary>
