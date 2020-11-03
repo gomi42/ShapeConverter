@@ -124,6 +124,8 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                     {
                         if (tspanElement.Name.LocalName == "tspan" && PresentationAttribute.IsElementVisible(tspanElement))
                         {
+                            var isTspanDisplayed = PresentationAttribute.IsElementDisplayed(tspanElement);
+
                             cssStyleCascade.PushStyles(tspanElement);
                             SetInheritedOpacityInCascade();
 
@@ -140,7 +142,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                             var addNewGeometry = hasOwnFill || hasOwnStroke;
                             GraphicPathGeometry tspanGeometry;
 
-                            if (addNewGeometry)
+                            if (addNewGeometry || !isTspanDisplayed)
                             {
                                 tspanGeometry = new GraphicPathGeometry();
                                 textGeometry.FillRule = GraphicFillRule.NoneZero;
@@ -160,7 +162,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                             position.X.SetChildValues(null, null);
                             position.Y.SetChildValues(null, null);
 
-                            if (addNewGeometry)
+                            if (isTspanDisplayed && addNewGeometry)
                             {
                                 var tspanGraphicPath = new GraphicPath();
                                 tspanGraphicPath.Geometry = tspanGeometry;

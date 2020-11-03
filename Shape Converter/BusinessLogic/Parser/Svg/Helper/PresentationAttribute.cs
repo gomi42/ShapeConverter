@@ -35,5 +35,14 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
             return displayAttr == null || displayAttr.Value != "none";
         }
 
+        /// <summary>
+        /// Check if the given element is visible
+        /// </summary>
+        public static bool IsElementDisplayed(XElement element)
+        {
+            var displayAttr = element.Attribute("visibility");
+
+            return displayAttr == null || displayAttr.Value == "visible";
+        }
     }
 }

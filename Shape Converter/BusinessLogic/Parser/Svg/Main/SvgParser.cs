@@ -158,7 +158,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
             foreach (var element in groupElement.Elements())
             {
-                if (!PresentationAttribute.IsElementVisible(element))
+                if (!PresentationAttribute.IsElementVisible(element) || !PresentationAttribute.IsElementDisplayed(element))
                 {
                     continue;
                 }
