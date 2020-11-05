@@ -35,9 +35,22 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
     /// </summary>
     internal class TextParser : GeometryTextParser
     {
+        /// <summary>
+        /// a color block
+        /// </summary>
+        private class ColorBlock
+        {
+            public bool AdjustFill;
+            public bool AdjustStroke;
+            public List<GraphicPath> Characters;
+        }
+
         private Clipping clipping;
         private BrushParser brushParser;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public TextParser(CssStyleCascade cssStyleCascade,
                           DoubleParser doubleParser,
                           BrushParser brushParser,
@@ -66,13 +79,6 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             cssStyleCascade.Pop();
 
             return graphicVisual;
-        }
-
-        protected class ColorBlock
-        {
-            public bool AdjustFill;
-            public bool AdjustStroke;
-            public List<GraphicPath> Characters;
         }
 
         /// <summary>
@@ -225,6 +231,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         {
             Rect textBounds;
 
+            // adjust a single brush
             void Adjust(GraphicBrush graphicBrush, Rect bounds, Rect blockBounds)
             {
                 Point Interpolate(Point pointIn)
@@ -269,6 +276,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                 }
             }
 
+            // get the bounds of the given block
             Rect GetBlockBounds(ColorBlock block)
             {
                 var blockBounds = Rect.Empty;
@@ -282,6 +290,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                 return blockBounds;
             }
 
+            // adjust a single block
             void AdjustOneBlock(ColorBlock block)
             {
                 var blockBounds = GetBlockBounds(block);
@@ -314,6 +323,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                 }
             }
 
+            // adjust the master text block
             Rect AdjustMasterTextBlock(ColorBlock block)
             {
                 var blockBounds = GetBlockBounds(block);

@@ -62,6 +62,9 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         protected CssStyleCascade cssStyleCascade;
         protected DoubleParser doubleParser;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public GeometryTextParser(CssStyleCascade cssStyleCascade,
                                   DoubleParser doubleParser)
         {
