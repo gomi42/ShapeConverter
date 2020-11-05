@@ -67,6 +67,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             "font-style",
             "font-weight",
             "font-stretch",
+            "text-anchor",
         };
 
         private List<CssStyleDeclaration> styleDeclarations = new List<CssStyleDeclaration>();

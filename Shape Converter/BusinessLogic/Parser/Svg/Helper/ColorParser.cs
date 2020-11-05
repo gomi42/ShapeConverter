@@ -177,6 +177,11 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Helper
             // 4: color is either given as name or hex values
             try
             {
+                if (strVal == "grey")
+                {
+                    strVal = "gray";
+                }
+
                 var color2 = (Color)ColorConverter.ConvertFromString(strVal);
                 color = Color.FromArgb((byte)(alpha * 255), color2.R, color2.G, color2.B);
                 return true;

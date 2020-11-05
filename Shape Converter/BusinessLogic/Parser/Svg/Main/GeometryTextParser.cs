@@ -21,9 +21,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Media;
 using System.Xml.Linq;
+using ShapeConverter.BusinessLogic.Generators;
 using ShapeConverter.BusinessLogic.Parser.Svg.Helper;
 
 namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
@@ -33,6 +35,30 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
     /// </summary>
     internal class GeometryTextParser
     {
+        /// <summary>
+        /// The text anchor
+        /// </summary>
+        protected enum TextAnchor
+        {
+            Start,
+            Middle,
+            End
+        }
+
+        /// <summary>
+        /// A position block
+        /// </summary>
+        protected class PositionBlock
+        {
+            public PositionBlock()
+            {
+                Characters = new List<GraphicPath>();
+            }
+
+            public TextAnchor TextAnchor;
+            public List<GraphicPath> Characters;
+        }
+
         protected CssStyleCascade cssStyleCascade;
         protected DoubleParser doubleParser;
 
@@ -49,7 +75,9 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         public GraphicPathGeometry ParseTextGeometry(XElement element,
                                                      Matrix currentTransformationMatrix)
         {
+            var positionBlocks = new List<PositionBlock>();
             var position = new CharacterPositions();
+
             var xList = GetLengthPercentList(element, "x", PercentBaseSelector.ViewBoxWidth);
             var dxList = GetLengthPercentList(element, "dx", PercentBaseSelector.ViewBoxWidth);
             position.X.SetParentValues(xList, dxList);
@@ -60,6 +88,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
             var fontSize = GetFontSize();
             var typeface = GetTypeface();
+            var textAnchor = GetTextAnchor();
             var rotation = new ParentChildPriorityList();
             rotation.ParentValues = GetRotate(element);
 
@@ -84,9 +113,10 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
                             var tspanFontSize = GetFontSize();
                             var tspanTypeface = GetTypeface();
+                            var tspanAnchor = GetTextAnchor();
                             rotation.ChildValues = GetRotate(xElement);
 
-                            Vectorize(textGeometry, xElement.Value, position, beginOfLine, hasSuccessor, tspanTypeface, tspanFontSize, rotation, currentTransformationMatrix);
+                            Vectorize(positionBlocks, xElement.Value, tspanAnchor, position, beginOfLine, hasSuccessor, tspanTypeface, tspanFontSize, rotation, currentTransformationMatrix);
 
                             rotation.ChildValues = null;
                             cssStyleCascade.Pop();
@@ -96,7 +126,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
                     case XText xText:
                     {
-                        Vectorize(textGeometry, xText.Value, position, beginOfLine, hasSuccessor, typeface, fontSize, rotation, currentTransformationMatrix);
+                        Vectorize(positionBlocks, xText.Value, textAnchor, position, beginOfLine, hasSuccessor, typeface, fontSize, rotation, currentTransformationMatrix);
                         break;
                     }
                 }
@@ -105,15 +135,36 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                 node = nextNode;
             }
 
-            return textGeometry;
+            AdjustPosition(positionBlocks);
+
+            return MakeSingleGeometry(positionBlocks);
+        }
+
+        /// <summary>
+        /// Combine all characters to a single geometry
+        /// </summary>
+        /// <param name="positionBlocks"></param>
+        /// <returns></returns>
+        private GraphicPathGeometry MakeSingleGeometry(List<PositionBlock> positionBlocks)
+        {
+            var geometry = new GraphicPathGeometry();
+            geometry.FillRule = GraphicFillRule.NoneZero;
+
+            foreach (var block in positionBlocks)
+            {
+                geometry.Segments.AddRange(block.Characters.SelectMany(x => x.Geometry.Segments));
+            }
+
+            return geometry;
         }
 
         /// <summary>
         /// Vectorize a partial string
         /// remove all leading and trailing blanks
         /// shrink multiple blanks in a row to one blank
-        protected void Vectorize(GraphicPathGeometry textGeometry,
+        protected List<GraphicPath> Vectorize(List<PositionBlock> positionBlocks,
                               string strVal,
+                              TextAnchor textAnchor,
                               CharacterPositions position,
                               bool beginOfLine,
                               bool hasSuccessor,
@@ -123,6 +174,36 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                               Matrix currentTransformationMatrix)
         {
             bool blankFound = false;
+            var charBlock = new List<GraphicPath>();
+
+            ////////
+
+            void VectorizeChar(char character)
+            {
+                var graphicPath = new GraphicPath();
+                graphicPath.Geometry.FillRule = GraphicFillRule.NoneZero;
+                charBlock.Add(graphicPath);
+                PositionBlock positionBlock;
+
+                if (position.X.IsCurrentFromAbsoluteList)
+                {
+                    positionBlock = new PositionBlock();
+                    positionBlock.TextAnchor = textAnchor;
+                    positionBlocks.Add(positionBlock);
+                }
+                else
+                {
+                    positionBlock = positionBlocks.Last();
+                }
+
+                positionBlock.Characters.Add(graphicPath);
+
+                (position.X.Current, position.Y.Current) = TextVectorizer.Vectorize(graphicPath.Geometry, character.ToString(), position.X.Current, position.Y.Current, typeface, fontSize, rotation.GetCurrentOrLast(), currentTransformationMatrix);
+                position.Next();
+                rotation.Next();
+            }
+
+            ////////
 
             foreach (var ch in strVal)
             {
@@ -135,10 +216,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                     else
                     {
                         beginOfLine = false;
-                        var str = ch.ToString();
-                        (position.X.Current, position.Y.Current) = TextVectorizer.Vectorize(textGeometry, ch.ToString(), position.X.Current, position.Y.Current, typeface, fontSize, rotation.GetCurrentOrLast(), currentTransformationMatrix);
-                        position.Next();
-                        rotation.Next();
+                        VectorizeChar(ch);
                     }
                 }
                 else
@@ -155,29 +233,67 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                     }
                     else
                     {
-                        string str;
-
                         if (blankFound)
                         {
-                            (position.X.Current, position.Y.Current) = TextVectorizer.Vectorize(textGeometry, " ", position.X.Current, position.Y.Current, typeface, fontSize, rotation.GetCurrentOrLast(), currentTransformationMatrix);
-                            position.Next();
-                            rotation.Next();
+                            VectorizeChar(' ');
                             blankFound = false;
                         }
 
-                        str = ch.ToString();
-                        (position.X.Current, position.Y.Current) = TextVectorizer.Vectorize(textGeometry, ch.ToString(), position.X.Current, position.Y.Current, typeface, fontSize, rotation.GetCurrentOrLast(), currentTransformationMatrix);
-                        position.Next();
-                        rotation.Next();
+                        VectorizeChar(ch);
                     }
                 }
             }
 
             if (hasSuccessor && blankFound)
             {
-                (position.X.Current, position.Y.Current) = TextVectorizer.Vectorize(textGeometry, " ", position.X.Current, position.Y.Current, typeface, fontSize, rotation.GetCurrentOrLast(), currentTransformationMatrix);
-                position.Next();
-                rotation.Next();
+                VectorizeChar(' ');
+            }
+
+            return charBlock;
+        }
+
+        /// <summary>
+        /// Adjust the position of each character according to the anchor of its block
+        /// </summary>
+        protected void AdjustPosition(List<PositionBlock> positionBlocks)
+        {
+            foreach (var block in positionBlocks)
+            {
+                if (block.TextAnchor == TextAnchor.Start)
+                {
+                    continue;
+                }
+
+                Rect blockBounds = Rect.Empty;
+
+                foreach (var ch in block.Characters)
+                {
+                    var bounds = ch.Geometry.Bounds;
+                    blockBounds = Rect.Union(blockBounds, bounds);
+                }
+
+                double translateX = 0.0;
+
+                switch (block.TextAnchor)
+                {
+                    case TextAnchor.Middle:
+                        translateX = -blockBounds.Width / 2;
+                        break;
+
+                    case TextAnchor.End:
+                        translateX = -blockBounds.Width;
+                        break;
+                }
+
+                var matrix = Matrix.Identity;
+                matrix.Translate(translateX, 0);
+
+                var transformVisual = new TransformVisual();
+
+                foreach (var ch in block.Characters)
+                {
+                    ch.Geometry = transformVisual.Transform(ch.Geometry, matrix);
+                }
             }
         }
 
@@ -194,6 +310,37 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             }
 
             return doubleParser.GetLengthPercentList(attr.Value, percentBaseSelector);
+        }
+
+        /// <summary>
+        /// Get the text anchor
+        /// </summary>
+        protected TextAnchor GetTextAnchor()
+        {
+            TextAnchor textAnchor = TextAnchor.Start;
+            var anchor = cssStyleCascade.GetProperty("text-anchor");
+
+            if (anchor == null)
+            {
+                return textAnchor;
+            }
+
+            switch (anchor)
+            {
+                case "start":
+                    textAnchor = TextAnchor.Start;
+                    break;
+
+                case "middle":
+                    textAnchor = TextAnchor.Middle;
+                    break;
+
+                case "end":
+                    textAnchor = TextAnchor.End;
+                    break;
+            }
+
+            return textAnchor;
         }
 
         /// <summary>

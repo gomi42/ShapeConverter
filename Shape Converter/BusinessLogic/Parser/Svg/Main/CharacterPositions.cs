@@ -181,6 +181,17 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         }
 
         /// <summary>
+        /// True if Current is taken from an absolute list
+        /// </summary>
+        public bool IsCurrentFromAbsoluteList
+        {
+            get
+            {
+                return AbsoluteValue.GetCurrent(out double _);
+            }
+        }
+
+        /// <summary>
         /// Set the new absolute and relative position lists of the parent
         /// </summary>
         public void SetParentValues(List<double> absoluteValues, List<double> relativeValues)

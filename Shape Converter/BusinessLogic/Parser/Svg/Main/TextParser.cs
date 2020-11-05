@@ -25,6 +25,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Media;
 using System.Xml.Linq;
+using ShapeConverter.BusinessLogic.Generators;
 using ShapeConverter.BusinessLogic.Parser.Svg.Helper;
 
 namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
@@ -67,14 +68,11 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             return graphicVisual;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        private class GradientTSpanAdjustment
+        protected class ColorBlock
         {
             public bool AdjustFill;
             public bool AdjustStroke;
-            public GraphicPath Path;
+            public List<GraphicPath> Characters;
         }
 
         /// <summary>
@@ -83,10 +81,17 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         private GraphicVisual ParseText(XElement textElement,
                               Matrix currentTransformationMatrix)
         {
-            GraphicVisual graphicVisual;
-            GraphicGroup graphicGroup = null;
+            GraphicGroup graphicGroup = new GraphicGroup();
 
+
+            var colorBlocks = new List<ColorBlock>();
+            var positionBlocks = new List<PositionBlock>();
             var position = new CharacterPositions();
+
+            var textColorBlock = new ColorBlock();
+            textColorBlock.Characters = new List<GraphicPath>();
+            textColorBlock.AdjustFill = true;
+            textColorBlock.AdjustStroke = true;
 
             var xList = GetLengthPercentList(textElement, "x", PercentBaseSelector.ViewBoxWidth);
             var dxList = GetLengthPercentList(textElement, "dx", PercentBaseSelector.ViewBoxWidth);
@@ -98,22 +103,27 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
             var fontSize = GetFontSize();
             var typeface = GetTypeface();
+            var textAnchor = GetTextAnchor();
 
             var rotation = new ParentChildPriorityList();
             rotation.ParentValues = GetRotate(textElement);
-
-            var textGeometry = new GraphicPathGeometry();
-            textGeometry.FillRule = GraphicFillRule.NoneZero;
-            var textGraphicPath = new GraphicPath();
-            textGraphicPath.Geometry = textGeometry;
-            graphicVisual = textGraphicPath;
-
-            var adjustments = new List<GradientTSpanAdjustment>();
 
             var textOpacity = cssStyleCascade.GetNumberPercentFromTop("opacity", 1);
             var textFillOpacity = cssStyleCascade.GetNumberPercentFromTop("fill-opacity", 1);
             var textStrokeOpacity = cssStyleCascade.GetNumberPercentFromTop("stroke-opacity", 1);
 
+            if (!textElement.HasElements)
+            {
+                var geometry = ParseTextGeometry(textElement, currentTransformationMatrix);
+            
+                var graphicPath = new GraphicPath();
+                graphicPath.Geometry = geometry;
+                graphicPath.Geometry.FillRule = GraphicFillRule.NoneZero;
+
+                brushParser.SetFillAndStroke(textElement, graphicPath, currentTransformationMatrix);
+
+                return graphicPath;
+            }
 
             XNode node = textElement.FirstNode;
             bool beginOfLine = true;
@@ -143,52 +153,31 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
                             var hasOwnFill = ExistsAttributeOnTop("fill");
                             var hasOwnStroke = ExistsAttributeOnTop("stroke");
-                            var addNewGeometry = hasOwnFill || hasOwnStroke;
-                            GraphicPathGeometry tspanGeometry;
-
-                            if (addNewGeometry || !isTspanDisplayed)
-                            {
-                                tspanGeometry = new GraphicPathGeometry();
-                                textGeometry.FillRule = GraphicFillRule.NoneZero;
-                            }
-                            else
-                            {
-                                tspanGeometry = textGeometry;
-                            }
 
                             var tspanFontSize = GetFontSize();
                             var tspanTypeface = GetTypeface();
+                            var tspanAnchor = GetTextAnchor();
                             rotation.ChildValues = GetRotate(tspanElement);
 
-                            Vectorize(tspanGeometry, tspanElement.Value, position, beginOfLine, hasSuccessor, tspanTypeface, tspanFontSize, rotation, currentTransformationMatrix);
+                            var charBlock = Vectorize(positionBlocks, tspanElement.Value, tspanAnchor, position, beginOfLine, hasSuccessor, tspanTypeface, tspanFontSize, rotation, currentTransformationMatrix);
 
                             rotation.ChildValues = null;
                             position.X.SetChildValues(null, null);
                             position.Y.SetChildValues(null, null);
 
-                            if (isTspanDisplayed && addNewGeometry)
+                            if (isTspanDisplayed)
                             {
-                                var tspanGraphicPath = new GraphicPath();
-                                tspanGraphicPath.Geometry = tspanGeometry;
+                                var colorBlock = new ColorBlock();
+                                colorBlocks.Add(colorBlock);
+                                colorBlock.Characters = charBlock;
+                                colorBlock.AdjustFill = !hasOwnFill;
+                                colorBlock.AdjustStroke = !hasOwnStroke;
 
-                                if (graphicGroup == null)
+                                foreach (var ch in charBlock)
                                 {
-                                    graphicGroup = new GraphicGroup();
-                                    graphicGroup.Children.Add(textGraphicPath);
-                                    graphicVisual = graphicGroup;
+                                    
+                                    brushParser.SetFillAndStroke(tspanElement, ch, currentTransformationMatrix, textOpacity, textFillOpacity, textStrokeOpacity);
                                 }
-
-                                graphicGroup.Children.Add(tspanGraphicPath);
-
-                                brushParser.SetFillAndStroke(tspanElement, tspanGraphicPath, currentTransformationMatrix, textOpacity, textFillOpacity, textStrokeOpacity);
-
-                                var gc = new GradientTSpanAdjustment
-                                {
-                                    AdjustFill = !hasOwnFill,
-                                    AdjustStroke = !hasOwnStroke,
-                                    Path = tspanGraphicPath
-                                };
-                                adjustments.Add(gc);
                             }
 
                             cssStyleCascade.Pop();
@@ -198,7 +187,13 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
                     case XText textContentElement:
                     {
-                        Vectorize(textGeometry, textContentElement.Value, position, beginOfLine, hasSuccessor, typeface, fontSize, rotation, currentTransformationMatrix);
+                        var charBlock = Vectorize(positionBlocks, textContentElement.Value, textAnchor, position, beginOfLine, hasSuccessor, typeface, fontSize, rotation, currentTransformationMatrix);
+                        textColorBlock.Characters.AddRange(charBlock);
+
+                        foreach (var ch in charBlock)
+                        {
+                            brushParser.SetFillAndStroke(textElement, ch, currentTransformationMatrix);
+                        }
                         break;
                     }
                 }
@@ -207,53 +202,37 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                 node = nextNode;
             }
 
-            brushParser.SetFillAndStroke(textElement, textGraphicPath, currentTransformationMatrix);
+            AdjustPosition(positionBlocks);
+            AdjustGradients(textColorBlock, colorBlocks);
 
-            if (adjustments.Count > 0)
+            foreach (var block in positionBlocks)
             {
-                var gc2 = new GradientTSpanAdjustment
-                {
-                    AdjustFill = true,
-                    AdjustStroke = true,
-                    Path = textGraphicPath
-                };
-                adjustments.Add(gc2);
-
-                AdjustGradients(adjustments);
+                graphicGroup.Children.AddRange(block.Characters);
             }
 
             if (clipping.IsClipPathSet())
             {
-                // shapes don't support clipping, create a group around it if none exists
-
-                if (graphicGroup == null)
-                {
-                    graphicGroup = new GraphicGroup();
-                    graphicVisual = graphicGroup;
-                    graphicGroup.Children.Add(graphicVisual);
-                }
-
                 clipping.SetClipPath(graphicGroup, currentTransformationMatrix);
             }
 
-            return graphicVisual;
+            return graphicGroup;
         }
 
         /// <summary>
-        /// Adjust the gradients so that all touch the bounds of the overall text
+        /// Adjust the gradients so that all touch the bounds of the block they belong to
         /// </summary>
-        private void AdjustGradients(List<GradientTSpanAdjustment> adjustments)
+        private void AdjustGradients(ColorBlock textColorBlock, List<ColorBlock> colorBlocks)
         {
-            Rect textBounds = Rect.Empty;
+            Rect textBounds;
 
-            void Adjust(GraphicBrush graphicBrush, Rect bounds)
+            void Adjust(GraphicBrush graphicBrush, Rect bounds, Rect blockBounds)
             {
                 Point Interpolate(Point pointIn)
                 {
-                    var xh = pointIn.X * (textBounds.Right - textBounds.Left) + textBounds.Left;
+                    var xh = pointIn.X * (blockBounds.Right - blockBounds.Left) + blockBounds.Left;
                     var x2 = (xh - bounds.Left) / (bounds.Right - bounds.Left);
 
-                    var yh = pointIn.Y * (textBounds.Bottom- textBounds.Top) + textBounds.Top;
+                    var yh = pointIn.Y * (blockBounds.Bottom - blockBounds.Top) + blockBounds.Top;
                     var y2 = (yh - bounds.Top) / (bounds.Bottom - bounds.Top);
 
                     return new Point(x2, y2);
@@ -283,32 +262,76 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                             radialGradientBrush.StartPoint = Interpolate(radialGradientBrush.StartPoint);
                             radialGradientBrush.EndPoint = Interpolate(radialGradientBrush.EndPoint);
 
-                            radialGradientBrush.RadiusX = radialGradientBrush.RadiusX * (textBounds.Right - textBounds.Left) / (bounds.Right - bounds.Left);
+                            radialGradientBrush.RadiusX = radialGradientBrush.RadiusX * (blockBounds.Right - blockBounds.Left) / (bounds.Right - bounds.Left);
                         }
                         break;
                     }
                 }
             }
 
-            foreach (var adjustment in adjustments)
+            Rect GetBlockBounds(ColorBlock block)
             {
-                var bounds = adjustment.Path.Geometry.Bounds;
-                textBounds = Rect.Union(textBounds, bounds);
+                var blockBounds = Rect.Empty;
+
+                foreach (var ch in block.Characters)
+                {
+                    var bounds = ch.Geometry.Bounds;
+                    blockBounds = Rect.Union(blockBounds, bounds);
+                }
+
+                return blockBounds;
             }
 
-            foreach (var adjustment in adjustments)
+            void AdjustOneBlock(ColorBlock block)
             {
-                var path = adjustment.Path;
+                var blockBounds = GetBlockBounds(block);
 
-                if (adjustment.AdjustFill)
+                foreach (var ch in block.Characters)
                 {
-                    Adjust(path.FillBrush, path.Geometry.Bounds);
+                    Rect bounds;
+
+                    if (block.AdjustFill)
+                    {
+                        bounds = textBounds;
+                    }
+                    else
+                    {
+                        bounds = blockBounds;
+                    }
+
+                    Adjust(ch.FillBrush, ch.Geometry.Bounds, bounds);
+
+                    if (block.AdjustStroke)
+                    {
+                        bounds = textBounds;
+                    }
+                    else
+                    {
+                        bounds = blockBounds;
+                    }
+
+                    Adjust(ch.StrokeBrush, ch.Geometry.Bounds, bounds);
+                }
+            }
+
+            Rect AdjustMasterTextBlock(ColorBlock block)
+            {
+                var blockBounds = GetBlockBounds(block);
+
+                foreach (var ch in block.Characters)
+                {
+                    Adjust(ch.FillBrush, ch.Geometry.Bounds, blockBounds);
+                    Adjust(ch.StrokeBrush, ch.Geometry.Bounds, blockBounds);
                 }
 
-                if (adjustment.AdjustStroke)
-                {
-                    Adjust(path.StrokeBrush, path.Geometry.Bounds);
-                }
+                return blockBounds;
+            }
+
+            textBounds = AdjustMasterTextBlock(textColorBlock);
+
+            foreach (var block in colorBlocks)
+            {
+                AdjustOneBlock(block);
             }
         }
 
