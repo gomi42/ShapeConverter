@@ -123,7 +123,7 @@ namespace ShapeConverter.BusinessLogic.Exporter
                         outputStream.WriteLine("clippath");
                     }
 
-                    foreach (var childVisual in group.Childreen)
+                    foreach (var childVisual in group.Children)
                     {
                         Generate(childVisual);
                     }

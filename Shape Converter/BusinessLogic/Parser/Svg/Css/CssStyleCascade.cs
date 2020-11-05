@@ -67,6 +67,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             "font-style",
             "font-weight",
             "font-stretch",
+            "text-anchor",
         };
 
         private List<CssStyleDeclaration> styleDeclarations = new List<CssStyleDeclaration>();
@@ -201,7 +202,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
                 {
                     foreach (var name in styleDeclaration.Properties)
                     {
-                        var value = styleDeclaration.GetPropertyValue(name);
+                        var value = styleDeclaration.GetProperty(name);
                         styleDeclarationToModify.SetProperty(name, value);
                     }
                 }
@@ -229,7 +230,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             for (int i = styleDeclarations.Count - 1; i >= 0; i--)
             {
                 var styles = styleDeclarations[i];
-                var value = styles.GetPropertyValue(name);
+                var value = styles.GetProperty(name);
 
                 if (value != null)
                 {
@@ -245,10 +246,18 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
         /// </summary>
         public string GetPropertyFromTop(string name)
         {
-            if (styleDeclarations.Count > 0)
+            return GetPropertyFromLevel(name, 0);
+        }
+
+        /// <summary>
+        /// Get a property from the given level (0 = top)
+        /// </summary>
+        public string GetPropertyFromLevel(string name, int level)
+        {
+            if (styleDeclarations.Count > level)
             {
-                var styles = styleDeclarations[styleDeclarations.Count - 1];
-                var value = styles.GetPropertyValue(name);
+                var styles = styleDeclarations[styleDeclarations.Count - 1 - level];
+                var value = styles.GetProperty(name);
 
                 if (value != null)
                 {
@@ -257,6 +266,18 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Get a property from the top of the cascade only
+        /// </summary>
+        public void SetPropertyOnTop(string name, string prop)
+        {
+            if (styleDeclarations.Count > 0)
+            {
+                var styles = styleDeclarations[styleDeclarations.Count - 1];
+                styles.SetProperty(name, prop);
+            }
         }
 
         /// <summary>

@@ -104,7 +104,7 @@ namespace ShapeConverter.BusinessLogic.Exporter
 
                     }
 
-                    foreach (var childVisual in group.Childreen)
+                    foreach (var childVisual in group.Children)
                     {
                         var path = Generate(childVisual, ns, definitions, ref definitionsCount);
                         element.Add(path);

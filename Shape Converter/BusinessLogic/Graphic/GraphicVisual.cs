@@ -61,7 +61,7 @@ namespace ShapeConverter
     /// </summary>
     public class GraphicGroup : GraphicVisual
     {
-        public List<GraphicVisual> Childreen { get; set; } = new List<GraphicVisual>();
+        public List<GraphicVisual> Children { get; set; } = new List<GraphicVisual>();
 
         public double Opacity { get; set; } = 1;
 

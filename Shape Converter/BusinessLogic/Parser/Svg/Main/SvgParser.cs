@@ -39,6 +39,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
     internal class SvgParser : IFileParser
     {
         private ShapeParser shapeParser;
+        private TextParser textParser;
         private Clipping clipping;
         private CssStyleCascade cssStyleCascade;
         private Dictionary<string, XElement> globalDefinitions;
@@ -87,8 +88,14 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
             doubleParser = new DoubleParser(cssStyleCascade);
             ReadGlobalDefinitions(root);
-            shapeParser = new ShapeParser(defaultNamespace, cssStyleCascade, globalDefinitions);
-            clipping = new Clipping(cssStyleCascade, globalDefinitions);
+
+            var brushParser = new BrushParser(defaultNamespace, cssStyleCascade, globalDefinitions, doubleParser);
+            var geometryParser = new GeometryParser(doubleParser);
+
+            var geometryTextParser = new GeometryTextParser(cssStyleCascade, doubleParser);
+            clipping = new Clipping(cssStyleCascade, globalDefinitions, geometryParser, geometryTextParser);
+            shapeParser = new ShapeParser(cssStyleCascade, brushParser, geometryParser, clipping);
+            textParser = new TextParser(cssStyleCascade, doubleParser, brushParser, clipping);
 
             GraphicVisual visual = ParseSVG(root, currentTransformationMatrix, true);
             visual = OptimizeVisual.Optimize(visual);
@@ -151,7 +158,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
             foreach (var element in groupElement.Elements())
             {
-                if (!IsElementVisible(element))
+                if (!PresentationAttribute.IsElementVisible(element) || !PresentationAttribute.IsElementDisplayed(element))
                 {
                     continue;
                 }
@@ -179,6 +186,12 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
                         break;
                     }
 
+                    case "text":
+                    {
+                        graphicVisual = textParser.Parse(element, matrix);
+                        break;
+                    }
+
                     default:
                     {
                         graphicVisual = shapeParser.Parse(element, matrix);
@@ -188,21 +201,11 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
                 if (graphicVisual != null)
                 {
-                    group.Childreen.Add(graphicVisual);
+                    group.Children.Add(graphicVisual);
                 }
             }
 
             return group;
-        }
-
-        /// <summary>
-        /// Check if the given element is visible
-        /// </summary>
-        private bool IsElementVisible(XElement element)
-        {
-            var displayAttr = element.Attribute("display");
-
-            return displayAttr == null || displayAttr.Value != "none";
         }
 
         /// <summary>

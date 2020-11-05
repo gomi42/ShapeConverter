@@ -91,7 +91,7 @@ namespace ShapeConverter.Parser.Psd
 
                 if (graphicPath != null)
                 {
-                    group.Childreen.Add(graphicPath);
+                    group.Children.Add(graphicPath);
                 }
             }
         }

@@ -44,7 +44,7 @@ namespace EpsSharp.Eps.Commands.GraphicState
                                                                                graphicState.ClippingPath.Bounds);
             graphicPath.ColorPrecision = shadingDescriptor.ColorPrecision;
 
-            interpreter.GraphicGroup.Childreen.Add(graphicPath);
+            interpreter.GraphicGroup.Children.Add(graphicPath);
         }
     }
 }

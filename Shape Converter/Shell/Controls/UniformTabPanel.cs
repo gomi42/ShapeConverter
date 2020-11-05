@@ -42,17 +42,17 @@ namespace ShapeConverter
                 return (new Size(3000, 42));
             }
 
-            int numVisibleChildreen = 0;
+            int numVisibleChildren = 0;
 
             foreach (UIElement child in InternalChildren)
             {
                 if (child.Visibility != Visibility.Collapsed)
                 {
-                    numVisibleChildreen++;
+                    numVisibleChildren++;
                 }
             }
 
-            int width = (int)(constraint.Width / numVisibleChildreen);
+            int width = (int)(constraint.Width / numVisibleChildren);
             Size childConstraint = new Size(width, constraint.Height);
             double height = 42;
 

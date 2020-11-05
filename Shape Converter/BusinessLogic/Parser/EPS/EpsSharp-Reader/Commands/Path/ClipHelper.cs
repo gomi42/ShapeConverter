@@ -34,7 +34,7 @@ namespace EpsSharp.Eps.Commands.Path
 
             interpreter.GraphicGroup = graphicGroup;
             interpreter.GraphicGroup.Clip = geometry;
-            interpreter.ReturnGraphicGroup.Childreen.Add(graphicGroup);
+            interpreter.ReturnGraphicGroup.Children.Add(graphicGroup);
         }
     }
 }

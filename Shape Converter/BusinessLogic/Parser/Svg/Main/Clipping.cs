@@ -22,16 +22,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows;
 using System.Windows.Media;
 using System.Xml.Linq;
-using ShapeConverter.BusinessLogic.Parser.Svg.Helper;
 
 namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 {
     internal class Clipping
     {
         private GeometryParser geometryParser;
+        private GeometryTextParser textParser;
         private CssStyleCascade cssStyleCascade;
         private Dictionary<string, XElement> globalDefinitions;
 
@@ -39,12 +38,14 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         /// Constructor
         /// </summary>
         public Clipping(CssStyleCascade cssStyleCascade,
-                        Dictionary<string, XElement> globalDefinitions)
+                        Dictionary<string, XElement> globalDefinitions,
+                        GeometryParser geometryParser,
+                        GeometryTextParser textParser)
         {
             this.cssStyleCascade = cssStyleCascade;
             this.globalDefinitions = globalDefinitions;
-
-            geometryParser = new GeometryParser(cssStyleCascade);
+            this.geometryParser = geometryParser;
+            this.textParser = textParser;
         }
 
         /// <summary>
@@ -95,7 +96,24 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                 return;
             }
 
-            var clipGeometry = geometryParser.Parse(shapeElement, currentTransformationMatrix);
+            GraphicPathGeometry clipGeometry;
+
+            switch (shapeElement.Name.LocalName)
+            {
+                case "text":
+                    clipGeometry = textParser.ParseTextGeometry(shapeElement, currentTransformationMatrix);
+                    break;
+
+                default:
+                    clipGeometry = geometryParser.Parse(shapeElement, currentTransformationMatrix);
+                    break;
+            }
+
+            if (clipGeometry == null)
+            {
+                return;
+            }
+
             clipGeometry.FillRule = GraphicFillRule.NoneZero;
 
             var clipRule = cssStyleCascade.GetProperty("clip-rule");

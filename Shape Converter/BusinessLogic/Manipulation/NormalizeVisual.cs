@@ -173,7 +173,7 @@ namespace ShapeConverter.BusinessLogic.Generators
                 {
                     case GraphicGroup group:
                     {
-                        foreach (var childVisual in group.Childreen)
+                        foreach (var childVisual in group.Children)
                         {
                             DetermineBoundsRecursive(childVisual);
                         }
@@ -240,10 +240,10 @@ namespace ShapeConverter.BusinessLogic.Generators
                         graphicGroup.Clip = NormalizeGeometry(group.Clip);
                     }
 
-                    foreach (var childVisual in group.Childreen)
+                    foreach (var childVisual in group.Children)
                     {
                         var normalizedVisual = Normalize(childVisual);
-                        graphicGroup.Childreen.Add(normalizedVisual);
+                        graphicGroup.Children.Add(normalizedVisual);
                     }
 
                     break;

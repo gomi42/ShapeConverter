@@ -127,7 +127,7 @@ namespace ShapeConverter.BusinessLogic.Generators.GeometryCSharpSourceGenerator
             {
                 case GraphicGroup group:
                 {
-                    foreach (var childVisual in group.Childreen)
+                    foreach (var childVisual in group.Children)
                     {
                         GenerateSourceRecursive(childVisual);
                     }

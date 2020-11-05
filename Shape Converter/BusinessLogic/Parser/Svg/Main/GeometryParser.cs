@@ -20,7 +20,9 @@
 // along with this program. If not, see<http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Documents;
 using System.Windows.Media;
 using System.Xml.Linq;
 using ShapeConverter.BusinessLogic.Generators;
@@ -35,16 +37,14 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
     /// </summary>
     internal class GeometryParser
     {
-        private CssStyleCascade cssStyleCascade;
         private DoubleParser doubleParser;
 
         /// <summary>
         /// Constructor
         /// </summary>
-        public GeometryParser(CssStyleCascade cssStyleCascade)
+        public GeometryParser(DoubleParser doubleParser)
         {
-            this.cssStyleCascade = cssStyleCascade;
-            doubleParser = new DoubleParser(cssStyleCascade);
+            this.doubleParser = doubleParser;
         }
 
         /// <summary>
@@ -83,10 +83,6 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
                 case "polyline":
                     geometry = ParsePolyline(shape);
-                    break;
-
-                case "text":
-                    geometry = ParseText(shape);
                     break;
             }
 
@@ -295,188 +291,6 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             var ellipse = EllipseToGeometryConverter.EllipseToGeometry(new Point(cx, cy), rxVal, ryVal);
 
             return ellipse;
-        }
-
-        /// <summary>
-        /// Parse a path
-        /// </summary>
-        private GraphicPathGeometry ParseText(XElement path)
-        {
-            var strVal = path.Value.Replace("\n", string.Empty);
-            strVal = strVal.Trim();
-
-            var x = GetLengthPercentAttr(path, "x", PercentBaseSelector.ViewBoxWidth);
-            var y = GetLengthPercentAttr(path, "y", PercentBaseSelector.ViewBoxHeight);
-
-            var fontFamily = GetFontFamily();
-            var fontSize = GetFontSize();
-            var fontStyle = GetFontStyle();
-            var fontWeight = GetFontWeight();
-            var fontStretch = GetFontStretch();
-
-            var typeFace = new Typeface(fontFamily, fontStyle, fontWeight, fontStretch);
-            var textGeometry = TextVectorizer.Vectorize(strVal, x, y, typeFace, fontSize);
-
-            return textGeometry;
-        }
-                                                                        
-        /// <summary>
-        /// Get the font family
-        /// </summary>
-        private FontFamily GetFontFamily()
-        {
-            var fontFamily = cssStyleCascade.GetProperty("font-family");
-
-            if (string.IsNullOrEmpty(fontFamily))
-            {
-                fontFamily = "Segoe UI";
-            }
-
-            return new FontFamily(fontFamily);
-        }
-
-        /// <summary>
-        /// Get the font size
-        /// </summary>
-        private double GetFontSize()
-        {
-            var fontSizeStr = cssStyleCascade.GetProperty("font-size");
-            double fontSize = 16.0;
-
-            if (!string.IsNullOrEmpty(fontSizeStr))
-            {
-                fontSize = doubleParser.GetLengthPercent(fontSizeStr, PercentBaseSelector.ViewBoxDiagonal);
-            }
-
-            return fontSize;
-        }
-
-        /// <summary>
-        /// Get the font style
-        /// </summary>
-        private FontStyle GetFontStyle()
-        {
-            FontStyle fontStyle = FontStyles.Normal;
-
-            var strVal = cssStyleCascade.GetProperty("font-style");
-
-            if (string.IsNullOrEmpty(strVal))
-            {
-                return fontStyle;
-            }
-
-            switch (strVal)
-            {
-                case "normal":
-                    fontStyle = FontStyles.Normal;
-                    break;
-
-                case "italic":
-                    fontStyle = FontStyles.Italic;
-                    break;
-
-                case "oblige":
-                    fontStyle = FontStyles.Oblique;
-                    break;
-            }
-
-            return fontStyle;
-        }
-
-        /// <summary>
-        /// Get the font weight
-        /// </summary>
-        private FontWeight GetFontWeight()
-        {
-            var fontWeight = FontWeights.Normal;
-
-            var strVal = cssStyleCascade.GetProperty("font-weight");
-
-            if (string.IsNullOrEmpty(strVal))
-            {
-                return fontWeight;
-            }
-
-            switch (strVal)
-            {
-                case "normal":
-                    fontWeight = FontWeights.Normal;
-                    break;
-
-                case "bold":
-                    fontWeight = FontWeights.Bold;
-                    break;
-
-                case "bolder":
-                    fontWeight = FontWeights.ExtraBold;
-                    break;
-
-                case "lighter":
-                    fontWeight = FontWeights.Light;
-                    break;
-            }
-
-            return fontWeight;
-        }
-
-        /// <summary>
-        /// Get the font stretch
-        /// </summary>
-        private FontStretch GetFontStretch()
-        {
-            var fontStretch = FontStretches.Normal;
-
-            var strVal = cssStyleCascade.GetProperty("font-stretch");
-
-            if (string.IsNullOrEmpty(strVal))
-            {
-                return fontStretch;
-            }
-
-            switch (strVal)
-            {
-                case "normal":
-                    fontStretch = FontStretches.Normal;
-                    break;
-
-                case "ultra-condensed":
-                    fontStretch = FontStretches.UltraCondensed;
-                    break;
-
-                case "extra-condensed":
-                    fontStretch = FontStretches.ExtraCondensed;
-                    break;
-
-                case "condensed":
-                    fontStretch = FontStretches.Condensed;
-                    break;
-
-                case "semi-condensed":
-                    fontStretch = FontStretches.SemiCondensed;
-                    break;
-
-                case "semi-expanded":
-                    fontStretch = FontStretches.SemiExpanded;
-                    break;
-
-                case "expanded":
-                    fontStretch = FontStretches.Expanded;
-                    break;
-
-                case "extra-expanded":
-                    fontStretch = FontStretches.ExtraExpanded;
-                    break;
-
-                case "ultra-expanded":
-                    fontStretch = FontStretches.UltraExpanded;
-                    break;
-
-                default:
-                    fontStretch = FontStretches.Normal;
-                    break;
-            }
-
-            return fontStretch;
         }
 
         /// <summary>

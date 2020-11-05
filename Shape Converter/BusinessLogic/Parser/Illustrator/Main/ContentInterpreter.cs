@@ -285,7 +285,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
 
                         graphicGroup = new GraphicGroup();
                         graphicGroup.Clip = currentGeometry;
-                        returnGraphicGroup.Childreen.Add(graphicGroup);
+                        returnGraphicGroup.Children.Add(graphicGroup);
                         break;
                     }
 
@@ -299,7 +299,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
                     {
                         lastMove.IsClosed = true;
                         var path = GetCurrentPathFilled();
-                        graphicGroup.Childreen.Add(path);
+                        graphicGroup.Children.Add(path);
                         ResetCurrentGeometry();
                         break;
                     }
@@ -308,7 +308,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
                     case OpCodeName.S:
                     {
                         var path = GetCurrentPathStroked();
-                        graphicGroup.Childreen.Add(path);
+                        graphicGroup.Children.Add(path);
                         ResetCurrentGeometry();
                         break;
                     }
@@ -319,7 +319,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
                     {
                         lastMove.IsClosed = true;
                         var path = GetCurrentPathFilledAndStroked();
-                        graphicGroup.Childreen.Add(path);
+                        graphicGroup.Children.Add(path);
                         ResetCurrentGeometry();
                         break;
                     }
@@ -329,7 +329,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
                     {
                         var path = GetCurrentPathFilledAndStroked();
                         currentGeometry.FillRule = GraphicFillRule.NoneZero;
-                        graphicGroup.Childreen.Add(path);
+                        graphicGroup.Children.Add(path);
                         ResetCurrentGeometry();
                         break;
                     }
@@ -340,7 +340,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
                         var path = GetCurrentPathFilledAndStroked();
                         currentGeometry.FillRule = GraphicFillRule.NoneZero;
                         currentGeometry.FillRule = GraphicFillRule.EvenOdd;
-                        graphicGroup.Childreen.Add(path);
+                        graphicGroup.Children.Add(path);
                         ResetCurrentGeometry();
                         break;
                     }
@@ -351,7 +351,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
                     {
                         var path = GetCurrentPathFilled();
                         currentGeometry.FillRule = GraphicFillRule.NoneZero;
-                        graphicGroup.Childreen.Add(path);
+                        graphicGroup.Children.Add(path);
                         ResetCurrentGeometry();
                         break;
                     }
@@ -361,7 +361,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
                     {
                         var path = GetCurrentPathFilled();
                         currentGeometry.FillRule = GraphicFillRule.EvenOdd;
-                        graphicGroup.Childreen.Add(path);
+                        graphicGroup.Children.Add(path);
                         ResetCurrentGeometry();
                         break;
                     }
@@ -501,7 +501,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
                                                                                            currentGraphicsState.SoftMask);
                         graphicPath.ColorPrecision = shadingDescriptor.ColorPrecision;
 
-                        graphicGroup.Childreen.Add(graphicPath);
+                        graphicGroup.Children.Add(graphicPath);
                         break;
                     }
 
@@ -601,7 +601,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
                     {
                         var text = (CString)contentOperator.Operands[0];
                         var textGraphic = textVectorizer.Vectorize(text.Value, currentGraphicsState, fontState);
-                        graphicGroup.Childreen.AddRange(textGraphic);
+                        graphicGroup.Children.AddRange(textGraphic);
                         break;
                     }
 
@@ -782,7 +782,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
                     case CString str:
                     {
                         var textGraphic = textVectorizer.Vectorize(str.Value, currentGraphicsState, fontState);
-                        graphicGroup.Childreen.AddRange(textGraphic);
+                        graphicGroup.Children.AddRange(textGraphic);
                         break;
                     }
 
@@ -840,7 +840,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
 
             // do some optimizations that the post-processor cannot do
 
-            if (group.Childreen.Count == 1 && group.Clip == null && !DoubleUtilities.IsEqual(currentGraphicsState.FillAlpha.Object, 1.0))
+            if (group.Children.Count == 1 && group.Clip == null && !DoubleUtilities.IsEqual(currentGraphicsState.FillAlpha.Object, 1.0))
             {
                 // the layer has only 1 child and the layer has an opacity set other than 1 -> 
                 // recreate the layer but with the layer opacity set which gets "added" to each single object
@@ -858,12 +858,12 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
                 cloneCurrentGraphicsState.StrokeAlpha.Layer = currentGraphicsState.StrokeAlpha.Object;
 
                 group = interpreter.Run(xobjectDict, sequence, cloneCurrentGraphicsState);
-                graphicGroup.Childreen.Add(group.Childreen[0]);
+                graphicGroup.Children.Add(group.Children[0]);
             }
             else
             {
                 group.Opacity = currentGraphicsState.FillAlpha.Object;
-                graphicGroup.Childreen.Add(group);
+                graphicGroup.Children.Add(group);
             }
         }
 
