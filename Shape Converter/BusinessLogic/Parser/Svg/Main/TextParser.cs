@@ -173,16 +173,22 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
                             if (isTspanDisplayed)
                             {
-                                var colorBlock = new ColorBlock();
-                                colorBlocks.Add(colorBlock);
-                                colorBlock.Characters = charBlock;
-                                colorBlock.AdjustFill = !hasOwnFill;
-                                colorBlock.AdjustStroke = !hasOwnStroke;
-
                                 foreach (var ch in charBlock)
                                 {
-                                    
                                     brushParser.SetFillAndStroke(tspanElement, ch, currentTransformationMatrix, textOpacity, textFillOpacity, textStrokeOpacity);
+                                }
+
+                                if (hasOwnFill || hasOwnStroke)
+                                {
+                                    var colorBlock = new ColorBlock();
+                                    colorBlocks.Add(colorBlock);
+                                    colorBlock.Characters = charBlock;
+                                    colorBlock.AdjustFill = !hasOwnFill;
+                                    colorBlock.AdjustStroke = !hasOwnStroke;
+                                }
+                                else
+                                {
+                                    textColorBlock.Characters.AddRange(charBlock);
                                 }
                             }
 
@@ -324,20 +330,24 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             }
 
             // adjust the master text block
-            Rect AdjustMasterTextBlock(ColorBlock block)
+            void AdjustMasterTextBlock()
             {
-                var blockBounds = GetBlockBounds(block);
+                textBounds = GetBlockBounds(textColorBlock);
 
-                foreach (var ch in block.Characters)
+                foreach (var block in colorBlocks)
                 {
-                    Adjust(ch.FillBrush, ch.Geometry.Bounds, blockBounds);
-                    Adjust(ch.StrokeBrush, ch.Geometry.Bounds, blockBounds);
+                    var blockBounds = GetBlockBounds(block);
+                    textBounds = Rect.Union(textBounds, blockBounds);
                 }
 
-                return blockBounds;
+                foreach (var ch in textColorBlock.Characters)
+                {
+                    Adjust(ch.FillBrush, ch.Geometry.Bounds, textBounds);
+                    Adjust(ch.StrokeBrush, ch.Geometry.Bounds, textBounds);
+                }
             }
 
-            textBounds = AdjustMasterTextBlock(textColorBlock);
+            AdjustMasterTextBlock();
 
             foreach (var block in colorBlocks)
             {
