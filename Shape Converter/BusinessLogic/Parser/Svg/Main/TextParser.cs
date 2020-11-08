@@ -40,9 +40,10 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         /// </summary>
         private class ColorBlock
         {
-            public bool AdjustFill;
-            public bool AdjustStroke;
-            public List<GraphicPath> Characters;
+            public bool AdjustFillGlobal;
+            public bool AdjustStrokeGlobal;
+            public List<PositionBlockCharacter> Characters;
+            public List<GraphicPath> Paths = new List<GraphicPath>();
         }
 
         private Clipping clipping;
@@ -95,9 +96,10 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             var position = new CharacterPositions();
 
             var textColorBlock = new ColorBlock();
-            textColorBlock.Characters = new List<GraphicPath>();
-            textColorBlock.AdjustFill = true;
-            textColorBlock.AdjustStroke = true;
+            colorBlocks.Add(textColorBlock);
+            textColorBlock.Characters = new List<PositionBlockCharacter>();
+            textColorBlock.AdjustFillGlobal = true;
+            textColorBlock.AdjustStrokeGlobal = true;
 
             var xList = GetLengthPercentList(textElement, "x", PercentBaseSelector.ViewBoxWidth);
             var dxList = GetLengthPercentList(textElement, "dx", PercentBaseSelector.ViewBoxWidth);
@@ -121,7 +123,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             if (!textElement.HasElements)
             {
                 var geometry = ParseTextGeometry(textElement, currentTransformationMatrix);
-            
+
                 var graphicPath = new GraphicPath();
                 graphicPath.Geometry = geometry;
                 graphicPath.Geometry.FillRule = GraphicFillRule.NoneZero;
@@ -165,7 +167,16 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                             var tspanAnchor = GetTextAnchor();
                             rotation.ChildValues = GetRotate(tspanElement);
 
-                            var charBlock = Vectorize(positionBlocks, tspanElement.Value, tspanAnchor, position, beginOfLine, hasSuccessor, tspanTypeface, tspanFontSize, rotation, currentTransformationMatrix);
+                            var charBlock = Vectorize(positionBlocks, 
+                                                      tspanElement.Value,
+                                                      tspanAnchor,
+                                                      position, 
+                                                      beginOfLine, 
+                                                      hasSuccessor,
+                                                      tspanTypeface,
+                                                      tspanFontSize,
+                                                      rotation, 
+                                                      currentTransformationMatrix);
 
                             rotation.ChildValues = null;
                             position.X.SetChildValues(null, null);
@@ -173,22 +184,28 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
                             if (isTspanDisplayed)
                             {
-                                foreach (var ch in charBlock)
-                                {
-                                    brushParser.SetFillAndStroke(tspanElement, ch, currentTransformationMatrix, textOpacity, textFillOpacity, textStrokeOpacity);
-                                }
+                                ColorBlock colorBlock;
 
                                 if (hasOwnFill || hasOwnStroke)
                                 {
-                                    var colorBlock = new ColorBlock();
+                                    colorBlock = new ColorBlock();
                                     colorBlocks.Add(colorBlock);
                                     colorBlock.Characters = charBlock;
-                                    colorBlock.AdjustFill = !hasOwnFill;
-                                    colorBlock.AdjustStroke = !hasOwnStroke;
+                                    colorBlock.AdjustFillGlobal = !hasOwnFill;
+                                    colorBlock.AdjustStrokeGlobal = !hasOwnStroke;
                                 }
                                 else
                                 {
+                                    colorBlock = textColorBlock;
                                     textColorBlock.Characters.AddRange(charBlock);
+                                }
+
+                                for (int i = 0; i < charBlock.Count; i++)
+                                {
+                                    var path = new GraphicPath();
+                                    colorBlock.Paths.Add(path);
+
+                                    brushParser.SetFillAndStroke(tspanElement, path, currentTransformationMatrix, textOpacity, textFillOpacity, textStrokeOpacity);
                                 }
                             }
 
@@ -199,12 +216,24 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
                     case XText textContentElement:
                     {
-                        var charBlock = Vectorize(positionBlocks, textContentElement.Value, textAnchor, position, beginOfLine, hasSuccessor, typeface, fontSize, rotation, currentTransformationMatrix);
+                        var charBlock = Vectorize(positionBlocks, 
+                                                  textContentElement.Value,
+                                                  textAnchor, 
+                                                  position,
+                                                  beginOfLine, 
+                                                  hasSuccessor,
+                                                  typeface, 
+                                                  fontSize,
+                                                  rotation,
+                                                  currentTransformationMatrix);
                         textColorBlock.Characters.AddRange(charBlock);
 
-                        foreach (var ch in charBlock)
+                        for (int i = 0; i < charBlock.Count; i++)
                         {
-                            brushParser.SetFillAndStroke(textElement, ch, currentTransformationMatrix);
+                            var path = new GraphicPath();
+                            textColorBlock.Paths.Add(path);
+
+                            brushParser.SetFillAndStroke(textElement, path, currentTransformationMatrix);
                         }
                         break;
                     }
@@ -215,11 +244,12 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             }
 
             AdjustPosition(positionBlocks);
-            AdjustGradients(textColorBlock, colorBlocks);
+            UpdateColorBlockPathGeometry(colorBlocks);
+            AdjustGradients(colorBlocks);
 
-            foreach (var block in positionBlocks)
+            foreach (var block in colorBlocks)
             {
-                graphicGroup.Children.AddRange(block.Characters);
+                graphicGroup.Children.AddRange(block.Paths);
             }
 
             if (clipping.IsClipPathSet())
@@ -231,9 +261,23 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         }
 
         /// <summary>
+        /// Set the geometry of the already created path to the adjusted geometry from the position block
+        /// </summary>
+        private void UpdateColorBlockPathGeometry(List<ColorBlock> colorBlocks)
+        {
+            foreach (var block in colorBlocks)
+            {
+                for (int i = 0; i < block.Characters.Count; i++)
+                {
+                    block.Paths[i].Geometry = block.Characters[i].Character;
+                }
+            }
+        }
+
+        /// <summary>
         /// Adjust the gradients so that all touch the bounds of the block they belong to
         /// </summary>
-        private void AdjustGradients(ColorBlock textColorBlock, List<ColorBlock> colorBlocks)
+        private void AdjustGradients(List<ColorBlock> colorBlocks)
         {
             Rect textBounds;
 
@@ -287,7 +331,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             {
                 var blockBounds = Rect.Empty;
 
-                foreach (var ch in block.Characters)
+                foreach (var ch in block.Paths)
                 {
                     var bounds = ch.Geometry.Bounds;
                     blockBounds = Rect.Union(blockBounds, bounds);
@@ -301,11 +345,11 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             {
                 var blockBounds = GetBlockBounds(block);
 
-                foreach (var ch in block.Characters)
+                foreach (var ch in block.Paths)
                 {
                     Rect bounds;
 
-                    if (block.AdjustFill)
+                    if (block.AdjustFillGlobal)
                     {
                         bounds = textBounds;
                     }
@@ -316,7 +360,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
                     Adjust(ch.FillBrush, ch.Geometry.Bounds, bounds);
 
-                    if (block.AdjustStroke)
+                    if (block.AdjustStrokeGlobal)
                     {
                         bounds = textBounds;
                     }
@@ -330,24 +374,18 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             }
 
             // adjust the master text block
-            void AdjustMasterTextBlock()
+            void SetTextBounds()
             {
-                textBounds = GetBlockBounds(textColorBlock);
+                textBounds = Rect.Empty;
 
                 foreach (var block in colorBlocks)
                 {
                     var blockBounds = GetBlockBounds(block);
                     textBounds = Rect.Union(textBounds, blockBounds);
                 }
-
-                foreach (var ch in textColorBlock.Characters)
-                {
-                    Adjust(ch.FillBrush, ch.Geometry.Bounds, textBounds);
-                    Adjust(ch.StrokeBrush, ch.Geometry.Bounds, textBounds);
-                }
             }
 
-            AdjustMasterTextBlock();
+            SetTextBounds();
 
             foreach (var block in colorBlocks)
             {

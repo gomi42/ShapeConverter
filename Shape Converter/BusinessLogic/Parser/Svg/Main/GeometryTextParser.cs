@@ -22,9 +22,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Media;
 using System.Xml.Linq;
+using EpsSharp.Eps.Commands.Arithmetic;
 using ShapeConverter.BusinessLogic.Generators;
 using ShapeConverter.BusinessLogic.Parser.Svg.Helper;
 
@@ -52,11 +54,41 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         {
             public PositionBlock()
             {
-                Characters = new List<GraphicPath>();
+                Characters = new List<GraphicPathGeometry>();
             }
 
             public TextAnchor TextAnchor;
-            public List<GraphicPath> Characters;
+            public List<GraphicPathGeometry> Characters;
+
+            /// <summary>
+            /// Add a char to the block and return its proxy
+            /// </summary>
+            /// <param name="character"></param>
+            /// <returns></returns>
+            public PositionBlockCharacter AddCharacter(GraphicPathGeometry character)
+            {
+                Characters.Add(character);
+                return new PositionBlockCharacter(this, Characters.Count - 1);
+            }
+        }
+
+        /// <summary>
+        /// Represents a single character in a position block.
+        /// This proxy covers the fact that characters in position blocks
+        /// are exchanged.
+        /// </summary>
+        protected class PositionBlockCharacter
+        {
+            private PositionBlock positionBlock;
+            private int index;
+
+            public PositionBlockCharacter(PositionBlock positionBlock, int index)
+            {
+                this.positionBlock = positionBlock;
+                this.index = index;
+            }
+
+            public GraphicPathGeometry Character => positionBlock.Characters[index];
         }
 
         protected CssStyleCascade cssStyleCascade;
@@ -94,9 +126,6 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             var textAnchor = GetTextAnchor();
             var rotation = new ParentChildPriorityList();
             rotation.ParentValues = GetRotate(element);
-
-            GraphicPathGeometry textGeometry = new GraphicPathGeometry();
-            textGeometry.FillRule = GraphicFillRule.NoneZero;
 
             XNode node = element.FirstNode;
             bool beginOfLine = true;
@@ -155,7 +184,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
             foreach (var block in positionBlocks)
             {
-                geometry.Segments.AddRange(block.Characters.SelectMany(x => x.Geometry.Segments));
+                geometry.Segments.AddRange(block.Characters.SelectMany(x => x.Segments));
             }
 
             return geometry;
@@ -163,29 +192,22 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
         /// <summary>
         /// Vectorize a partial string
-        /// remove all leading and trailing blanks
-        /// shrink multiple blanks in a row to one blank
-        protected List<GraphicPath> Vectorize(List<PositionBlock> positionBlocks,
-                              string strVal,
-                              TextAnchor textAnchor,
-                              CharacterPositions position,
-                              bool beginOfLine,
-                              bool hasSuccessor,
-                              Typeface typeface,
-                              double fontSize,
-                              ParentChildPriorityList rotation,
-                              Matrix currentTransformationMatrix)
+        protected List<PositionBlockCharacter> Vectorize(List<PositionBlock> positionBlocks,
+                                                         string strVal,
+                                                         TextAnchor textAnchor,
+                                                         CharacterPositions position,
+                                                         bool beginOfLine,
+                                                         bool hasSuccessor,
+                                                         Typeface typeface,
+                                                         double fontSize,
+                                                         ParentChildPriorityList rotation,
+                                                         Matrix currentTransformationMatrix)
         {
-            bool blankFound = false;
-            var charBlock = new List<GraphicPath>();
+            var charBlock = new List<PositionBlockCharacter>();
+            var str = ReduceWhiteSpaces(strVal, beginOfLine, hasSuccessor);
 
-            ////////
-
-            void VectorizeChar(char character)
+            foreach (var character in str)
             {
-                var graphicPath = new GraphicPath();
-                graphicPath.Geometry.FillRule = GraphicFillRule.NoneZero;
-                charBlock.Add(graphicPath);
                 PositionBlock positionBlock;
 
                 if (position.X.IsCurrentFromAbsoluteList)
@@ -199,14 +221,34 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                     positionBlock = positionBlocks.Last();
                 }
 
-                positionBlock.Characters.Add(graphicPath);
+                var graphicPath = new GraphicPathGeometry();
+                graphicPath.FillRule = GraphicFillRule.NoneZero;
+                var posChar = positionBlock.AddCharacter(graphicPath);
+                charBlock.Add(posChar);
 
-                (position.X.Current, position.Y.Current) = TextVectorizer.Vectorize(graphicPath.Geometry, character.ToString(), position.X.Current, position.Y.Current, typeface, fontSize, rotation.GetCurrentOrLast(), currentTransformationMatrix);
+                (position.X.Current, position.Y.Current) = TextVectorizer.Vectorize(graphicPath, 
+                                                                                    character.ToString(), 
+                                                                                    position.X.Current, 
+                                                                                    position.Y.Current, 
+                                                                                    typeface, 
+                                                                                    fontSize, 
+                                                                                    rotation.GetCurrentOrLast(), 
+                                                                                    currentTransformationMatrix);
                 position.Next();
                 rotation.Next();
             }
 
-            ////////
+            return charBlock;
+        }
+
+        /// <summary>
+        /// Reduce white space blocks to a single white space, keep a single white space
+        /// for a new line
+        /// </summary>
+        public static string ReduceWhiteSpaces(string strVal, bool beginOfLine, bool hasSuccessor)
+        {
+            var sb = new StringBuilder();
+            bool blankFound = false;
 
             foreach (var ch in strVal)
             {
@@ -219,7 +261,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                     else
                     {
                         beginOfLine = false;
-                        VectorizeChar(ch);
+                        sb.Append(ch);
                     }
                 }
                 else
@@ -238,21 +280,21 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                     {
                         if (blankFound)
                         {
-                            VectorizeChar(' ');
+                            sb.Append(' ');
                             blankFound = false;
                         }
 
-                        VectorizeChar(ch);
+                        sb.Append(ch);
                     }
                 }
             }
 
             if (hasSuccessor && blankFound)
             {
-                VectorizeChar(' ');
+                sb.Append(' ');
             }
 
-            return charBlock;
+            return sb.ToString();
         }
 
         /// <summary>
@@ -271,7 +313,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
                 foreach (var ch in block.Characters)
                 {
-                    var bounds = ch.Geometry.Bounds;
+                    var bounds = ch.Bounds;
                     blockBounds = Rect.Union(blockBounds, bounds);
                 }
 
@@ -293,9 +335,10 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
                 var transformVisual = new TransformVisual();
 
-                foreach (var ch in block.Characters)
+                for(int i = 0; i < block.Characters.Count; i++)
                 {
-                    ch.Geometry = transformVisual.Transform(ch.Geometry, matrix);
+                    var ch = block.Characters[i];
+                    block.Characters[i] = transformVisual.Transform(ch, matrix);
                 }
             }
         }
