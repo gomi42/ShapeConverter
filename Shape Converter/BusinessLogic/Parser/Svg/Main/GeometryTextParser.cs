@@ -366,9 +366,10 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         /// <summary>
         /// Adjust the length
         /// </summary>
-        protected void AdjustLength(List<PositionBlock> positionBlocks, double textLength, LengthAdjust lengthAdjust)
+        protected void AdjustLength(List<PositionBlock> positionBlocks, double newTextWidth, LengthAdjust lengthAdjust)
         {
             var allCharacters = new List<PositionBlockCharacter>();
+            double textWithOutGaps = 0;
 
             foreach (var block in positionBlocks)
             {
@@ -381,10 +382,12 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                     {
                         var proxy = new PositionBlockCharacter(block, i);
                         allCharacters.Add(proxy);
+
+                        textWithOutGaps += bounds.Width;
                     }
                 }
             }
-                
+
             if (allCharacters.Count == 0)
             {
                 return;
@@ -403,47 +406,54 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                 return pa < pb ? -1 : 1;
             });
 
-            double overAllCurrentWidth = allCharacters[allCharacters.Count - 1].Character.Bounds.Right - allCharacters[0].Character.Bounds.Left;
+            double currentTextWidth = allCharacters[allCharacters.Count - 1].Character.Bounds.Right - allCharacters[0].Character.Bounds.Left;
 
-            if (lengthAdjust == LengthAdjust.Spacing)
+            switch (lengthAdjust)
             {
-                double sumGap = textLength - overAllCurrentWidth;
-                double additionalGapPerChar = sumGap / (allCharacters.Count - 1);
-
-                var transformVisual = new TransformVisual();
-                double tranlateX = 0;
-
-                for (int i = 1; i < allCharacters.Count; i++)
+                case LengthAdjust.Spacing:
                 {
-                    tranlateX += additionalGapPerChar;
+                    double sumGap = newTextWidth - currentTextWidth;
+                    double additionalGapPerChar = sumGap / (allCharacters.Count - 1);
 
-                    var matrix = Matrix.Identity;
-                    matrix.Translate(tranlateX, 0);
+                    var transformVisual = new TransformVisual();
+                    double tranlateX = 0;
 
-                    var ch = allCharacters[i];
-                    ch.Character = transformVisual.Transform(ch.Character, matrix);
+                    for (int i = 1; i < allCharacters.Count; i++)
+                    {
+                        tranlateX += additionalGapPerChar;
+
+                        var matrix = Matrix.Identity;
+                        matrix.Translate(tranlateX, 0);
+
+                        var ch = allCharacters[i];
+                        ch.Character = transformVisual.Transform(ch.Character, matrix);
+                    }
+
+                    break;
                 }
-            }
-            else
-            {
-                var transformVisual = new TransformVisual();
-                double tranlateX = 0;
-                var lastX = allCharacters[0].Character.Bounds.Left;
 
-                foreach (var ch in allCharacters)
+                case LengthAdjust.SpacingAndGlyphs:
                 {
-                    // the size of the gap between 2 chars is modified in a smaller portion than the chars
-                    var gap = (ch.Character.Bounds.Left - lastX) * textLength / overAllCurrentWidth * 0.75;
-                    tranlateX += gap;
-                    var scale = (textLength - gap) / overAllCurrentWidth;
+                    var transformVisual = new TransformVisual();
+                    double tranlateX = 0;
 
-                    lastX = ch.Character.Bounds.Right;
+                    var sumGap = currentTextWidth - textWithOutGaps;
+                    var newTextWidthOutGaps = newTextWidth - sumGap;
+                    double charScale = newTextWidthOutGaps / textWithOutGaps;
 
-                    var matrix = Matrix.Identity;
-                    matrix.Scale(scale, 1);
-                    matrix.Translate(tranlateX, 0);
+                    foreach (var ch in allCharacters)
+                    {
+                        var lastX = ch.Character.Bounds.Right;
 
-                    ch.Character = transformVisual.Transform(ch.Character, matrix);
+                        var matrix = Matrix.Identity;
+                        matrix.ScaleAt(charScale, 1, ch.Character.Bounds.Left, ch.Character.Bounds.Top);
+                        matrix.Translate(tranlateX, 0);
+
+                        ch.Character = transformVisual.Transform(ch.Character, matrix);
+                        tranlateX = ch.Character.Bounds.Right - lastX;
+                    }
+
+                    break;
                 }
             }
         }
