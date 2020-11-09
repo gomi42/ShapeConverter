@@ -26,6 +26,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Xml.Linq;
 using ShapeConverter.BusinessLogic.Generators;
+using ShapeConverter.BusinessLogic.Helper;
 using ShapeConverter.BusinessLogic.Parser.Svg.Helper;
 
 namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
@@ -120,7 +121,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             var textFillOpacity = cssStyleCascade.GetNumberPercentFromTop("fill-opacity", 1);
             var textStrokeOpacity = cssStyleCascade.GetNumberPercentFromTop("stroke-opacity", 1);
 
-            if (!textElement.HasElements)
+            if (false && !textElement.HasElements)
             {
                 var geometry = ParseTextGeometry(textElement, currentTransformationMatrix);
 
@@ -143,86 +144,102 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
                 switch (node)
                 {
-                    case XElement tspanElement:
+                    case XElement embededElement:
                     {
-                        if (tspanElement.Name.LocalName == "tspan" && PresentationAttribute.IsElementVisible(tspanElement))
+                        if (!PresentationAttribute.IsElementVisible(embededElement))
                         {
-                            var isTspanDisplayed = PresentationAttribute.IsElementDisplayed(tspanElement);
-
-                            cssStyleCascade.PushStyles(tspanElement);
-
-                            var xChildList = GetLengthPercentList(tspanElement, "x", PercentBaseSelector.ViewBoxWidth);
-                            var dxChildList = GetLengthPercentList(tspanElement, "dx", PercentBaseSelector.ViewBoxWidth);
-                            position.X.SetChildValues(xChildList, dxChildList);
-
-                            var yChildList = GetLengthPercentList(tspanElement, "y", PercentBaseSelector.ViewBoxHeight);
-                            var dyChildList = GetLengthPercentList(tspanElement, "dy", PercentBaseSelector.ViewBoxHeight);
-                            position.Y.SetChildValues(yChildList, dyChildList);
-
-                            var hasOwnFill = ExistsAttributeOnTop("fill");
-                            var hasOwnStroke = ExistsAttributeOnTop("stroke");
-
-                            var tspanFontSize = GetFontSize();
-                            var tspanTypeface = GetTypeface();
-                            var tspanAnchor = GetTextAnchor();
-                            rotation.ChildValues = GetRotate(tspanElement);
-
-                            var charBlock = Vectorize(positionBlocks, 
-                                                      tspanElement.Value,
-                                                      tspanAnchor,
-                                                      position, 
-                                                      beginOfLine, 
-                                                      hasSuccessor,
-                                                      tspanTypeface,
-                                                      tspanFontSize,
-                                                      rotation, 
-                                                      currentTransformationMatrix);
-
-                            rotation.ChildValues = null;
-                            position.X.SetChildValues(null, null);
-                            position.Y.SetChildValues(null, null);
-
-                            if (isTspanDisplayed)
-                            {
-                                ColorBlock colorBlock;
-
-                                if (hasOwnFill || hasOwnStroke)
-                                {
-                                    colorBlock = new ColorBlock();
-                                    colorBlocks.Add(colorBlock);
-                                    colorBlock.Characters = charBlock;
-                                    colorBlock.AdjustFillGlobal = !hasOwnFill;
-                                    colorBlock.AdjustStrokeGlobal = !hasOwnStroke;
-                                }
-                                else
-                                {
-                                    colorBlock = textColorBlock;
-                                    textColorBlock.Characters.AddRange(charBlock);
-                                }
-
-                                for (int i = 0; i < charBlock.Count; i++)
-                                {
-                                    var path = new GraphicPath();
-                                    colorBlock.Paths.Add(path);
-
-                                    brushParser.SetFillAndStroke(tspanElement, path, currentTransformationMatrix, textOpacity, textFillOpacity, textStrokeOpacity);
-                                }
-                            }
-
-                            cssStyleCascade.Pop();
+                            continue;
                         }
+
+                        switch (embededElement.Name.LocalName)
+                        {
+                            case "tspan":
+                            {
+                                var tspanElement = embededElement;
+                                var isTspanDisplayed = PresentationAttribute.IsElementDisplayed(tspanElement);
+
+                                cssStyleCascade.PushStyles(tspanElement);
+
+                                var xChildList = GetLengthPercentList(tspanElement, "x", PercentBaseSelector.ViewBoxWidth);
+                                var dxChildList = GetLengthPercentList(tspanElement, "dx", PercentBaseSelector.ViewBoxWidth);
+                                position.X.SetChildValues(xChildList, dxChildList);
+
+                                var yChildList = GetLengthPercentList(tspanElement, "y", PercentBaseSelector.ViewBoxHeight);
+                                var dyChildList = GetLengthPercentList(tspanElement, "dy", PercentBaseSelector.ViewBoxHeight);
+                                position.Y.SetChildValues(yChildList, dyChildList);
+
+                                var hasOwnFill = ExistsAttributeOnTop("fill");
+                                var hasOwnStroke = ExistsAttributeOnTop("stroke");
+
+                                var tspanFontSize = GetFontSize();
+                                var tspanTypeface = GetTypeface();
+                                var tspanAnchor = GetTextAnchor();
+                                rotation.ChildValues = GetRotate(tspanElement);
+
+                                var charBlock = Vectorize(positionBlocks,
+                                                          tspanElement.Value,
+                                                          tspanAnchor,
+                                                          position,
+                                                          beginOfLine,
+                                                          hasSuccessor,
+                                                          tspanTypeface,
+                                                          tspanFontSize,
+                                                          rotation,
+                                                          currentTransformationMatrix);
+
+                                rotation.ChildValues = null;
+                                position.X.SetChildValues(null, null);
+                                position.Y.SetChildValues(null, null);
+
+                                if (isTspanDisplayed)
+                                {
+                                    ColorBlock colorBlock;
+
+                                    if (hasOwnFill || hasOwnStroke)
+                                    {
+                                        colorBlock = new ColorBlock();
+                                        colorBlocks.Add(colorBlock);
+                                        colorBlock.Characters = charBlock;
+                                        colorBlock.AdjustFillGlobal = !hasOwnFill;
+                                        colorBlock.AdjustStrokeGlobal = !hasOwnStroke;
+                                    }
+                                    else
+                                    {
+                                        colorBlock = textColorBlock;
+                                        textColorBlock.Characters.AddRange(charBlock);
+                                    }
+
+                                    for (int i = 0; i < charBlock.Count; i++)
+                                    {
+                                        var path = new GraphicPath();
+                                        colorBlock.Paths.Add(path);
+
+                                        brushParser.SetFillAndStroke(tspanElement, path, currentTransformationMatrix, textOpacity, textFillOpacity, textStrokeOpacity);
+                                    }
+                                }
+
+                                cssStyleCascade.Pop();
+                            }
+                            break;
+
+                            case "textpath":
+                            {
+                                break;
+                            }
+                        }
+
                         break;
                     }
 
                     case XText textContentElement:
                     {
-                        var charBlock = Vectorize(positionBlocks, 
+                        var charBlock = Vectorize(positionBlocks,
                                                   textContentElement.Value,
-                                                  textAnchor, 
+                                                  textAnchor,
                                                   position,
-                                                  beginOfLine, 
+                                                  beginOfLine,
                                                   hasSuccessor,
-                                                  typeface, 
+                                                  typeface,
                                                   fontSize,
                                                   rotation,
                                                   currentTransformationMatrix);
@@ -244,6 +261,13 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             }
 
             AdjustPosition(positionBlocks);
+
+            if (GetTextLength(textElement, out double textLength))
+            {
+                textLength = MatrixUtilities.TransformScale(textLength, currentTransformationMatrix);
+                AdjustLength(positionBlocks, textLength, GetTextAdjust(textElement));
+            }
+
             UpdateColorBlockPathGeometry(colorBlocks);
             AdjustGradients(colorBlocks);
 

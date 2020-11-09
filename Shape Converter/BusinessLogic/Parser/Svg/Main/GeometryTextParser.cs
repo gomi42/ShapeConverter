@@ -28,6 +28,7 @@ using System.Windows.Media;
 using System.Xml.Linq;
 using EpsSharp.Eps.Commands.Arithmetic;
 using ShapeConverter.BusinessLogic.Generators;
+using ShapeConverter.BusinessLogic.Helper;
 using ShapeConverter.BusinessLogic.Parser.Svg.Helper;
 
 namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
@@ -45,6 +46,15 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             Start,
             Middle,
             End
+        }
+
+        /// <summary>
+        /// The text length adjustment selector
+        /// </summary>
+        protected enum LengthAdjust
+        {
+            Spacing,
+            SpacingAndGlyphs
         }
 
         /// <summary>
@@ -88,7 +98,11 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                 this.index = index;
             }
 
-            public GraphicPathGeometry Character => positionBlock.Characters[index];
+            public GraphicPathGeometry Character
+            {
+                get => positionBlock.Characters[index];
+                set => positionBlock.Characters[index] = value;
+            }
         }
 
         protected CssStyleCascade cssStyleCascade;
@@ -169,6 +183,12 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
             AdjustPosition(positionBlocks);
 
+            if (GetTextLength(element, out double textLength))
+            {
+                textLength = MatrixUtilities.TransformScale(textLength, currentTransformationMatrix);
+                AdjustLength(positionBlocks, textLength, GetTextAdjust(element));
+            }
+
             return MakeSingleGeometry(positionBlocks);
         }
 
@@ -226,13 +246,13 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                 var posChar = positionBlock.AddCharacter(graphicPath);
                 charBlock.Add(posChar);
 
-                (position.X.Current, position.Y.Current) = TextVectorizer.Vectorize(graphicPath, 
-                                                                                    character.ToString(), 
-                                                                                    position.X.Current, 
-                                                                                    position.Y.Current, 
-                                                                                    typeface, 
-                                                                                    fontSize, 
-                                                                                    rotation.GetCurrentOrLast(), 
+                (position.X.Current, position.Y.Current) = TextVectorizer.Vectorize(graphicPath,
+                                                                                    character.ToString(),
+                                                                                    position.X.Current,
+                                                                                    position.Y.Current,
+                                                                                    typeface,
+                                                                                    fontSize,
+                                                                                    rotation.GetCurrentOrLast(),
                                                                                     currentTransformationMatrix);
                 position.Next();
                 rotation.Next();
@@ -335,10 +355,95 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
                 var transformVisual = new TransformVisual();
 
-                for(int i = 0; i < block.Characters.Count; i++)
+                for (int i = 0; i < block.Characters.Count; i++)
                 {
                     var ch = block.Characters[i];
                     block.Characters[i] = transformVisual.Transform(ch, matrix);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adjust the length
+        /// </summary>
+        protected void AdjustLength(List<PositionBlock> positionBlocks, double textLength, LengthAdjust lengthAdjust)
+        {
+            var allCharacters = new List<PositionBlockCharacter>();
+
+            foreach (var block in positionBlocks)
+            {
+                for (int i = 0; i < block.Characters.Count; i++)
+                {
+                    var ch = block.Characters[i];
+                    var bounds = ch.Bounds;
+
+                    if (bounds != Rect.Empty)
+                    {
+                        var proxy = new PositionBlockCharacter(block, i);
+                        allCharacters.Add(proxy);
+                    }
+                }
+            }
+                
+            if (allCharacters.Count == 0)
+            {
+                return;
+            }
+
+            allCharacters.Sort(delegate (PositionBlockCharacter a, PositionBlockCharacter b)
+            {
+                var pa = a.Character.Bounds.Left;
+                var pb = b.Character.Bounds.Left;
+
+                if (pa == pb)
+                {
+                    return 0;
+                }
+
+                return pa < pb ? -1 : 1;
+            });
+
+            double overAllCurrentWidth = allCharacters[allCharacters.Count - 1].Character.Bounds.Right - allCharacters[0].Character.Bounds.Left;
+
+            if (lengthAdjust == LengthAdjust.Spacing)
+            {
+                double sumGap = textLength - overAllCurrentWidth;
+                double additionalGapPerChar = sumGap / (allCharacters.Count - 1);
+
+                var transformVisual = new TransformVisual();
+                double tranlateX = 0;
+
+                for (int i = 1; i < allCharacters.Count; i++)
+                {
+                    tranlateX += additionalGapPerChar;
+
+                    var matrix = Matrix.Identity;
+                    matrix.Translate(tranlateX, 0);
+
+                    var ch = allCharacters[i];
+                    ch.Character = transformVisual.Transform(ch.Character, matrix);
+                }
+            }
+            else
+            {
+                var transformVisual = new TransformVisual();
+                double tranlateX = 0;
+                var lastX = allCharacters[0].Character.Bounds.Left;
+
+                foreach (var ch in allCharacters)
+                {
+                    // the size of the gap between 2 chars is modified in a smaller portion than the chars
+                    var gap = (ch.Character.Bounds.Left - lastX) * textLength / overAllCurrentWidth * 0.75;
+                    tranlateX += gap;
+                    var scale = (textLength - gap) / overAllCurrentWidth;
+
+                    lastX = ch.Character.Bounds.Right;
+
+                    var matrix = Matrix.Identity;
+                    matrix.Scale(scale, 1);
+                    matrix.Translate(tranlateX, 0);
+
+                    ch.Character = transformVisual.Transform(ch.Character, matrix);
                 }
             }
         }
@@ -402,6 +507,50 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             }
 
             return doubleParser.GetNumberList(xAttr.Value);
+        }
+
+        /// <summary>
+        /// Get the text length
+        /// </summary>
+        protected bool GetTextLength(XElement element, out double textLength)
+        {
+            XAttribute attr = element.Attribute("textLength");
+
+            if (attr == null)
+            {
+                textLength = 0;
+                return false;
+            }
+
+            textLength = doubleParser.GetLengthPercent(attr.Value, PercentBaseSelector.ViewBoxWidth);
+            return true;
+        }
+
+        /// <summary>
+        /// Get the length adjust
+        /// </summary>
+        protected LengthAdjust GetTextAdjust(XElement element)
+        {
+            var lengthAdjust = LengthAdjust.Spacing;
+            XAttribute attr = element.Attribute("lengthAdjust");
+
+            if (attr == null)
+            {
+                return lengthAdjust;
+            }
+
+            switch (attr.Value)
+            {
+                case "spacing ":
+                    lengthAdjust = LengthAdjust.SpacingAndGlyphs;
+                    break;
+
+                case "spacingAndGlyphs":
+                    lengthAdjust = LengthAdjust.SpacingAndGlyphs;
+                    break;
+            }
+
+            return lengthAdjust;
         }
 
         /// <summary>
