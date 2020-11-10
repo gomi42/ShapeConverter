@@ -447,7 +447,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
         /// </summary>
         private void ReadGlobalDefinitions(XElement element)
         {
-            void Rec(XElement childElement)
+            void ReadChildGlobalDefinitions(XElement childElement)
             {
                 var idAttr = childElement.Attribute("id");
 
@@ -458,12 +458,12 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
                 foreach (var child in childElement.Elements())
                 {
-                    Rec(child);
+                    ReadChildGlobalDefinitions(child);
                 }
             }
 
             globalDefinitions = new Dictionary<string, XElement>();
-            Rec(element);
+            ReadChildGlobalDefinitions(element);
         }
     }
 }
