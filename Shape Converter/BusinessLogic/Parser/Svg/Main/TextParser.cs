@@ -103,10 +103,22 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             textColorBlock.AdjustStrokeGlobal = true;
 
             var xList = GetLengthPercentList(textElement, "x", PercentBaseSelector.ViewBoxWidth);
+
+            if (xList == null)
+            {
+                xList = new List<double> { 0.0 };
+            }
+
             var dxList = GetLengthPercentList(textElement, "dx", PercentBaseSelector.ViewBoxWidth);
             position.X.SetParentValues(xList, dxList);
 
             var yList = GetLengthPercentList(textElement, "y", PercentBaseSelector.ViewBoxHeight);
+            
+            if (yList == null)
+            {
+                yList = new List<double> { 0.0 };
+            }
+
             var dyList = GetLengthPercentList(textElement, "dy", PercentBaseSelector.ViewBoxHeight);
             position.Y.SetParentValues(yList, dyList);
 

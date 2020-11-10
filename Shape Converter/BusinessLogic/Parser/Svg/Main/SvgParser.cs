@@ -294,7 +294,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
                     default:
                         throw new ArgumentException("invalid argument");
                 }
-                
+
                 var xOperation = align.Substring(0, 4);
                 var yOperation = align.Substring(4, 4);
 
@@ -447,34 +447,23 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
         /// </summary>
         private void ReadGlobalDefinitions(XElement element)
         {
-            foreach (var child in element.Elements())
+            void Rec(XElement childElement)
             {
-                switch (child.Name.LocalName)
+                var idAttr = childElement.Attribute("id");
+
+                if (idAttr != null)
                 {
-                    case "defs":
-                    {
-                        globalDefinitions = new Dictionary<string, XElement>();
+                    globalDefinitions[idAttr.Value] = childElement;
+                }
 
-                        foreach (var defChild in child.Elements())
-                        {
-                            var idAttr = defChild.Attribute("id");
-
-                            if (idAttr != null)
-                            {
-                                globalDefinitions[idAttr.Value] = defChild;
-                            }
-                        }
-                        break;
-                    }
-
-                    default:
-                        if (child.HasElements)
-                        {
-                            ReadGlobalDefinitions(child);
-                        }
-                        break;
+                foreach (var child in childElement.Elements())
+                {
+                    Rec(child);
                 }
             }
+
+            globalDefinitions = new Dictionary<string, XElement>();
+            Rec(element);
         }
     }
 }

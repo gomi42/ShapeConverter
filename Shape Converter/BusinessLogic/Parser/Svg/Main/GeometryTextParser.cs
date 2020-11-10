@@ -128,10 +128,22 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             var position = new CharacterPositions();
 
             var xList = GetLengthPercentList(element, "x", PercentBaseSelector.ViewBoxWidth);
+
+            if (xList == null)
+            {
+                xList = new List<double> { 0.0 };
+            }
+
             var dxList = GetLengthPercentList(element, "dx", PercentBaseSelector.ViewBoxWidth);
             position.X.SetParentValues(xList, dxList);
 
             var yList = GetLengthPercentList(element, "y", PercentBaseSelector.ViewBoxHeight);
+
+            if (yList == null)
+            {
+                yList = new List<double> { 0.0 };
+            }
+
             var dyList = GetLengthPercentList(element, "dy", PercentBaseSelector.ViewBoxHeight);
             position.Y.SetParentValues(yList, dyList);
 
