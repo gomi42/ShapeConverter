@@ -25,6 +25,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Media;
 using System.Xml.Linq;
+using EpsSharp.Eps.Commands.Path;
 using ShapeConverter.BusinessLogic.Generators;
 using ShapeConverter.BusinessLogic.Helper;
 using ShapeConverter.BusinessLogic.Parser.Svg.Helper;
@@ -116,7 +117,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             var elementTransformationMatrix = cssStyleCascade.GetTransformMatrixFromTop();
             elementTransformationMatrix = elementTransformationMatrix * matrix;
 
-            var group = ParseGroupChildren(element, elementTransformationMatrix);
+            var group = ParseChildren(element, elementTransformationMatrix);
 
             group.Opacity = cssStyleCascade.GetNumberPercentFromTop("opacity", 1);
             clipping.SetClipPath(group, elementTransformationMatrix);
@@ -140,7 +141,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             var elementTransformationMatrix = cssStyleCascade.GetTransformMatrixFromTop();
             elementTransformationMatrix = elementTransformationMatrix * matrix;
 
-            var group = ParseGroupChildren(element, elementTransformationMatrix);
+            var group = ParseChildren(element, elementTransformationMatrix);
 
             group.Opacity = cssStyleCascade.GetNumberPercentFromTop("opacity", 1);
             clipping.SetClipPath(group, elementTransformationMatrix);
@@ -152,7 +153,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
         /// <summary>
         /// Parse all graphic elements
         /// </summary>
-        private GraphicGroup ParseGroupChildren(XElement groupElement, Matrix matrix)
+        private GraphicGroup ParseChildren(XElement groupElement, Matrix matrix)
         {
             var group = new GraphicGroup();
 
@@ -163,41 +164,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
                     continue;
                 }
 
-                GraphicVisual graphicVisual = null;
-
-                switch (element.Name.LocalName)
-                {
-                    case "defs":
-                    case "style":
-                    {
-                        // already read, ignore
-                        break;
-                    }
-
-                    case "svg":
-                    {
-                        graphicVisual = ParseSVG(element, matrix, false);
-                        break;
-                    }
-
-                    case "g":
-                    {
-                        graphicVisual = ParseGContainer(element, matrix);
-                        break;
-                    }
-
-                    case "text":
-                    {
-                        graphicVisual = textParser.Parse(element, matrix);
-                        break;
-                    }
-
-                    default:
-                    {
-                        graphicVisual = shapeParser.Parse(element, matrix);
-                        break;
-                    }
-                }
+                GraphicVisual graphicVisual = ParseElement(element, matrix);
 
                 if (graphicVisual != null)
                 {
@@ -206,6 +173,117 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             }
 
             return group;
+        }
+
+        private GraphicVisual ParseElement(XElement element, Matrix matrix)
+        {
+            GraphicVisual graphicVisual = null;
+
+            switch (element.Name.LocalName)
+            {
+                case "defs":
+                case "style":
+                {
+                    // already read, ignore
+                    break;
+                }
+
+                case "svg":
+                {
+                    graphicVisual = ParseSVG(element, matrix, false);
+                    break;
+                }
+
+                case "g":
+                {
+                    graphicVisual = ParseGContainer(element, matrix);
+                    break;
+                }
+
+                case "text":
+                {
+                    graphicVisual = textParser.Parse(element, matrix);
+                    break;
+                }
+
+                case "use":
+                {
+                    graphicVisual = ParseUseElement(element, matrix);
+                    break;
+                }
+
+                default:
+                {
+                    graphicVisual = shapeParser.Parse(element, matrix);
+                    break;
+                }
+            }
+
+            return graphicVisual;
+        }
+
+        /// <summary>
+        /// Handle the use element
+        /// poor man's implementation of the use element, it doesn't cover all the style rules
+        /// (which one takes precidence) but it is a first version.
+        /// </summary>
+        private GraphicVisual ParseUseElement(XElement element, Matrix currentMatrix)
+        {
+            void CopyAttr(XElement sourceElement, XElement destElement, string attrName)
+            {
+                var sourceAttr = sourceElement.Attribute(attrName);
+
+                if (sourceAttr == null)
+                {
+                    return;
+                }
+
+                destElement.SetAttributeValue(attrName, sourceAttr.Value);
+            }
+
+            var hrefAttr = element.Attribute("href");
+
+            if (hrefAttr == null)
+            {
+                return null;
+            }
+
+            var id = hrefAttr.Value;
+
+            if (!id.StartsWith("#", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            id = id.Substring(1, id.Length - 1);
+
+            if (!globalDefinitions.ContainsKey(id))
+            {
+                return null;
+            }
+
+            var referencedElem = globalDefinitions[id];
+
+            var x = doubleParser.GetLengthPercent(element, "x", 0.0, PercentBaseSelector.ViewBoxWidth);
+            var y = doubleParser.GetLengthPercent(element, "y", 0.0, PercentBaseSelector.ViewBoxHeight);
+
+            Matrix matrix = Matrix.Identity;
+            matrix.Translate(x, y);
+
+            var clone = referencedElem;
+
+            if (referencedElem.Name.LocalName == "svg")
+            {
+                clone = new XElement(referencedElem);
+                CopyAttr(referencedElem, clone, "width");
+                CopyAttr(referencedElem, clone, "height");
+            }
+
+            cssStyleCascade.PushStyles(element);
+            var visual = ParseElement(clone, matrix * currentMatrix);
+            cssStyleCascade.Pop();
+
+            return visual;
         }
 
         /// <summary>
