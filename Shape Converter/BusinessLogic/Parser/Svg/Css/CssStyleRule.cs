@@ -2,7 +2,7 @@
 // Author:
 //   Michael Göricke
 //
-// Copyright (c) 2019
+// Copyright (c) 2020
 // Inspired by SharpVectors
 //
 // This file is part of ShapeConverter.
@@ -26,33 +26,28 @@ using System.Text.RegularExpressions;
 
 namespace ShapeConverter.BusinessLogic.Parser.Svg.CSS
 {
+    /// <summary>
+    /// A single style rule
+    /// Although we parse selectors containing combinators we don't support 
+    /// combinators in this simplified style engine. This is done just to ignore
+    /// them and move on to the next selector.
+    /// </summary>
     internal class CssStyleRule
     {
-        internal static string nsPattern = @"([A-Za-z\*][A-Za-z0-9]*)?\|";
-        internal static string attributeValueCheck = "(?<attname>(" + nsPattern + ")?[_a-zA-Z0-9\\-]+)\\s*(?<eqtype>[\\~\\^\\$\\*\\|]?)=\\s*(\"|\')?(?<attvalue>.*?)(\"|\')?";
-
-        internal static string sSelector = "(?<ns>" + nsPattern + ")?" +
-            @"(?<type>([A-Za-z\*][A-Za-z0-9]*))?" +
-            @"((?<class>\.[A-Za-z][_A-Za-z0-9\-]*)+)?" +
-            @"(?<id>\#[A-Za-z][_A-Za-z0-9\-]*)?" +
-            @"((?<predicate>\[\s*(" +
-            @"(?<attributecheck>(" + nsPattern + ")?[a-zA-Z0-9]+)" +
-            @"|" +
-            "(?<attributevaluecheck>" + attributeValueCheck + ")" +
-            @")\s*\])+)?" +
-            @"((?<pseudoclass>\:[a-z\-]+(\([^\)]+\))?)+)?" +
-            @"(?<pseudoelements>(\:\:[a-z\-]+)+)?" +
-            @"(?<seperator>(\s*(\+|\>|\~)\s*)|(\s+))?";
-        private static string sStyleRule = "^((?<selector>(" + sSelector + @")+)(\s*,\s*)?)+";
-        private static Regex regex = new Regex(sStyleRule);
-
+        internal static string SelectorRule =
+            @"(?:[A-Za-z][A-Za-z0-9]*)?" +          //type
+            @"(?:\.[A-Za-z][_A-Za-z0-9\-]*)?" +     //class
+            @"(?:\#[A-Za-z][_A-Za-z0-9\-]*)?" +     //id
+            @"(?:(\s*(\+|\>|\~)\s*)|(\s+))?";       //combinator
+        private static string StyleRule = "^((?<selector>(" + SelectorRule + @")+)(?:\s*,\s*)?)+";
+        private static Regex StyleRuleRegex = new Regex(StyleRule);
 
         /// <summary>
         /// Parse
         /// </summary>
         internal static CssStyleRule Parse(ref string css)
         {
-            Match match = regex.Match(css);
+            Match match = StyleRuleRegex.Match(css);
 
             if (match.Success && match.Length > 0)
             {
@@ -71,7 +66,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.CSS
         /// <summary>
         /// The constructor for CssStyleRule
         /// </summary>
-        internal CssStyleRule(Match match)
+        private CssStyleRule(Match match)
         {
             Group selectorMatches = match.Groups["selector"];
             var selectors = new List<string>();
