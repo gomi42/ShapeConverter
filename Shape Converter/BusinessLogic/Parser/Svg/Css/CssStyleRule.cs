@@ -80,6 +80,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.CSS
                 if (str.Length > 0)
                 {
                     selectors.Add(str);
+                    var sel = new CssSelector(str);
                 }
             }
 
