@@ -70,8 +70,8 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             "text-anchor",
         };
 
-        private List<CssStyleDeclaration> styleDeclarations = new List<CssStyleDeclaration>();
-        private List<CssStyleSheet> cssStyleSheets;
+        private List<CssStyleDeclaration> styleDeclarations;
+        private CssStyleSheet cssStyleSheet;
         private Stack<SvgViewBox> svgViewBoxStack;
 
         /// <summary>
@@ -79,7 +79,8 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
         /// </summary>
         public CssStyleCascade(XElement element)
         {
-            cssStyleSheets = new List<CssStyleSheet>();
+            styleDeclarations = new List<CssStyleDeclaration>();
+            cssStyleSheet = new CssStyleSheet();
             svgViewBoxStack = new Stack<SvgViewBox>();
 
             ReadGlobalStyles(element);
@@ -96,8 +97,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
                 {
                     case "style":
                     {
-                        var styleSheet = new CssStyleSheet(child);
-                        cssStyleSheets.Add(styleSheet);
+                        cssStyleSheet.Parse(child);
                         break;
                     }
 
@@ -119,14 +119,9 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             var styleDeclaration = new CssStyleDeclaration();
             styleDeclarations.Add(styleDeclaration);
 
-            // the order of the next 5 calls determine the cascade
-            // less important (lowest specificity) first, 
-            // most important (highest specificity) last
             SetPresentationAttributes(styleDeclaration, element);
-            SetElementProperties(styleDeclaration, element);
-            SetClassProperties(styleDeclaration, element);
-            SetIdProperties(styleDeclaration, element);
-            SetStyleProperties(styleDeclaration, element);
+            SetPropertiesFromGlobalStyles(styleDeclaration, element);
+            SetPropertiesFromLocalStyle(styleDeclaration, element);
         }
 
         /// <summary>
@@ -154,65 +149,26 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
         }
 
         /// <summary>
-        /// Set the properties of the element style of the given element in the style declaration
+        /// Set the properties from the global styles
         /// </summary>
-        private void SetElementProperties(CssStyleDeclaration styleDeclaration, XElement element)
+        void SetPropertiesFromGlobalStyles(CssStyleDeclaration styleDeclarationToModify, XElement element)
         {
-            SetProperties(styleDeclaration, element.Name.LocalName);
-        }
+            var styleDeclarations = cssStyleSheet.GetStylesForElement(element);
 
-        /// <summary>
-        /// Set the properties of the class style of the given element in the style declaration
-        /// </summary>
-        private void SetClassProperties(CssStyleDeclaration styleDeclaration, XElement element)
-        {
-            var classAttr = element.Attributes().FirstOrDefault(x => x.Name == "class");
-
-            if (classAttr != null)
+            foreach (var styleDeclaration in styleDeclarations)
             {
-                SetProperties(styleDeclaration, "." + classAttr.Value);
-                SetProperties(styleDeclaration, element.Name.LocalName + "." + classAttr.Value);
-            }
-        }
-
-        /// <summary>
-        /// Set the properties of the id style of the given element in the style declaration
-        /// </summary>
-        private void SetIdProperties(CssStyleDeclaration styleDeclaration, XElement element)
-        {
-            var idAttr = element.Attributes().FirstOrDefault(x => x.Name == "id");
-
-            if (idAttr != null)
-            {
-                SetProperties(styleDeclaration, "#" + idAttr.Value);
-                SetProperties(styleDeclaration, element.Name.LocalName + "#" + idAttr.Value);
-            }
-        }
-
-        /// <summary>
-        /// Set the properties from the style sheets from the given selector 
-        /// </summary>
-        private void SetProperties(CssStyleDeclaration styleDeclarationToModify, string selector)
-        {
-            foreach (var styleSheet in cssStyleSheets)
-            {
-                var styleDeclarations = styleSheet.GetStylesForSelector(selector);
-
-                foreach (var styleDeclaration in styleDeclarations)
+                foreach (var name in styleDeclaration.Properties)
                 {
-                    foreach (var name in styleDeclaration.Properties)
-                    {
-                        var value = styleDeclaration.GetProperty(name);
-                        styleDeclarationToModify.SetProperty(name, value);
-                    }
+                    var value = styleDeclaration.GetProperty(name);
+                    styleDeclarationToModify.SetProperty(name, value);
                 }
             }
         }
 
         /// <summary>
-        /// Set the properties of the style attribute of the given element in the style declaration
+        /// Set the properties from the style attribute of the given element in the style declaration
         /// </summary>
-        private void SetStyleProperties(CssStyleDeclaration styleDeclaration, XElement element)
+        private void SetPropertiesFromLocalStyle(CssStyleDeclaration styleDeclaration, XElement element)
         {
             var styleAttr = element.Attributes().FirstOrDefault(x => x.Name == "style");
 

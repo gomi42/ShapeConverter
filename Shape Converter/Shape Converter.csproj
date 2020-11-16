@@ -419,6 +419,7 @@
     <Compile Include="BusinessLogic\Parser\Illustrator\Function\FunctionStop.cs" />
     <Compile Include="BusinessLogic\Parser\Illustrator\Shading\RadialGradientShading.cs" />
     <Compile Include="BusinessLogic\Parser\Illustrator\XObject\XObjectManager.cs" />
+    <Compile Include="BusinessLogic\Parser\Svg\Css\CssSelector.cs" />
     <Compile Include="BusinessLogic\Parser\Svg\Css\CssStyleCascadeExtension.cs" />
     <Compile Include="BusinessLogic\Parser\Svg\Css\CssStyleDeclaration.cs" />
     <Compile Include="BusinessLogic\Parser\Svg\Css\CssStyleRule.cs" />
