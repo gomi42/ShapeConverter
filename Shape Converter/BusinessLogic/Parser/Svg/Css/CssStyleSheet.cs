@@ -22,6 +22,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
@@ -34,7 +35,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.CSS
         /// <summary>
         /// Constructor
         /// </summary>
-        public CssStyleSheet(XElement styleElement)
+        public void Parse(XElement styleElement)
         {
             string css = PrepareContent(styleElement);
             Parse(ref css);
@@ -101,7 +102,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.CSS
 
                     if (rule != null)
                     {
-                        InsertRule(rule);
+                        cssRules.Add(rule);
                     }
                     else
                     {
@@ -140,49 +141,48 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.CSS
             }
         }
 
-        private void InsertRule(CssStyleRule rule)
-        {
-            cssRules.Add(rule);
-        }
-
-        private ulong Length
-        {
-            get
-            {
-                return (ulong)cssRules.Count;
-            }
-        }
-
         /// <summary>
-        /// Used to retrieve a CSS rule by ordinal index. The order in this collection represents the order of the rules in the CSS style sheet. If index is greater than or equal to the number of rules in the list, this returns null
+        /// Helper to sort styles based on their specificity
         /// </summary>
-        public CssStyleRule this[ulong index]
+        private struct SortStyle
         {
-            get
-            {
-                return (index < Length) ? cssRules[(int)index] : null;
-            }
-            set
-            {
-            }
+            public int Specificity;
+            public CssStyleDeclaration Style;
         }
 
         /// <summary>
         /// Get all style declarations that match the selector
         /// </summary>
-        public List<CssStyleDeclaration> GetStylesForSelector(string selector)
+        public List<CssStyleDeclaration> GetStylesForElement(XElement element)
         {
-            var list = new List<CssStyleDeclaration>();
+            List<SortStyle> foundStyles = new List<SortStyle>();
 
             foreach (var rule in cssRules)
             {
-                if (rule.MatchSelector(selector))
+                var specifity = rule.MatchElement(element);
+
+                if (specifity >= 0)
                 {
-                    list.Add(rule.Style);
+                    var ss = new SortStyle { Specificity = specifity, Style = rule.Style };
+                    foundStyles.Add(ss);
                 }
             }
 
-            return list;
+            // sort all matching styles, lowest specificity first
+            foundStyles.Sort(delegate (SortStyle a, SortStyle b)
+            {
+                           var sa = a.Specificity;
+                           var sb = b.Specificity;
+
+                if (sa == sb)
+                {
+                    return 0;
+                }
+
+                return sa < sb ? -1 : 1;
+            });
+
+            return foundStyles.Select(x => x.Style).ToList();
         }
     }
 }
