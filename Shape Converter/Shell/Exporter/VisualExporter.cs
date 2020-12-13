@@ -36,7 +36,7 @@ namespace ShapeConverter.Shell.Exporter
         {
             message = string.Empty;
             var saveDialog = new Microsoft.Win32.SaveFileDialog();
-            saveDialog.Filter = "ICO File (*.ico)|*.ico|SVG File (*.svg)|*.svg|PNG File (*.png)|*.png|JPG File (*.jpg)|*.jpg|TIFF File (*.tiff)|*.tiff|BMP File (*.bmp)|*.bmp|GIF File (*.gif)|*.gif|EPS File (*.eps)|*.eps";
+            saveDialog.Filter = "ICO File (*.ico)|*.ico|SVG File (*.svg)|*.svg|SVGZ File (*.svgz)|*.svgz|PNG File (*.png)|*.png|JPG File (*.jpg)|*.jpg|TIFF File (*.tiff)|*.tiff|BMP File (*.bmp)|*.bmp|GIF File (*.gif)|*.gif|EPS File (*.eps)|*.eps";
 
             var result = saveDialog.ShowDialog();
 
@@ -51,6 +51,10 @@ namespace ShapeConverter.Shell.Exporter
             {
                 case ".svg":
                     SvgExporter.ExportSvg(visual, width, saveDialog.FileName);
+                    break;
+
+                case ".svgz":
+                    SvgExporter.ExportSvgz(visual, width, saveDialog.FileName);
                     break;
 
                 case ".ico":

@@ -20,6 +20,8 @@
 // along with this program. If not, see<http://www.gnu.org/licenses/>.
 
 using System.Globalization;
+using System.IO;
+using System.IO.Compression;
 using System.Text;
 using System.Windows.Media;
 using System.Xml;
@@ -35,9 +37,41 @@ namespace ShapeConverter.BusinessLogic.Exporter
     public static class SvgExporter
     {
         /// <summary>
-        /// Export to an image format
+        /// Export to SVG
         /// </summary>
         public static void ExportSvg(GraphicVisual visual, int width, string filename)
+        {
+            XElement root = CreateXmlExport(visual, width);
+
+            using (var writer = XmlWriter.Create(filename, new XmlWriterSettings { OmitXmlDeclaration = true, Indent = true }))
+            {
+                root.Save(writer);
+            }
+        }
+
+        /// <summary>
+        /// Export to SVGZ
+        /// </summary>
+        public static void ExportSvgz(GraphicVisual visual, int width, string filename)
+        {
+            XElement root = CreateXmlExport(visual, width);
+
+            using (var fs = File.Create(filename))
+            {
+                using (var gz = new GZipStream(fs, CompressionMode.Compress))
+                {
+                    using (var writer = XmlWriter.Create(gz, new XmlWriterSettings { OmitXmlDeclaration = true, Indent = true }))
+                    {
+                        root.Save(writer);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Create the xml export structure
+        /// </summary>
+        private static XElement CreateXmlExport(GraphicVisual visual, int width)
         {
             XNamespace ns = "http://www.w3.org/2000/svg";
             XElement root = new XElement(ns + "svg");
@@ -51,7 +85,7 @@ namespace ShapeConverter.BusinessLogic.Exporter
 
             XElement definitions = new XElement(ns + "defs");
             int definitionsCount = 0;
-            var element = Generate(normalizedVisual, ns, definitions, ref definitionsCount);
+            var element = GenerateXmlTree(normalizedVisual, ns, definitions, ref definitionsCount);
 
             if (definitions.HasElements)
             {
@@ -59,18 +93,13 @@ namespace ShapeConverter.BusinessLogic.Exporter
             }
 
             root.Add(element);
-
-            using (var writer =
-                XmlWriter.Create(filename, new XmlWriterSettings { OmitXmlDeclaration = true, Indent = true }))
-            {
-                root.Save(writer);
-            }
+            return root;
         }
 
         /// <summary>
         /// Generate a visual recursively to xml
         /// </summary>
-        private static XElement Generate(GraphicVisual visual, XNamespace ns, XElement definitions, ref int definitionsCount)
+        private static XElement GenerateXmlTree(GraphicVisual visual, XNamespace ns, XElement definitions, ref int definitionsCount)
         {
             XElement element = null;
 
@@ -106,7 +135,7 @@ namespace ShapeConverter.BusinessLogic.Exporter
 
                     foreach (var childVisual in group.Children)
                     {
-                        var path = Generate(childVisual, ns, definitions, ref definitionsCount);
+                        var path = GenerateXmlTree(childVisual, ns, definitions, ref definitionsCount);
                         element.Add(path);
                     }
 
@@ -192,7 +221,7 @@ namespace ShapeConverter.BusinessLogic.Exporter
 
                     if (!DoubleUtilities.IsZero(graphicPath.StrokeDashOffset))
                     {
-                       pathElement.Add(new XAttribute("stroke-dashoffset", DoubleUtilities.FormatString(graphicPath.StrokeDashOffset * graphicPath.StrokeThickness)));
+                        pathElement.Add(new XAttribute("stroke-dashoffset", DoubleUtilities.FormatString(graphicPath.StrokeDashOffset * graphicPath.StrokeThickness)));
                     }
                 }
             }
