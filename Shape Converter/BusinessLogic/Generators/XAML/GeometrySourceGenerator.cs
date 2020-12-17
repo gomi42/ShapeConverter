@@ -23,7 +23,7 @@ namespace ShapeConverter.BusinessLogic.Generators
             {
                 result.Append($"<{tag} x:Key=\"shape{i}\">");
                 result.Append(geometry);
-                result.AppendLine($"\"</{tag}>");
+                result.AppendLine($"</{tag}>");
                 i++;
             }
 
