@@ -485,6 +485,8 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
             foreach (var stopElem in gradientElem.Elements(svgNamespace + "stop"))
             {
+                cssStyleCascade.PushStyles(stopElem);
+
                 var stop = new GraphicGradientStop();
                 gradientBrush.GradientStops.Add(stop);
 
@@ -492,13 +494,11 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                 (_, retVal) = doubleParser.GetNumberPercent(stopElem, "offset", 0);
                 stop.Position = retVal;
 
-                (_, retVal) = doubleParser.GetNumberPercent(stopElem, "stop-opacity", 1);
-                var stopOpacity = retVal;
-
-                XAttribute colorAttr = stopElem.Attribute("stop-color");
+                var stopOpacity = cssStyleCascade.GetNumberPercentFromTop("stop-opacity", 1);
+                var colorAttr = cssStyleCascade.GetPropertyFromTop("stop-color");
 
                 if (colorAttr != null
-                    && ColorParser.TryParseColor(colorAttr.Value, opacity * stopOpacity, out Color color))
+                    && ColorParser.TryParseColor(colorAttr, opacity * stopOpacity, out Color color))
                 {
                     stop.Color = color;
                 }
@@ -506,6 +506,8 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                 {
                     stop.Color = Colors.Black;
                 }
+
+                cssStyleCascade.Pop();
             }
         }
     }
