@@ -349,11 +349,11 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
                     var x = doubleParser.GetLength(gradientElem, "cx", 0.5);
                     var y = doubleParser.GetLength(gradientElem, "cy", 0.5);
-                    gradient.EndPoint = new Point(x, y) * matrix;
+                    gradient.EndPoint = new Point(x, y);
 
                     x = doubleParser.GetLength(gradientElem, "fx", x);
                     y = doubleParser.GetLength(gradientElem, "fy", y);
-                    gradient.StartPoint = new Point(x, y) * matrix;
+                    gradient.StartPoint = new Point(x, y);
 
                     var r = doubleParser.GetLength(gradientElem, "r", 0.5);
                     gradient.RadiusX = r;
@@ -366,10 +366,10 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                         gradient.MappingMode = GraphicBrushMappingMode.RelativeToBoundingBox;
 
                         // calculate the start position relative to the object rectangle
-                        gradient.StartPoint = GetRelativePosition(bounds, gradient.StartPoint);
+                        gradient.StartPoint = GetRelativePosition(bounds, gradient.StartPoint * matrix);
 
                         // calculate the end position relative to the object rectangle
-                        gradient.EndPoint = GetRelativePosition(bounds, gradient.EndPoint);
+                        gradient.EndPoint = GetRelativePosition(bounds, gradient.EndPoint * matrix);
 
                         // get the center point and a point on the outer ring
                         // in user space coordinates
