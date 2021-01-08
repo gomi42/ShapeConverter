@@ -59,7 +59,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         /// </summary>
         public void SetFillAndStroke(XElement path, GraphicPath graphicPath, Matrix currentTransformationMatrix)
         {
-            SetFill(path, graphicPath, 1);
+            SetFill(path, graphicPath, currentTransformationMatrix, 1);
             SetStroke(path, graphicPath, currentTransformationMatrix, 1);
         }
 
@@ -73,16 +73,16 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                                      double parentFillOpacity,
                                      double parentStrokeOpacity)
         {
-            SetFill(path, graphicPath, parentOpacity * parentFillOpacity);
+            SetFill(path, graphicPath, currentTransformationMatrix, parentOpacity * parentFillOpacity);
             SetStroke(path, graphicPath, currentTransformationMatrix, parentOpacity * parentStrokeOpacity);
         }
 
         /// <summary>
         /// Set all colors of the graphic path
         /// </summary>
-        private void SetFill(XElement path, GraphicPath graphicPath, double parentOpacity)
+        private void SetFill(XElement path, GraphicPath graphicPath, Matrix currentTransformationMatrix, double parentOpacity)
         {
-            graphicPath.FillBrush = CreateBrush(path, "fill", true, graphicPath, parentOpacity);
+            graphicPath.FillBrush = CreateBrush(path, "fill", true, graphicPath, currentTransformationMatrix, parentOpacity);
         }
 
         /// <summary>
@@ -90,7 +90,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         /// </summary>
         private void SetStroke(XElement path, GraphicPath graphicPath, Matrix currentTransformationMatrix, double parentOpacity)
         {
-            graphicPath.StrokeBrush = CreateBrush(path, "stroke", false, graphicPath, parentOpacity);
+            graphicPath.StrokeBrush = CreateBrush(path, "stroke", false, graphicPath, currentTransformationMatrix, parentOpacity);
 
             if (graphicPath.StrokeBrush != null)
             {
@@ -223,7 +223,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         /// <summary>
         /// Create the brush for the given attribute name
         /// </summary>
-        private GraphicBrush CreateBrush(XElement element, string name, bool setDefault, GraphicPath graphicPath, double parentOpacity)
+        private GraphicBrush CreateBrush(XElement element, string name, bool setDefault, GraphicPath graphicPath, Matrix currentTransformationMatrix, double parentOpacity)
         {
             var strVal = cssStyleCascade.GetProperty(name);
 
@@ -260,13 +260,13 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
                 var bounds = graphicPath.Geometry.Bounds;
 
-                return CreateGradientBrush(id, alpha, bounds);
+                return CreateGradientBrush(id, alpha, currentTransformationMatrix, bounds);
             }
 
             // 4: use the current color
             if (strVal == "currentColor")
             {
-                return CreateBrush(element, "color", setDefault, graphicPath, parentOpacity);
+                return CreateBrush(element, "color", setDefault, graphicPath, currentTransformationMatrix, parentOpacity);
             }
 
             // 5: try color formats of different flavours (hex, rgb, name)
@@ -295,7 +295,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         /// <summary>
         /// Create a gradient brush of the specified id
         /// </summary>
-        private GraphicBrush CreateGradientBrush(string gradientId, double opacity, Rect bounds)
+        private GraphicBrush CreateGradientBrush(string gradientId, double opacity, Matrix currentTransformationMatrix, Rect bounds)
         {
             GraphicBrush brush = null;
 
@@ -315,15 +315,15 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
                     ReadGradientProperties(gradientElem, opacity, gradient);
 
-                    Matrix matrix = GetGradientTransformMatrix(gradientElem);
+                    Matrix matrix = GetGradientTransformMatrix(gradientElem) * currentTransformationMatrix;
 
                     var x = doubleParser.GetLength(gradientElem, "x1", 0);
                     var y = doubleParser.GetLength(gradientElem, "y1", 0);
-                    gradient.StartPoint = new Point(x, y) * matrix;
+                    gradient.StartPoint = new Point(x, y);
 
                     x = doubleParser.GetLength(gradientElem, "x2", 1);
                     y = doubleParser.GetLength(gradientElem, "y2", 0);
-                    gradient.EndPoint = new Point(x, y) * matrix;
+                    gradient.EndPoint = new Point(x, y);
 
                     // see comment in LinearGradientShading.cs of the pdf parser in GetBrush for more details
 
@@ -331,8 +331,8 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                     {
                         gradient.MappingMode = GraphicBrushMappingMode.RelativeToBoundingBox;
 
-                        gradient.StartPoint = GetRelativePosition(bounds, gradient.StartPoint);
-                        gradient.EndPoint = GetRelativePosition(bounds, gradient.EndPoint);
+                        gradient.StartPoint = GetRelativePosition(bounds, gradient.StartPoint * matrix);
+                        gradient.EndPoint = GetRelativePosition(bounds, gradient.EndPoint * matrix);
                     }
 
                     break;
@@ -349,11 +349,11 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
                     var x = doubleParser.GetLength(gradientElem, "cx", 0.5);
                     var y = doubleParser.GetLength(gradientElem, "cy", 0.5);
-                    gradient.EndPoint = new Point(x, y) * matrix;
+                    gradient.EndPoint = new Point(x, y);
 
                     x = doubleParser.GetLength(gradientElem, "fx", x);
                     y = doubleParser.GetLength(gradientElem, "fy", y);
-                    gradient.StartPoint = new Point(x, y) * matrix;
+                    gradient.StartPoint = new Point(x, y);
 
                     var r = doubleParser.GetLength(gradientElem, "r", 0.5);
                     gradient.RadiusX = r;
@@ -366,10 +366,10 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                         gradient.MappingMode = GraphicBrushMappingMode.RelativeToBoundingBox;
 
                         // calculate the start position relative to the object rectangle
-                        gradient.StartPoint = GetRelativePosition(bounds, gradient.StartPoint);
+                        gradient.StartPoint = GetRelativePosition(bounds, gradient.StartPoint * matrix);
 
                         // calculate the end position relative to the object rectangle
-                        gradient.EndPoint = GetRelativePosition(bounds, gradient.EndPoint);
+                        gradient.EndPoint = GetRelativePosition(bounds, gradient.EndPoint * matrix);
 
                         // get the center point and a point on the outer ring
                         // in user space coordinates
@@ -485,6 +485,8 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
 
             foreach (var stopElem in gradientElem.Elements(svgNamespace + "stop"))
             {
+                cssStyleCascade.PushStyles(stopElem);
+
                 var stop = new GraphicGradientStop();
                 gradientBrush.GradientStops.Add(stop);
 
@@ -492,13 +494,11 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                 (_, retVal) = doubleParser.GetNumberPercent(stopElem, "offset", 0);
                 stop.Position = retVal;
 
-                (_, retVal) = doubleParser.GetNumberPercent(stopElem, "stop-opacity", 1);
-                var stopOpacity = retVal;
-
-                XAttribute colorAttr = stopElem.Attribute("stop-color");
+                var stopOpacity = cssStyleCascade.GetNumberPercentFromTop("stop-opacity", 1);
+                var colorAttr = cssStyleCascade.GetPropertyFromTop("stop-color");
 
                 if (colorAttr != null
-                    && ColorParser.TryParseColor(colorAttr.Value, opacity * stopOpacity, out Color color))
+                    && ColorParser.TryParseColor(colorAttr, opacity * stopOpacity, out Color color))
                 {
                     stop.Color = color;
                 }
@@ -506,6 +506,8 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                 {
                     stop.Color = Colors.Black;
                 }
+
+                cssStyleCascade.Pop();
             }
         }
     }

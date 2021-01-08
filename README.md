@@ -25,6 +25,7 @@ The ShapeConverter converts vector data into WPF/XAML shapes. The main intention
 
 * the generated data do not contain any transformations (one of the main goals of the ShapeConverter's generated code)
 * clipping regions are removed if possible or at least minimized and optimized
+* the XAML does not contain any transformation, the transformations are incorporated into the coordinates of each resulting shape so that a single `Geometry` is a valid shape without further information needed
 * normalize the coordinates to the range 0..100 (default) to decouple the generated data from the designer's coordinate space
 * selectively deselect parts of the shape if the shape consists of multiple shapes
 * show a background checkboard to verify transparencies of the shape
@@ -49,4 +50,4 @@ The ShapeConverter converts vector data into WPF/XAML shapes. The main intention
 ##### Forks
 
 * You must not create a fork unless you want to contribute to the ShapeConverter
-* The forks from the following users just mess up the fork list and must be ignored (the forks exist just because they can and don't contribute anything): Egaros
+* The forks from the following users just mess up the fork list and must be ignored (the forks exist just because they can and don't contribute anything): Egaros, 93lab
