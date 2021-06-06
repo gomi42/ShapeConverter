@@ -31,6 +31,8 @@
     <Color x:Key="ErrorTextColor">#FFBF5D00</Color>
     <Color x:Key="SadTextColor">#FFC6C6C6</Color>
     <Color x:Key="MouseOverTextColor">#FF646464</Color>
+    <Color x:Key="NaviButtonBackgroundColor">#FFDDDDDD</Color>
+    <Color x:Key="ParameterDeviderColor">#FFACACAC</Color>
 
     <!--  brushes  -->
     <SolidColorBrush x:Key="DustyGrayBrush"
@@ -45,8 +47,10 @@
                      Color="{StaticResource SadTextColor}" />
     <SolidColorBrush x:Key="MouseOverTextBrush"
                      Color="{StaticResource MouseOverTextColor}" />
+    <SolidColorBrush x:Key="NaviButtonBackgroundBrush"
+                     Color="{StaticResource NaviButtonBackgroundColor}" />
     <SolidColorBrush x:Key="ParameterDeviderBrush"
-                     Color="#FFACACAC" />
+                     Color="{StaticResource ParameterDeviderColor}" />
 
     <SolidColorBrush x:Key="CheckerBoardBrush1"
                      Color="#FFF9F9F9" />

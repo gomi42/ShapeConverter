@@ -34,15 +34,9 @@
                     <Grid x:Name="Root">
                         <Border x:Name="Border"
                                 Margin="-1,0,0,0"
+                                Background="{StaticResource NaviButtonBackgroundBrush}"
                                 BorderBrush="{StaticResource DustyGrayBrush}"
                                 BorderThickness="1">
-                            <Border.Background>
-                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                    <GradientStop Offset="0" Color="#FFECECEC" />
-                                    <GradientStop Offset="0.7" Color="#FFE3E3E3" />
-                                    <GradientStop Offset="1" Color="#FFD7D7D7" />
-                                </LinearGradientBrush>
-                            </Border.Background>
                             <ContentPresenter x:Name="ContentSite"
                                               HorizontalAlignment="Center"
                                               VerticalAlignment="Center"
@@ -54,16 +48,10 @@
                                 <VisualState x:Name="Unselected" />
                                 <VisualState x:Name="Selected">
                                     <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Border"
-                                                                       Storyboard.TargetProperty="Background"
-                                                                       Duration="0">
-
-                                            <DiscreteObjectKeyFrame KeyTime="0">
-                                                <DiscreteObjectKeyFrame.Value>
-                                                    <SolidColorBrush Color="{StaticResource SelectionBackgroundColor}" />
-                                                </DiscreteObjectKeyFrame.Value>
-                                            </DiscreteObjectKeyFrame>
-                                        </ObjectAnimationUsingKeyFrames>
+                                        <ColorAnimation Storyboard.TargetName="Border"
+                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                        To="{StaticResource SelectionBackgroundColor}"
+                                                        Duration="0" />
                                         <ColorAnimation Storyboard.TargetName="Border"
                                                         Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
                                                         To="{StaticResource SelectionBackgroundColor}"

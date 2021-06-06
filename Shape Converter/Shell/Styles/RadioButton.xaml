@@ -31,17 +31,10 @@
                     <Grid>
                         <Border x:Name="Background"
                                 Margin="0"
+                                Background="{StaticResource NaviButtonBackgroundBrush}"
                                 BorderBrush="{StaticResource DustyGrayBrush}"
                                 BorderThickness="1"
-                                CornerRadius="12,0,0,12">
-                            <Border.Background>
-                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                    <GradientStop Offset="0" Color="#FFECECEC" />
-                                    <GradientStop Offset="0.7" Color="#FFE3E3E3" />
-                                    <GradientStop Offset="1" Color="#FFD7D7D7" />
-                                </LinearGradientBrush>
-                            </Border.Background>
-                        </Border>
+                                CornerRadius="12,0,0,12" />
                         <Border x:Name="PressedBackground"
                                 Margin="0"
                                 Background="{StaticResource PressedBackgroundBrush}"
@@ -79,26 +72,18 @@
                             <VisualStateGroup x:Name="CheckStates">
                                 <VisualState x:Name="Checked">
                                     <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Background"
-                                                                       Storyboard.TargetProperty="Background"
-                                                                       Duration="0">
-
-                                            <DiscreteObjectKeyFrame KeyTime="0">
-                                                <DiscreteObjectKeyFrame.Value>
-                                                    <SolidColorBrush Color="{StaticResource SelectionBackgroundColor}" />
-                                                </DiscreteObjectKeyFrame.Value>
-                                            </DiscreteObjectKeyFrame>
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Background"
-                                                                       Storyboard.TargetProperty="BorderBrush"
-                                                                       Duration="0">
-
-                                            <DiscreteObjectKeyFrame KeyTime="0">
-                                                <DiscreteObjectKeyFrame.Value>
-                                                    <SolidColorBrush Color="{StaticResource SelectionBackgroundColor}" />
-                                                </DiscreteObjectKeyFrame.Value>
-                                            </DiscreteObjectKeyFrame>
-                                        </ObjectAnimationUsingKeyFrames>
+                                        <ThicknessAnimation Storyboard.TargetName="Background"
+                                                        Storyboard.TargetProperty="BorderThickness"
+                                                        To="0,0,0,0"
+                                                        Duration="0" />
+                                        <ColorAnimation Storyboard.TargetName="Background"
+                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                        To="{StaticResource SelectionBackgroundColor}"
+                                                        Duration="0" />
+                                        <ColorAnimation Storyboard.TargetName="Background"
+                                                        Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                                        To="{StaticResource SelectionBackgroundColor}"
+                                                        Duration="0" />
                                         <ColorAnimation Storyboard.TargetName="contentPresenter"
                                                         Storyboard.TargetProperty="(TextElement.Foreground).(SolidColorBrush.Color)"
                                                         To="White"
@@ -123,17 +108,10 @@
                     <Grid>
                         <Border x:Name="Background"
                                 Margin="0"
+                                Background="{StaticResource NaviButtonBackgroundBrush}"
                                 BorderBrush="{StaticResource DustyGrayBrush}"
                                 BorderThickness="0,1,1,1"
-                                CornerRadius="0,12,12,0">
-                            <Border.Background>
-                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                    <GradientStop Offset="0" Color="#FFECECEC" />
-                                    <GradientStop Offset="0.7" Color="#FFE3E3E3" />
-                                    <GradientStop Offset="1" Color="#FFD7D7D7" />
-                                </LinearGradientBrush>
-                            </Border.Background>
-                        </Border>
+                                CornerRadius="0,12,12,0" />
                         <Border x:Name="PressedBackground"
                                 Margin="0"
                                 Background="{StaticResource PressedBackgroundBrush}"
@@ -171,26 +149,18 @@
                             <VisualStateGroup x:Name="CheckStates">
                                 <VisualState x:Name="Checked">
                                     <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Background"
-                                                                       Storyboard.TargetProperty="Background"
-                                                                       Duration="0">
-
-                                            <DiscreteObjectKeyFrame KeyTime="0">
-                                                <DiscreteObjectKeyFrame.Value>
-                                                    <SolidColorBrush Color="{StaticResource SelectionBackgroundColor}" />
-                                                </DiscreteObjectKeyFrame.Value>
-                                            </DiscreteObjectKeyFrame>
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Background"
-                                                                       Storyboard.TargetProperty="BorderBrush"
-                                                                       Duration="0">
-
-                                            <DiscreteObjectKeyFrame KeyTime="0">
-                                                <DiscreteObjectKeyFrame.Value>
-                                                    <SolidColorBrush Color="{StaticResource SelectionBackgroundColor}" />
-                                                </DiscreteObjectKeyFrame.Value>
-                                            </DiscreteObjectKeyFrame>
-                                        </ObjectAnimationUsingKeyFrames>
+                                        <ThicknessAnimation Storyboard.TargetName="Background"
+                                                        Storyboard.TargetProperty="BorderThickness"
+                                                        To="0,0,0,0"
+                                                        Duration="0" />
+                                        <ColorAnimation Storyboard.TargetName="Background"
+                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                        To="{StaticResource SelectionBackgroundColor}"
+                                                        Duration="0" />
+                                        <ColorAnimation Storyboard.TargetName="Background"
+                                                        Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                                        To="{StaticResource SelectionBackgroundColor}"
+                                                        Duration="0" />
                                         <ColorAnimation Storyboard.TargetName="contentPresenter"
                                                         Storyboard.TargetProperty="(TextElement.Foreground).(SolidColorBrush.Color)"
                                                         To="White"
