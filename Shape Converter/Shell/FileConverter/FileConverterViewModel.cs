@@ -116,16 +116,8 @@ namespace ShapeConverter.Shell.FileConverter
         /// </summary>
         public List<PreviewShapeViewModel> PreviewShapes
         {
-            get
-            {
-                return previewShapes;
-            }
-
-            set
-            {
-                previewShapes = value;
-                NotifyPropertyChanged();
-            }
+            get => previewShapes;
+            set => SetProperty(ref previewShapes, value);
         }
 
         /// <summary>
@@ -133,16 +125,8 @@ namespace ShapeConverter.Shell.FileConverter
         /// </summary>
         public bool ShowError
         {
-            get
-            {
-                return showError;
-            }
-
-            set
-            {
-                showError = value;
-                NotifyPropertyChanged();
-            }
+            get => showError;
+            set => SetProperty(ref showError, value);
         }
 
         /// <summary>

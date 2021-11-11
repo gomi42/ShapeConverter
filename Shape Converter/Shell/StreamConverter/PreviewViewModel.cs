@@ -78,16 +78,8 @@ namespace ShapeConverter.Shell.StreamConverter
         /// </summary>
         public Geometry Preview
         {
-            get
-            {
-                return preview;
-            }
-
-            set
-            {
-                preview = value;
-                NotifyPropertyChanged();
-            }
+            get => preview;
+            set => SetProperty(ref preview, value);
         }
 
         /// <summary>
@@ -95,16 +87,8 @@ namespace ShapeConverter.Shell.StreamConverter
         /// </summary>
         public List<FillStrokeItem> FillStrokeItems
         {
-            get
-            {
-                return fillStrokeItems;
-            }
-
-            set
-            {
-                fillStrokeItems = value;
-                NotifyPropertyChanged();
-            }
+            get => fillStrokeItems;
+            set => SetProperty(ref fillStrokeItems, value);
         }
 
         /// <summary>
@@ -130,16 +114,8 @@ namespace ShapeConverter.Shell.StreamConverter
         /// </summary>
         public Brush PreviewFill
         {
-            get
-            {
-                return previewFill;
-            }
-
-            set
-            {
-                previewFill = value;
-                NotifyPropertyChanged();
-            }
+            get => previewFill;
+            set => SetProperty(ref previewFill, value);
         }
 
         /// <summary>
@@ -147,16 +123,8 @@ namespace ShapeConverter.Shell.StreamConverter
         /// </summary>
         public Brush PreviewStroke
         {
-            get
-            {
-                return previewStroke;
-            }
-
-            set
-            {
-                previewStroke = value;
-                NotifyPropertyChanged();
-            }
+            get => previewStroke;
+            set => SetProperty(ref previewStroke, value);
         }
 
         /// <summary>
@@ -164,16 +132,8 @@ namespace ShapeConverter.Shell.StreamConverter
         /// </summary>
         public double PreviewStrokeThickness
         {
-            get
-            {
-                return previewStrokeThickness;
-            }
-
-            set
-            {
-                previewStrokeThickness = value;
-                NotifyPropertyChanged();
-            }
+            get => previewStrokeThickness;
+            set => SetProperty(ref previewStrokeThickness, value);
         }
 
         /// <summary>

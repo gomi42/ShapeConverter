@@ -159,16 +159,8 @@ namespace ShapeConverter.Shell.CommonViews
         /// </summary>
         public string SourceCode
         {
-            get
-            {
-                return sourceCode;
-            }
-
-            set
-            {
-                sourceCode = value;
-                NotifyPropertyChanged();
-            }
+            get => sourceCode;
+            set => SetProperty(ref sourceCode, value);
         }
 
         /// <summary>
@@ -176,16 +168,8 @@ namespace ShapeConverter.Shell.CommonViews
         /// </summary>
         public string ColorPrecisionMessage
         {
-            get
-            {
-                return colorPrecisionMessage;
-            }
-
-            set
-            {
-                colorPrecisionMessage = value;
-                NotifyPropertyChanged();
-            }
+            get => colorPrecisionMessage;
+            set => SetProperty(ref colorPrecisionMessage, value);
         }
 
         /// <summary>

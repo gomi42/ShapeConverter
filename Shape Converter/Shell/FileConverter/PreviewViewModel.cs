@@ -39,16 +39,8 @@ namespace ShapeConverter.Shell.FileConverter
         /// </summary>
         public Brush Preview
         {
-            get 
-            {
-                return preview; 
-            }
-
-            set
-            {
-                preview = value;
-                NotifyPropertyChanged();
-            }
+            get => preview;
+            set => SetProperty(ref preview, value);
         }
 
         /// <summary>
@@ -56,16 +48,8 @@ namespace ShapeConverter.Shell.FileConverter
         /// </summary>
         public string ColorPrecisionMessage
         {
-            get
-            {
-                return colorPrecisionMessage;
-            }
-
-            set
-            {
-                colorPrecisionMessage = value;
-                NotifyPropertyChanged();
-            }
+            get => colorPrecisionMessage;
+            set => SetProperty(ref colorPrecisionMessage, value);
         }
 
         /// <summary>

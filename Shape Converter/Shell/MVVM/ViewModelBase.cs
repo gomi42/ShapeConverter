@@ -42,5 +42,19 @@ namespace ShapeConverter.Shell.MVVM
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(info));
         }
+
+        /// <summary>
+        /// Set the field and notify the change of a property
+        /// </summary>
+        protected void SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
+        {
+            if (Equals(field, value))
+            {
+                return;
+            }
+
+            field = value;
+            NotifyPropertyChanged(propertyName);
+        }
     }
 }

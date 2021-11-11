@@ -67,16 +67,8 @@ namespace ShapeConverter.Shell.CommonViews
         /// </summary>
         public bool AddMargin
         {
-            get
-            {
-                return addMargin; 
-            }
-
-            set
-            {
-                addMargin = value;
-                NotifyPropertyChanged();
-            }
+            get => addMargin;
+            set => SetProperty(ref addMargin, value);
         }
 
         /// <summary>
@@ -89,16 +81,8 @@ namespace ShapeConverter.Shell.CommonViews
         /// </summary>
         public bool ShowValidationError
         {
-            get
-            {
-                return showValidationError;
-            }
-
-            set
-            {
-                showValidationError = value;
-                NotifyPropertyChanged();
-            }
+            get => showValidationError;
+            set => SetProperty(ref showValidationError, value);
         }
 
         /// <summary>
@@ -106,16 +90,8 @@ namespace ShapeConverter.Shell.CommonViews
         /// </summary>
         public string ErrorMessage
         {
-            get
-            {
-                return errorMessage;
-            }
-
-            set
-            {
-                errorMessage = value;
-                NotifyPropertyChanged();
-            }
+            get => errorMessage;
+            set => SetProperty(ref errorMessage, value);
         }
 
         /// <summary>

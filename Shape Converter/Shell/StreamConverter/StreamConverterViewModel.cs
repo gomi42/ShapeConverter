@@ -94,16 +94,8 @@ namespace ShapeConverter.Shell.StreamConverter
         /// </summary>
         public bool ShowError
         {
-            get 
-            {
-                return showError; 
-            }
-
-            set
-            {
-                showError = value; 
-                NotifyPropertyChanged();
-            }
+            get => showError;
+            set => SetProperty(ref showError, value);
         }
 
         /// <summary>
