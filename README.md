@@ -47,6 +47,10 @@ The ShapeConverter converts vector data into WPF/XAML shapes. The main intention
 * PdfSharp from Stefan Lange, empira Software GmbH
 * psd-parser from Ntreev Soft co., Ltd.
 
+##### It's not dead, it's done
+
+You might have noticed there isn't much activity here. It's not because the project is unmaintained, it's because the ShapeConverter is done, it just works. Way more features are implemented than were planned at the beginning, the ShapeConverter has reached a state where it serves all conversion needs for the daily use very well. EPS and SVG standards are not 100% supported but the importers support far more than you'll ever encounter in your SVG or EPS icons (e.g. CSS style sheets in SVG). If more is needed it will be implemented.
+
 ##### Forks
 
 * You must not create a fork unless you want to contribute to the ShapeConverter
