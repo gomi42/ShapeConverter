@@ -94,7 +94,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             var geometryParser = new GeometryParser(doubleParser);
 
             var geometryTextParser = new GeometryTextParser(cssStyleCascade, doubleParser);
-            clipping = new Clipping(cssStyleCascade, globalDefinitions, geometryParser, geometryTextParser);
+            clipping = new Clipping(cssStyleCascade, globalDefinitions, geometryParser, geometryTextParser, this);
             shapeParser = new ShapeParser(cssStyleCascade, brushParser, geometryParser, clipping);
             textParser = new TextParser(cssStyleCascade, doubleParser, brushParser, clipping);
 
@@ -229,7 +229,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
         /// poor man's implementation of the use element, it doesn't cover all the style rules
         /// (which one takes precidence) but it is a first version.
         /// </summary>
-        private GraphicVisual ParseUseElement(XElement element, Matrix currentMatrix)
+        public GraphicVisual ParseUseElement(XElement element, Matrix currentMatrix)
         {
             void CopyAttr(XElement sourceElement, XElement destElement, string attrName)
             {

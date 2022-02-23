@@ -31,6 +31,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
     {
         private GeometryParser geometryParser;
         private GeometryTextParser textParser;
+        private SvgParser svgParser;
         private CssStyleCascade cssStyleCascade;
         private Dictionary<string, XElement> globalDefinitions;
 
@@ -40,12 +41,14 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         public Clipping(CssStyleCascade cssStyleCascade,
                         Dictionary<string, XElement> globalDefinitions,
                         GeometryParser geometryParser,
-                        GeometryTextParser textParser)
+                        GeometryTextParser textParser,
+                        SvgParser svgParser)
         {
             this.cssStyleCascade = cssStyleCascade;
             this.globalDefinitions = globalDefinitions;
             this.geometryParser = geometryParser;
             this.textParser = textParser;
+            this.svgParser = svgParser;
         }
 
         /// <summary>
@@ -102,6 +105,18 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
             {
                 case "text":
                     clipGeometry = textParser.ParseTextGeometry(shapeElement, currentTransformationMatrix);
+                    break;
+
+                case "use":
+                    var visual = svgParser.ParseUseElement(shapeElement, currentTransformationMatrix);
+
+                    //for the moment handle single element only
+                    if (!(visual is GraphicPath path))
+                    {
+                        return;
+                    }
+
+                    clipGeometry = path.Geometry;
                     break;
 
                 default:
