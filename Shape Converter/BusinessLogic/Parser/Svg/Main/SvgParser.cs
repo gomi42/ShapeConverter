@@ -222,6 +222,8 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             return graphicVisual;
         }
 
+        private readonly XNamespace xlink = "http://www.w3.org/1999/xlink";
+
         /// <summary>
         /// Handle the use element
         /// poor man's implementation of the use element, it doesn't cover all the style rules
@@ -245,7 +247,12 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
             if (hrefAttr == null)
             {
-                return null;
+                hrefAttr = element.Attribute(xlink + "href");
+
+                if (hrefAttr == null)
+                {
+                    return null;
+                }
             }
 
             var id = hrefAttr.Value;
