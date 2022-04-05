@@ -32,7 +32,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Function
     {
         private List<IFunction> functions;
         private List<double> bounds;
-        private bool reverse;
+        private List<double> encode;
 
         /// <summary>
         /// init
@@ -42,14 +42,9 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Function
             var domainArray = functionDict.Elements.GetArray(PdfKeys.Domain);
             var rangeArray = functionDict.Elements.GetArray(PdfKeys.Range);
             var functionsArray = functionDict.Elements.GetArray(PdfKeys.Functions);
+
             var encodeArray = functionDict.Elements.GetArray(PdfKeys.Encode);
-
-            var e0 = encodeArray.Elements.GetReal(0);
-            var e1 = encodeArray.Elements.GetReal(1);
-
-            // for Illustrator it doesn't make sense to revert only one function
-            // we assume either none or all functions are reverted
-            reverse = e0 > e1;
+            encode = PdfUtilities.CreateDoubleList(encodeArray);
 
             var boundsArray = functionDict.Elements.GetArray(PdfKeys.Bounds);
             bounds = PdfUtilities.CreateDoubleList(boundsArray);
@@ -83,25 +78,43 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Function
                 double bound0 = bounds[i];
                 double bound1 = bounds[i + 1];
 
-                if (!reverse)
-                {
-                    boundary[0].Stop = bound0;
-                    boundary[1].Stop = bound1;
-                }
-                else
-                {
-                    boundary[0].Stop = 1 - bound0;
-                    boundary[1].Stop = 1 - bound1;
-                }
+                boundary[0].Stop = bound0;
+                boundary[1].Stop = bound1;
+
+                // only value pairs 0/1 or 1/0 are assumed for encode
+                var reverse = encode[i*2] > encode[i*2 + 1];
 
                 if (i == 0)
                 {
-                    stops.Add(boundary[0]);
-                    stops.Add(boundary[1]);
+                    if (!reverse)
+                    {
+                        boundary[0].Stop = bound0;
+                        boundary[1].Stop = bound1;
+
+                        stops.Add(boundary[0]);
+                        stops.Add(boundary[1]);
+                    }
+                    else
+                    {
+                        boundary[0].Stop = bound1;
+                        boundary[1].Stop = bound0;
+
+                        stops.Add(boundary[1]);
+                        stops.Add(boundary[0]);
+                    }
                 }
                 else
                 {
-                    stops.Add(boundary[1]);
+                    if (!reverse)
+                    {
+                        boundary[1].Stop = bound1;
+                        stops.Add(boundary[1]);
+                    }
+                    else
+                    {
+                        boundary[0].Stop = bound1;
+                        stops.Add(boundary[0]);
+                    }
                 }
             }
 
