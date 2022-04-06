@@ -1,3 +1,4 @@
+#define TEST
 #region PDFsharp - A .NET library for processing PDF
 //
 // Authors:
@@ -29,6 +30,7 @@
 
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using PdfSharp.Internal;
 using PdfSharp.Pdf.Advanced;
 using PdfSharp.Pdf.Content.Objects;
@@ -47,6 +49,20 @@ namespace PdfSharp.Pdf.Content
             _page = page;
             PdfContent content = page.Contents.CreateSingleContent();
             byte[] bytes = content.Stream.Value;
+
+#if TEST1
+            using (var stream = File.Open(@"D:\Programme\Tools\Shape Converter\Testdaten\kombiniert\Zeus\Zeus2.txt", FileMode.Open))
+            {
+                using (var reader = new BinaryReader(stream, Encoding.UTF8, false))
+                {
+                    var size = (int)stream.Length;
+                    bytes = new byte[size];
+
+                    bytes = reader.ReadBytes(size);
+                }
+            }
+#endif
+
             _lexer = new CLexer(bytes);
         }
 
