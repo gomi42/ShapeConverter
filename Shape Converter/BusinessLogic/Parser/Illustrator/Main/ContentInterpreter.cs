@@ -20,6 +20,7 @@
 // along with this program. If not, see<http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Media;
 using PdfSharp.Pdf;
@@ -47,11 +48,13 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
         PatternManager patternManager;
         XObjectManager xObjectManager;
         TextVectorizer textVectorizer;
+        PdfDictionary properties;
 
         Stack<GraphicsState> graphicsStateStack;
 
         GraphicsState currentGraphicsState;
         FontState fontState;
+        Stack<bool> visibilityStack;
 
         GraphicPathGeometry currentGeometry = null;
 
@@ -88,6 +91,8 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
 
             xObjectManager = new XObjectManager();
             xObjectManager.Init(resources);
+
+            properties = resources.Properties;
         }
 
         /// <summary>
@@ -113,12 +118,13 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
         /// <summary>
         /// Parse a single PDF page
         /// </summary>
-        public GraphicGroup Run(PdfDictionary form, CSequence sequence, GraphicsState graphicsState)
+        public GraphicGroup Run(PdfDictionary form, CSequence sequence, GraphicsState graphicsState, PdfDictionary[] visibleGroups)
         {
             this.returnGraphicGroup = new GraphicGroup();
             graphicGroup = returnGraphicGroup;
 
             graphicsStateStack = new Stack<GraphicsState>();
+            visibilityStack = new Stack<bool>();
 
             fontState = new FontState();
             textVectorizer = new TextVectorizer();
@@ -132,12 +138,31 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
 
             ResetCurrentGeometry();
 
+            bool isVisible = true;
+
             for (int index = 0; index < sequence.Count; index++)
             {
                 var contentOperator = sequence[index] as COperator;
 
                 switch (contentOperator.OpCode.OpCodeName)
                 {
+                    // begin marked content with property
+                    case OpCodeName.BDC:
+                    {
+                        //var tag = ((CName)contentOperator.Operands[0]).Name;
+                        var props = ((CName)contentOperator.Operands[1]).Name;
+                        var group = properties.Elements.GetDictionary(props);
+
+                        visibilityStack.Push(isVisible);
+                        isVisible = visibleGroups == null || visibleGroups.Contains(group);
+                        break;
+                    }
+
+                    // end marked content
+                    case OpCodeName.EMC:
+                        isVisible = visibilityStack.Pop();
+                        break;
+
                     // path construction operators
                     // rectangle
                     case OpCodeName.re:
@@ -298,8 +323,13 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
                     case OpCodeName.s:
                     {
                         lastMove.IsClosed = true;
-                        var path = GetCurrentPathFilled();
-                        graphicGroup.Children.Add(path);
+
+                        if (isVisible)
+                        {
+                            var path = GetCurrentPathFilled();
+                            graphicGroup.Children.Add(path);
+                        }
+
                         ResetCurrentGeometry();
                         break;
                     }
@@ -307,8 +337,12 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
                     // stroke the path
                     case OpCodeName.S:
                     {
-                        var path = GetCurrentPathStroked();
-                        graphicGroup.Children.Add(path);
+                        if (isVisible)
+                        {
+                            var path = GetCurrentPathStroked();
+                            graphicGroup.Children.Add(path);
+                        }
+
                         ResetCurrentGeometry();
                         break;
                     }
@@ -318,8 +352,13 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
                     case OpCodeName.bx:
                     {
                         lastMove.IsClosed = true;
-                        var path = GetCurrentPathFilledAndStroked();
-                        graphicGroup.Children.Add(path);
+
+                        if (isVisible)
+                        {
+                            var path = GetCurrentPathFilledAndStroked();
+                            graphicGroup.Children.Add(path);
+                        }
+
                         ResetCurrentGeometry();
                         break;
                     }
@@ -327,9 +366,13 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
                     // fill and stroke the path
                     case OpCodeName.B:
                     {
-                        var path = GetCurrentPathFilledAndStroked();
-                        currentGeometry.FillRule = GraphicFillRule.NoneZero;
-                        graphicGroup.Children.Add(path);
+                        if (isVisible)
+                        {
+                            var path = GetCurrentPathFilledAndStroked();
+                            currentGeometry.FillRule = GraphicFillRule.NoneZero;
+                            graphicGroup.Children.Add(path);
+                        }
+
                         ResetCurrentGeometry();
                         break;
                     }
@@ -337,10 +380,14 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
                     // fill and stroke the path
                     case OpCodeName.Bx:
                     {
-                        var path = GetCurrentPathFilledAndStroked();
-                        currentGeometry.FillRule = GraphicFillRule.NoneZero;
-                        currentGeometry.FillRule = GraphicFillRule.EvenOdd;
-                        graphicGroup.Children.Add(path);
+                        if (isVisible)
+                        {
+                            var path = GetCurrentPathFilledAndStroked();
+                            currentGeometry.FillRule = GraphicFillRule.NoneZero;
+                            currentGeometry.FillRule = GraphicFillRule.EvenOdd;
+                            graphicGroup.Children.Add(path);
+                        }
+
                         ResetCurrentGeometry();
                         break;
                     }
@@ -349,9 +396,13 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
                     case OpCodeName.F:
                     case OpCodeName.f:
                     {
-                        var path = GetCurrentPathFilled();
-                        currentGeometry.FillRule = GraphicFillRule.NoneZero;
-                        graphicGroup.Children.Add(path);
+                        if (isVisible)
+                        {
+                            var path = GetCurrentPathFilled();
+                            currentGeometry.FillRule = GraphicFillRule.NoneZero;
+                            graphicGroup.Children.Add(path);
+                        }
+
                         ResetCurrentGeometry();
                         break;
                     }
@@ -359,9 +410,13 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
                     // fill the path
                     case OpCodeName.fx:
                     {
-                        var path = GetCurrentPathFilled();
-                        currentGeometry.FillRule = GraphicFillRule.EvenOdd;
-                        graphicGroup.Children.Add(path);
+                        if (isVisible)
+                        {
+                            var path = GetCurrentPathFilled();
+                            currentGeometry.FillRule = GraphicFillRule.EvenOdd;
+                            graphicGroup.Children.Add(path);
+                        }
+
                         ResetCurrentGeometry();
                         break;
                     }
@@ -491,17 +546,20 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
                     // shading
                     case OpCodeName.sh:
                     {
-                        var graphicPath = new GraphicPath();
-                        var shadingDescriptor = shadingManager.GetShading(contentOperator.Operands);
+                        if (isVisible)
+                        {
+                            var graphicPath = new GraphicPath();
+                            var shadingDescriptor = shadingManager.GetShading(contentOperator.Operands);
 
-                        graphicPath.Geometry = currentGraphicsState.ClippingPath;
-                        graphicPath.FillBrush = shadingDescriptor.GetBrush(currentGraphicsState.CurrentTransformationMatrix,
-                                                                                           currentGraphicsState.ClippingPath.Bounds,
-                                                                                           currentGraphicsState.FillAlpha.Current,
-                                                                                           currentGraphicsState.SoftMask);
-                        graphicPath.ColorPrecision = shadingDescriptor.ColorPrecision;
+                            graphicPath.Geometry = currentGraphicsState.ClippingPath;
+                            graphicPath.FillBrush = shadingDescriptor.GetBrush(currentGraphicsState.CurrentTransformationMatrix,
+                                                                                               currentGraphicsState.ClippingPath.Bounds,
+                                                                                               currentGraphicsState.FillAlpha.Current,
+                                                                                               currentGraphicsState.SoftMask);
+                            graphicPath.ColorPrecision = shadingDescriptor.ColorPrecision;
 
-                        graphicGroup.Children.Add(graphicPath);
+                            graphicGroup.Children.Add(graphicPath);
+                        }
                         break;
                     }
 
@@ -601,7 +659,12 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
                     {
                         var text = (CString)contentOperator.Operands[0];
                         var textGraphic = textVectorizer.Vectorize(text.Value, currentGraphicsState, fontState);
-                        graphicGroup.Children.AddRange(textGraphic);
+
+                        if (isVisible)
+                        {
+                            graphicGroup.Children.AddRange(textGraphic);
+                        }
+
                         break;
                     }
 
@@ -609,7 +672,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
                     case OpCodeName.TJ:
                     {
                         var array = (CArray)contentOperator.Operands[0];
-                        HandleMultipleTextCommand(array);
+                        HandleMultipleTextCommand(array, isVisible);
                         break;
                     }
 
@@ -773,7 +836,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
         /// <summary>
         /// Handle multiple strings command
         /// </summary>
-        private void HandleMultipleTextCommand(CArray commandParameter)
+        private void HandleMultipleTextCommand(CArray commandParameter, bool isVisible)
         {
             foreach (var parameter in commandParameter)
             {
@@ -782,7 +845,12 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
                     case CString str:
                     {
                         var textGraphic = textVectorizer.Vectorize(str.Value, currentGraphicsState, fontState);
-                        graphicGroup.Children.AddRange(textGraphic);
+
+                        if (isVisible)
+                        {
+                            graphicGroup.Children.AddRange(textGraphic);
+                        }
+
                         break;
                     }
 
@@ -836,7 +904,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
             CSequence sequence = ContentReader.ReadContent(xobjectDict.Stream.UnfilteredValue);
 
             var interpreter = new ContentInterpreter();
-            var group = interpreter.Run(xobjectDict, sequence, cloneCurrentGraphicsState);
+            var group = interpreter.Run(xobjectDict, sequence, cloneCurrentGraphicsState, null);
 
             // do some optimizations that the post-processor cannot do
 
@@ -857,7 +925,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
                 cloneCurrentGraphicsState.FillAlpha.Layer = currentGraphicsState.FillAlpha.Object;
                 cloneCurrentGraphicsState.StrokeAlpha.Layer = currentGraphicsState.StrokeAlpha.Object;
 
-                group = interpreter.Run(xobjectDict, sequence, cloneCurrentGraphicsState);
+                group = interpreter.Run(xobjectDict, sequence, cloneCurrentGraphicsState, null);
                 graphicGroup.Children.Add(group.Children[0]);
             }
             else
@@ -938,7 +1006,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
         /// <param name="path"></param>
         private void SetFinalDashes(GraphicPath path)
         {
-            if  (currentGraphicsState.Dashes == null)
+            if (currentGraphicsState.Dashes == null)
             {
                 return;
             }

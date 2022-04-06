@@ -115,5 +115,12 @@ namespace ShapeConverter.Parser.Pdf
 
         // Mask
         public const string G              = "/G";
+
+        // optional content
+        public const string OCGs           = "/OCGs";
+        public const string D              = "/D";
+        public const string BaseState      = "/BaseState";
+        public const string ON             = "/ON";
+        public const string OFF            = "/OFF";
     }
 }

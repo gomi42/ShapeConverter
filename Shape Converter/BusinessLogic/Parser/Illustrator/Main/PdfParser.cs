@@ -20,6 +20,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see<http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
 using System.Text;
 using System.Windows.Media;
 using PdfSharp.Pdf;
@@ -43,11 +44,12 @@ namespace ShapeConverter.Parser.Pdf
         {
             var group = new GraphicGroup();
             PdfDocument inputDocument = PdfReader.Open(filename);
+            var invisibleGroups = GetVisibleGroups(inputDocument.OCPropperties);
 
             for (int i = 0; i < inputDocument.Pages.Count; i++)
             {
                 var page = inputDocument.Pages[i];
-                var geometry = Parse(page);
+                var geometry = Parse(page, invisibleGroups);
                 group.Children.Add(geometry);
             }
 
@@ -60,7 +62,7 @@ namespace ShapeConverter.Parser.Pdf
         /// <summary>
         /// Parse a single PDF page
         /// </summary>
-        private GraphicVisual Parse(PdfPage page)
+        private GraphicVisual Parse(PdfPage page, PdfDictionary[] invisibleGroups)
         {
             var currentGraphicsState = new GraphicsState();
             currentGraphicsState.TransformationMatrix = Matrix.Identity;
@@ -95,7 +97,64 @@ namespace ShapeConverter.Parser.Pdf
 #endif
 
             var interpreter = new ContentInterpreter();
-            return interpreter.Run(page, sequence, currentGraphicsState);
+            return interpreter.Run(page, sequence, currentGraphicsState, invisibleGroups);
+        }
+
+        /// <summary>
+        /// Get all invisible groups
+        /// </summary>
+        private PdfDictionary[] GetVisibleGroups(PdfDictionary prop)
+        {
+            if (prop == null)
+            {
+                return null;
+            }
+
+            var visibleGroups = new List<PdfDictionary>();
+            var ocgs = prop.Elements.GetArray(PdfKeys.OCGs);
+
+            var d = prop.Elements.GetDictionary(PdfKeys.D);
+            var baseState = d.Elements.GetName(PdfKeys.BaseState);
+
+            if (string.IsNullOrEmpty(baseState) || baseState == PdfKeys.ON)
+            {
+                for (int i = 0; i < ocgs.Elements.Count; i++)
+                {
+                    visibleGroups.Add(ocgs.Elements.GetDictionary(i));
+                }
+            }
+
+            var on = d.Elements.GetArray(PdfKeys.ON);
+
+            if (on != null)
+            {
+                for (int i = 0; i < on.Elements.Count; i++)
+                {
+                    var dict = on.Elements.GetDictionary(i);
+
+                    if (!visibleGroups.Contains(dict))
+                    {
+                        visibleGroups.Add(dict);
+                    }
+                }
+            }
+
+            var off = d.Elements.GetArray(PdfKeys.OFF);
+
+            if (off != null)
+            {
+                for (int i = 0; i < off.Elements.Count; i++)
+                {
+                    var dict = off.Elements.GetDictionary(i);
+
+                    if (visibleGroups.Contains(dict))
+                    {
+                        visibleGroups.Remove(dict);
+                    }
+                }
+            }
+
+            return visibleGroups.ToArray();
         }
     }
 }

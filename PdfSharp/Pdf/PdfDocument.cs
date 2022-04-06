@@ -252,6 +252,11 @@ namespace PdfSharp.Pdf
             get { return Catalog.Language; }
         }
 
+        public PdfDictionary OCPropperties
+        {
+            get { return Catalog.OCProperties; }
+        }
+
         /// <summary>
         /// Gets the security settings of this document.
         /// </summary>

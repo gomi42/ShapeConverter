@@ -141,6 +141,11 @@ namespace PdfSharp.Pdf.Advanced
             get { return Elements.GetString(Keys.Lang); }
         }
 
+        public PdfDictionary OCProperties
+        {
+            get { return Elements.GetDictionary(Keys.OCProperties); }
+        }
+
         /// <summary>
         /// Predefined keys of this dictionary.
         /// </summary>
