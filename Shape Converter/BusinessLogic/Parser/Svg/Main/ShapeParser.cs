@@ -58,28 +58,32 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             GraphicVisual graphicVisual = null;
 
             cssStyleCascade.PushStyles(shape);
+            var strVal = cssStyleCascade.GetProperty("visibility");
 
-            var transformMatrix = cssStyleCascade.GetTransformMatrixFromTop();
-            currentTransformationMatrix = transformMatrix * currentTransformationMatrix;
-
-            var geometry = geometryParser.Parse(shape, currentTransformationMatrix);
-
-            if (geometry != null)
+            if (string.IsNullOrEmpty(strVal) || strVal == "visible")
             {
-                var graphicPath = new GraphicPath();
-                graphicPath.Geometry = geometry;
-                graphicVisual = graphicPath;
+                var transformMatrix = cssStyleCascade.GetTransformMatrixFromTop();
+                currentTransformationMatrix = transformMatrix * currentTransformationMatrix;
 
-                brushParser.SetFillAndStroke(shape, graphicPath, currentTransformationMatrix);
+                var geometry = geometryParser.Parse(shape, currentTransformationMatrix);
 
-                if (clipping.IsClipPathSet())
+                if (geometry != null)
                 {
-                    // shapes don't support clipping, create a group around it
-                    var group = new GraphicGroup();
-                    graphicVisual = group;
-                    group.Children.Add(graphicPath);
+                    var graphicPath = new GraphicPath();
+                    graphicPath.Geometry = geometry;
+                    graphicVisual = graphicPath;
 
-                    clipping.SetClipPath(group, currentTransformationMatrix);
+                    brushParser.SetFillAndStroke(shape, graphicPath, currentTransformationMatrix);
+
+                    if (clipping.IsClipPathSet())
+                    {
+                        // shapes don't support clipping, create a group around it
+                        var group = new GraphicGroup();
+                        graphicVisual = group;
+                        group.Children.Add(graphicPath);
+
+                        clipping.SetClipPath(group, currentTransformationMatrix);
+                    }
                 }
             }
 

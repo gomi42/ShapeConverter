@@ -159,17 +159,21 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
 
             foreach (var element in groupElement.Elements())
             {
-                if (!PresentationAttribute.IsElementVisible(element) || !PresentationAttribute.IsElementDisplayed(element))
-                {
-                    continue;
-                }
+                cssStyleCascade.PushStyles(element);
 
                 GraphicVisual graphicVisual = ParseElement(element, matrix);
 
-                if (graphicVisual != null)
+                var strVal = cssStyleCascade.GetPropertyFromTop("display");
+
+                if (strVal != "none")
                 {
-                    group.Children.Add(graphicVisual);
+                    if (graphicVisual != null)
+                    {
+                        group.Children.Add(graphicVisual);
+                    }
                 }
+
+                cssStyleCascade.Pop();
             }
 
             return group;
