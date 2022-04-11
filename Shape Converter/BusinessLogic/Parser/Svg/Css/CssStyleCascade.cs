@@ -62,6 +62,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             "stroke-dasharray",
             "stroke-dashoffset",
             "display",
+            "visibility",
             "font-family",
             "font-size",
             "font-style",
