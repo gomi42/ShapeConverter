@@ -58,9 +58,8 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             GraphicVisual graphicVisual = null;
 
             cssStyleCascade.PushStyles(shape);
-            var strVal = cssStyleCascade.GetProperty("visibility");
 
-            if (string.IsNullOrEmpty(strVal) || strVal == "visible")
+            if (cssStyleCascade.IsVisible())
             {
                 var transformMatrix = cssStyleCascade.GetTransformMatrixFromTop();
                 currentTransformationMatrix = transformMatrix * currentTransformationMatrix;

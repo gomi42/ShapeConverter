@@ -68,15 +68,15 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
         /// <summary>
         /// Parse a single text
         /// </summary>
-        public GraphicVisual Parse(XElement shape,
+        public GraphicVisual Parse(XElement textElement,
                                    Matrix currentTransformationMatrix)
         {
-            cssStyleCascade.PushStyles(shape);
+            cssStyleCascade.PushStyles(textElement);
 
             var transformMatrix = cssStyleCascade.GetTransformMatrixFromTop();
             currentTransformationMatrix = transformMatrix * currentTransformationMatrix;
 
-            var graphicVisual = ParseText(shape, currentTransformationMatrix);
+            var graphicVisual = ParseText(textElement, currentTransformationMatrix);
 
             cssStyleCascade.Pop();
 
@@ -158,7 +158,9 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                 {
                     case XElement embededElement:
                     {
-                        if (!PresentationAttribute.IsElementVisible(embededElement))
+                        cssStyleCascade.PushStyles(embededElement);
+
+                        if (!cssStyleCascade.IsDisplayed())
                         {
                             continue;
                         }
@@ -168,9 +170,6 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                             case "tspan":
                             {
                                 var tspanElement = embededElement;
-                                var isTspanDisplayed = PresentationAttribute.IsElementDisplayed(tspanElement);
-
-                                cssStyleCascade.PushStyles(tspanElement);
 
                                 var xChildList = GetLengthPercentList(tspanElement, "x", PercentBaseSelector.ViewBoxWidth);
                                 var dxChildList = GetLengthPercentList(tspanElement, "dx", PercentBaseSelector.ViewBoxWidth);
@@ -203,7 +202,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                                 position.X.SetChildValues(null, null);
                                 position.Y.SetChildValues(null, null);
 
-                                if (isTspanDisplayed)
+                                if (cssStyleCascade.IsVisible())
                                 {
                                     ColorBlock colorBlock;
 
@@ -230,7 +229,6 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                                     }
                                 }
 
-                                cssStyleCascade.Pop();
                             }
                             break;
 
@@ -240,6 +238,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.Main
                             }
                         }
 
+                        cssStyleCascade.Pop();
                         break;
                     }
 

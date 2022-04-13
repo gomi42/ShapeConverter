@@ -160,9 +160,8 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             foreach (var element in groupElement.Elements())
             {
                 cssStyleCascade.PushStyles(element);
-                var strVal = cssStyleCascade.GetPropertyFromTop("display");
 
-                if (strVal != "none")
+                if (cssStyleCascade.IsDisplayed())
                 {
                     GraphicVisual graphicVisual = ParseElement(element, matrix);
 

@@ -56,7 +56,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
         }
 
         /// <summary>
-        /// Get an attribute as double from the level (0 = top)
+        /// Get an attribute as double from the given level (0 = top)
         /// </summary>
         public static double GetNumberPercentFromLevel(this CssStyleCascade cssStyleCascade, string name, int level, double defaultValue)
         {
@@ -86,6 +86,28 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg
             }
 
             return Matrix.Identity;
+        }
+
+        /// <summary>
+        /// Is the current element visible
+        /// </summary>
+        /// <returns></returns>
+        public static bool IsVisible(this CssStyleCascade cssStyleCascade)
+        {
+            var visibility = cssStyleCascade.GetProperty("visibility");
+
+            return string.IsNullOrEmpty(visibility) || (visibility != "hidden" && visibility != "colapsed");
+        }
+
+        /// <summary>
+        /// Is the current element displayed
+        /// </summary>
+        /// <returns></returns>
+        public static bool IsDisplayed(this CssStyleCascade cssStyleCascade)
+        {
+            var display = cssStyleCascade.GetPropertyFromTop("display");
+
+            return display != "none";
         }
     }
 }
