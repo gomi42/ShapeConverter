@@ -54,4 +54,4 @@ You might have noticed there isn't much activity here. It's not because the proj
 ##### Forks
 
 * You must not create a fork unless you want to contribute to the ShapeConverter
-* The forks from the following users just mess up the fork list and must be ignored (the forks exist just because they can and don't contribute anything): Egaros, 93lab, 0000duck
+* The forks from the following users just mess up the fork list and must be ignored (the forks exist just because they can and don't contribute anything): Egaros, 93lab, 0000duck, justinhachemeister
