@@ -35,5 +35,6 @@
         <ResourceDictionary Source="/Shell/Styles/Label.xaml" />
         <ResourceDictionary Source="/Shell/Styles/LabelCombobox.xaml" />
         <ResourceDictionary Source="/Shell/Styles/HeaderedContentControl.xaml" />
+        <ResourceDictionary Source="/Shell/Styles/Scrollbar.xaml" />
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

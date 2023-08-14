@@ -33,6 +33,8 @@
     <Color x:Key="MouseOverTextColor">#FF646464</Color>
     <Color x:Key="NaviButtonBackgroundColor">#FFDDDDDD</Color>
     <Color x:Key="ParameterDeviderColor">#FFACACAC</Color>
+    <Color x:Key="ScrollbarThumbColor">#FFC0C0C0</Color>
+    <Color x:Key="ScrollViewerBackgroundColor">#FFFFFFFF</Color>
 
     <!--  brushes  -->
     <SolidColorBrush x:Key="DustyGrayBrush"
@@ -51,6 +53,10 @@
                      Color="{StaticResource NaviButtonBackgroundColor}" />
     <SolidColorBrush x:Key="ParameterDeviderBrush"
                      Color="{StaticResource ParameterDeviderColor}" />
+    <SolidColorBrush x:Key="ScrollbarThumbBrush"
+                     Color="{StaticResource ScrollbarThumbColor}" />
+    <SolidColorBrush x:Key="ScrollViewerBackgroundBrush"
+                     Color="{StaticResource ScrollViewerBackgroundColor}" />
 
     <SolidColorBrush x:Key="CheckerBoardBrush1"
                      Color="#FFF9F9F9" />

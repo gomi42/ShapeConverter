@@ -724,6 +724,9 @@
     <None Include="Shell\Styles\Styles.xaml">
       <SubType>Designer</SubType>
     </None>
+    <Page Include="Shell\Styles\Scrollbar.xaml" Condition="'$(DesignTime)'=='true' AND '$(BuildingInsideVisualStudio)'!='true' AND '$(BuildingInsideExpressionBlend)'!='true'">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Shell\Styles\TabControl.xaml" Condition="'$(DesignTime)'=='true' AND '$(BuildingInsideVisualStudio)'!='true' AND '$(BuildingInsideExpressionBlend)'!='true'">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

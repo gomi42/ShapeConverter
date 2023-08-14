@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29009.5
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33103.184
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shape Converter", "Shape Converter\Shape Converter.csproj", "{A9491E59-4D31-4456-8D49-1BF89107560D}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -15,6 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
+		README.md = README.md
 		Settings.XamlStyler = Settings.XamlStyler
 	EndProjectSection
 EndProject
@@ -29,6 +30,7 @@ Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "ResMerger", "Tools\ResMerge
 		UseLegacyDebugEngines = No
 		LaunchSQLEngine = No
 		AttachLaunchAction = No
+		IORedirection = Auto
 	EndProjectSection
 EndProject
 Global
