@@ -31,7 +31,7 @@ namespace ShapeConverter.Shell.CommonViews
     /// </summary>
     public enum XamlCodeGeneratorType
     {
-        DrawingBrush,
+        Drawing,
         Path
     }
 
@@ -69,15 +69,19 @@ namespace ShapeConverter.Shell.CommonViews
         /// </summary>
         public XamlViewModel()
         {
-            var xamlCodeTypeItems = new List<XamlCodeTypeItem>();
-            xamlCodeTypeItems.Add(new XamlCodeTypeItem { Label = "DrawingBrush", CodeGeneratorType = XamlCodeGeneratorType.DrawingBrush });
-            xamlCodeTypeItems.Add(new XamlCodeTypeItem { Label = "Path", CodeGeneratorType = XamlCodeGeneratorType.Path });
+            var xamlCodeTypeItems = new List<XamlCodeTypeItem>
+            {
+                new XamlCodeTypeItem { Label = "Drawing", CodeGeneratorType = XamlCodeGeneratorType.Drawing },
+                new XamlCodeTypeItem { Label = "Path", CodeGeneratorType = XamlCodeGeneratorType.Path }
+            };
             CodeTypeItems = xamlCodeTypeItems;
             SelectedCodeTypeItem = CodeTypeItems[0];
 
-            var geometrytypes = new List<GeometryTypeItem>();
-            geometrytypes.Add(new GeometryTypeItem { Label = "Stream", GeometryGeneratorType = GeometryGeneratorType.Stream });
-            geometrytypes.Add(new GeometryTypeItem { Label = "PathGeometry", GeometryGeneratorType = GeometryGeneratorType.PathGeometry });
+            var geometrytypes = new List<GeometryTypeItem>
+            {
+                new GeometryTypeItem { Label = "Stream", GeometryGeneratorType = GeometryGeneratorType.Stream },
+                new GeometryTypeItem { Label = "PathGeometry", GeometryGeneratorType = GeometryGeneratorType.PathGeometry }
+            };
             GeometryTypes = geometrytypes;
             SelectedGeometryType = GeometryTypes[0];
 
@@ -224,7 +228,7 @@ namespace ShapeConverter.Shell.CommonViews
 
             switch (SelectedCodeTypeItem.CodeGeneratorType)
             {
-                case XamlCodeGeneratorType.DrawingBrush:
+                case XamlCodeGeneratorType.Drawing:
                     SourceCode = DrawingBrushSourceGenerator.Generate(path, geometryGeneratorType);
                     break;
 

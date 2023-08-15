@@ -34,21 +34,14 @@ namespace ShapeConverter.BusinessLogic.Generators
         public static string Generate(GraphicVisual visual, GeometryGeneratorType geometryGeneratorType)
         {
             StringBuilder result = new StringBuilder();
-            var indentTag = SourceFormatterHelper.GetTagIndent(1);
 
-            result.AppendLine("<DrawingBrush Stretch=\"Uniform\">");
-            result.AppendLine($"{indentTag}<DrawingBrush.Drawing>");
-
-            Generate(visual, result, 2, geometryGeneratorType);
-
-            result.AppendLine($"{indentTag}</DrawingBrush.Drawing>");
-            result.AppendLine("</DrawingBrush>");
+            Generate(visual, result, 0, geometryGeneratorType);
 
             return result.ToString();
         }
 
         /// <summary>
-        /// Generates the drawing brush source code for a given geometry.
+        /// Generates the drawing source code for a given geometry.
         /// </summary>
         private static void Generate(GraphicVisual visual, StringBuilder result, int level, GeometryGeneratorType geometryGeneratorType)
         {
