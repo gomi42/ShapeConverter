@@ -64,6 +64,7 @@ namespace ShapeConverter.Parser.Pdf
         public const string FontName       = "/FontName";
         public const string FontStretch    = "/FontStretch";
         public const string ItalicAngle    = "/ItalicAngle";
+        public const string FontWeight     = "/FontWeight";
 
         // color
         public const string DeviceRGB      = "/DeviceRGB";

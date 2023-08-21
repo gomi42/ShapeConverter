@@ -19,10 +19,14 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see<http://www.gnu.org/licenses/>.
 
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Windows;
+using System.Windows.Documents;
 using System.Windows.Media;
 using PdfSharp.Pdf;
+using PdfSharp.Pdf.IO;
 using ShapeConverter.Helper;
 using ShapeConverter.Parser.Pdf;
 
@@ -30,14 +34,66 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf
 {
     internal class FontTypeBase
     {
+        private class FontDescription
+        {
+            public FontDescription(string fontName)
+            {
+                FontName = fontName;
+                Style = FontStyles.Normal;
+                Weight = FontWeights.Normal;
+            }
+
+            public FontDescription(string fontName, FontStyle style, FontWeight weight)
+            {
+                FontName = fontName;
+                Style = style;
+                Weight = weight;
+            }
+
+            public string FontName { get; }
+            public FontStyle Style { get; }
+            public FontWeight Weight { get; }
+        }
+
+        //////////////////////////////////////////////////////////////////////////
+
         static int filenameCounter = 1;
 
-        string filename;
-        string fontFamily;
-        string fontName;
+        private Dictionary<string, FontDescription> Standard14Fonts = new Dictionary<string, FontDescription>
+        {
+            { "/Helvetica", new FontDescription("Arial") },
+            { "/Helvetica-Bold", new FontDescription("Arial", FontStyles.Normal, FontWeights.Bold) },
+            { "/Helvetica-Oblique", new FontDescription("Arial", FontStyles.Oblique, FontWeights.Normal) },
+            { "/Helvetica-BoldOblique", new FontDescription("Arial", FontStyles.Oblique, FontWeights.Bold) },
+            { "/Times-Roman", new FontDescription("Times New Roman") },
+            { "/Times-Bold", new FontDescription("Times New Roman", FontStyles.Normal, FontWeights.Bold) },
+            { "/Times-Italic", new FontDescription("Times New Roman", FontStyles.Italic, FontWeights.Normal) },
+            { "/Times-BoldItalic", new FontDescription("Times New Roman", FontStyles.Italic, FontWeights.Bold) },
+            { "/Courier", new FontDescription("Courier") },
+            { "/Courier-Bold", new FontDescription("Courier", FontStyles.Normal, FontWeights.Bold) },
+            { "/Courier-Oblique", new FontDescription("Courier", FontStyles.Oblique, FontWeights.Normal) },
+            { "/Courier-BoldOblique", new FontDescription("Courier", FontStyles.Oblique, FontWeights.Bold) },
+            { "/Symbol", new FontDescription("Symbol") },
+            { "/ZapfDingbats", new FontDescription("Wingdings") }
+        };
+
+        private FontDescription standardFont;
+        private string filename;
+        private string fontName;
+        private FontWeight fontWeight;
 
         protected void Init(PdfDictionary fontDict, string fileExtension)
         {
+            if (fontDict.Elements.Keys.Contains("/BaseFont"))
+            {
+                var baseFont = fontDict.Elements.GetValue("/BaseFont") as PdfName;
+
+                if (baseFont != null && Standard14Fonts.TryGetValue(baseFont.Value, out FontDescription fontDescription))
+                {
+                    standardFont = fontDescription;
+                }
+            }
+
             foreach (var fontKey in fontDict.Elements.Keys)
             {
                 switch (fontKey)
@@ -59,6 +115,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf
 
                     case PdfKeys.FontDescriptor:
                     {
+                        standardFont = null;
                         ReadFontDescriptor(fontDict.Elements.GetDictionary(fontKey), fileExtension);
                         break;
                     }
@@ -81,6 +138,8 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf
         /// </summary>
         private void ReadFontDescriptor(PdfDictionary fontDescriptorDict, string fileExtension)
         {
+            fontWeight = FontWeights.Normal;
+
             foreach (var fontDescriptorKey in fontDescriptorDict.Elements.Keys)
             {
                 switch (fontDescriptorKey)
@@ -106,7 +165,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf
 
                     case PdfKeys.FontFamily:
                     {
-                        fontFamily = fontDescriptorDict.Elements.GetString(fontDescriptorKey);
+                        //fontFamily = fontDescriptorDict.Elements.GetString(fontDescriptorKey);
                         break;
                     }
 
@@ -119,6 +178,68 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf
 
                     case PdfKeys.FontStretch:
                     {
+                        break;
+                    }
+
+                    case PdfKeys.FontWeight:
+                    {
+                        var pdfWeight = fontDescriptorDict.Elements.GetValue(fontDescriptorKey) as PdfInteger;
+
+                        if (pdfWeight == null)
+                        {
+                            break;
+                        }
+
+                        int weight = pdfWeight.Value;
+
+                        if (weight <= 100)
+                        {
+                            fontWeight = FontWeights.Thin;
+                        }
+                        else
+                        if (weight <= 200)
+                        {
+                            fontWeight = FontWeights.ExtraLight;
+                        }
+                        else
+                        if (weight <= 300)
+                        {
+                            fontWeight = FontWeights.Light;
+                        }
+                        else
+                        if (weight <= 400)
+                        {
+                            fontWeight = FontWeights.Normal;
+                        }
+                        else
+                        if (weight <= 500)
+                        {
+                            fontWeight = FontWeights.Medium;
+                        }
+                        else
+                        if (weight <= 600)
+                        {
+                            fontWeight = FontWeights.DemiBold;
+                        }
+                        else
+                        if (weight <= 700)
+                        {
+                            fontWeight = FontWeights.DemiBold;
+                        }
+                        else
+                        if (weight <= 800)
+                        {
+                            fontWeight = FontWeights.ExtraBold;
+                        }
+                        else
+                        if (weight <= 900)
+                        {
+                            fontWeight = FontWeights.ExtraLight;
+                        }
+                        else
+                        {
+                            fontWeight = FontWeights.UltraBlack;
+                        }
                         break;
                     }
 
@@ -135,14 +256,24 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf
         /// </summary>
         public Typeface GetTypeFace()
         {
-            string baseDir = System.IO.Path.GetDirectoryName(filename);
-            baseDir = baseDir.Replace('\\', '/');
+            Typeface typeFace;
 
-            var shortName = fontName.Substring(7, fontName.Length - 7);
+            if (standardFont != null)
+            {
+                var ff = new FontFamily(standardFont.FontName);
+                typeFace = new Typeface(ff, standardFont.Style, standardFont.Weight, FontStretches.Normal);
+            }
+            else
+            {
+                string baseDir = Path.GetDirectoryName(filename);
+                baseDir = baseDir.Replace('\\', '/');
 
-            string uri = string.Format("file:///{0}/#{1},{2}", baseDir, fontName, shortName);
-            var ff = new FontFamily(uri);
-            var typeFace = new Typeface(ff, FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
+                var shortName = fontName.Substring(7, fontName.Length - 7);
+
+                string uri = string.Format("file:///{0}/#{1},{2}", baseDir, fontName, shortName);
+                var ff = new FontFamily(uri);
+                typeFace = new Typeface(ff, FontStyles.Normal, fontWeight, FontStretches.Normal);
+            }
 
             return typeFace;
         }
