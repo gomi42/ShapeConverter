@@ -46,6 +46,7 @@ namespace ShapeConverter.Parser.Pdf
 
         // font
         public const string TrueType       = "/TrueType";
+        public const string Type0          = "/Type0";
         public const string Type1          = "/Type1";
         public const string BaseFont       = "/BaseFont";
         public const string FirstChar      = "/FirstChar";
@@ -55,6 +56,7 @@ namespace ShapeConverter.Parser.Pdf
         public const string Encoding       = "/Encoding";
         public const string ToUnicode      = "/ToUnicode";
         public const string Name           = "/Name";
+        public const string DescendantFonts= "/DescendantFonts";
 
         // font descriptor
         public const string FontFile       = "/FontFile";

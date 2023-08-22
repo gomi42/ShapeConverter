@@ -79,9 +79,23 @@ namespace ShapeConverter.Parser.Pdf
                     break;
                 }
 
+                case PdfKeys.Type0:
+                {
+                    fontDescriptor = new Type0Font();
+                    fontDescriptor.Init(fontDict);
+                    break;
+                }
+
                 case PdfKeys.Type1:
                 {
                     fontDescriptor = new Type1Font();
+                    fontDescriptor.Init(fontDict);
+                    break;
+                }
+
+                default:
+                {
+                    fontDescriptor = new PlaceholderTypeFont();
                     fontDescriptor.Init(fontDict);
                     break;
                 }

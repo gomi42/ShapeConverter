@@ -409,6 +409,8 @@
     <Compile Include="BusinessLogic\Parser\EPS\EpsSharp-Reader\Utilities\RelativeSamplesDecoder.cs" />
     <Compile Include="BusinessLogic\Parser\Illustrator\ColorSpace\IndexedColorSpace.cs" />
     <Compile Include="BusinessLogic\Parser\Illustrator\Font\FontTypeBase.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\Font\PlaceholderTypeFont.cs" />
+    <Compile Include="BusinessLogic\Parser\Illustrator\Font\Type0Font.cs" />
     <Compile Include="BusinessLogic\Parser\Illustrator\Function\PostScriptCalculatorFunction.cs" />
     <Compile Include="BusinessLogic\Parser\Illustrator\Main\ContentInterpreter.cs" />
     <Compile Include="BusinessLogic\Parser\Illustrator\Pattern\IPattern.cs" />

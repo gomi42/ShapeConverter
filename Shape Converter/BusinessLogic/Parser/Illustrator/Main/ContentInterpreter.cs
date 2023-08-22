@@ -149,12 +149,15 @@ namespace ShapeConverter.BusinessLogic.Parser.Pdf.Main
                     // begin marked content with property
                     case OpCodeName.BDC:
                     {
-                        //var tag = ((CName)contentOperator.Operands[0]).Name;
-                        var props = ((CName)contentOperator.Operands[1]).Name;
-                        var group = properties.Elements.GetDictionary(props);
-
                         visibilityStack.Push(isVisible);
-                        isVisible = visibleGroups == null || visibleGroups.Contains(group);
+
+                        if (contentOperator.Operands.Count > 1)
+                        {
+                            var props = ((CName)contentOperator.Operands[1]).Name;
+                            var group = properties.Elements.GetDictionary(props);
+
+                            isVisible = visibleGroups == null || visibleGroups.Contains(group);
+                        }
                         break;
                     }
 
