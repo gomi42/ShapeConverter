@@ -81,7 +81,7 @@ namespace ShapeConverter.BusinessLogic.Exporter
             var normalizedVisual = normalizer.Normalize(visual, NormalizeAspect.Width, width);
 
             double height = normalizer.AspectRatio * width;
-            root.Add(new XAttribute("viewBox", $"0 0 {width} {height}"));
+            root.Add(new XAttribute("viewBox", string.Format("0 0 {0} {1}", DoubleUtilities.FormatString(width), DoubleUtilities.FormatString(height))));
 
             XElement definitions = new XElement(ns + "defs");
             int definitionsCount = 0;
