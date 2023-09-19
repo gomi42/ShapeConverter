@@ -144,7 +144,7 @@ namespace ShapeConverter.BusinessLogic.Generators
 
             var len = result.Length;
 
-            if (result[len - 1] == ' ')
+            if (len > 1 && result[len - 1] == ' ')
             {
                 result.Remove(len - 1, 1);
             }
