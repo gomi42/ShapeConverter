@@ -30,7 +30,7 @@ namespace ShapeConverter.BusinessLogic.Parser.Svg.CSS
     internal class CssStyleDeclaration
     {
         private static Regex styleRegex = new Regex(
-            @"^(?<name>[A-Za-z\-0-9]+)\s*:(?<value>[^;\}!]+)(!\s?(?<priority>important))?;?");
+            @"^(?<name>[A-Za-z\-0-9]+)\s*:\s*(?<value>[^;\}!]+)(!\s?(?<priority>important))?;?");
 
         private Dictionary<string, string> styles;
 
