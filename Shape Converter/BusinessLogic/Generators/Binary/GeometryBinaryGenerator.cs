@@ -54,19 +54,19 @@ namespace ShapeConverter.BusinessLogic.Generators
 
                     case GraphicLineSegment graphicLineTo:
                     {
-                        ctx.LineTo(graphicLineTo.To, true, true);
+                        ctx.LineTo(graphicLineTo.To, true, false);
                         break;
                     }
 
                     case GraphicCubicBezierSegment graphicCubicBezier:
                     {
-                        ctx.BezierTo(graphicCubicBezier.ControlPoint1, graphicCubicBezier.ControlPoint2, graphicCubicBezier.EndPoint, true, true);
+                        ctx.BezierTo(graphicCubicBezier.ControlPoint1, graphicCubicBezier.ControlPoint2, graphicCubicBezier.EndPoint, true, false);
                         break;
                     }
 
                     case GraphicQuadraticBezierSegment graphicQuadraticBezier:
                     {
-                        ctx.QuadraticBezierTo(graphicQuadraticBezier.ControlPoint, graphicQuadraticBezier.EndPoint, true, true);
+                        ctx.QuadraticBezierTo(graphicQuadraticBezier.ControlPoint, graphicQuadraticBezier.EndPoint, true, false);
                         break;
                     }
                 }
